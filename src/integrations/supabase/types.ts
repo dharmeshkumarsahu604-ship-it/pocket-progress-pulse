@@ -425,12 +425,72 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_user_stats: {
+        Args: { user_uuid: string }
+        Returns: {
+          total_bookmarks: number
+          total_field_notes: number
+          total_scans: number
+          total_voice_notes: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      search_minerals: {
+        Args: {
+          max_hardness?: number
+          min_hardness?: number
+          search_query?: string
+        }
+        Returns: {
+          chemical_formula: string | null
+          cleavage: string | null
+          color: string | null
+          created_at: string
+          crystal_system: string | null
+          description: string
+          fracture: string | null
+          hardness: number
+          id: string
+          image_url: string | null
+          locations: string[] | null
+          luster: string | null
+          name: string
+          specific_gravity: number | null
+          streak: string | null
+          updated_at: string
+          uses: string | null
+        }[]
+      }
+      search_rocks: {
+        Args: {
+          max_hardness?: number
+          min_hardness?: number
+          rock_type?: string
+          search_query?: string
+        }
+        Returns: {
+          color: string | null
+          composition: string | null
+          created_at: string
+          description: string
+          formation_process: string | null
+          grain_size: string | null
+          hardness: number | null
+          id: string
+          image_url: string | null
+          locations: string[] | null
+          name: string
+          texture: string | null
+          type: string
+          updated_at: string
+          uses: string | null
+        }[]
       }
     }
     Enums: {

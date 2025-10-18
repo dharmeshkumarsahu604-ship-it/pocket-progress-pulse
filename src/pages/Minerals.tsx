@@ -1,40 +1,82 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MineralCard } from "@/components/minerals/MineralCard";
 import { SearchBar } from "@/components/shared/SearchBar";
-import { mockMinerals } from "@/data/mockMinerals";
 import { useSearch } from "@/hooks/useSearch";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface Mineral {
+  id: string;
+  name: string;
+  chemical_formula: string | null;
+  image_url: string | null;
+  description: string;
+  luster: string | null;
+  hardness: number;
+  color: string | null;
+  streak: string | null;
+  cleavage: string | null;
+  fracture: string | null;
+  crystal_system: string | null;
+  specific_gravity: number | null;
+  uses: string | null;
+  locations: string[] | null;
+}
 
 export default function Minerals() {
+  const [minerals, setMinerals] = useState<Mineral[]>([]);
+  const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useLocalStorage<string[]>("favorite-minerals", []);
   const [hardnessRange, setHardnessRange] = useState<[number, number]>([0, 10]);
   const [sortBy, setSortBy] = useState<"name" | "hardness" | "formula">("name");
   
   const { searchTerm, setSearchTerm, filteredItems } = useSearch(
-    mockMinerals,
-    ["name", "formula", "luster", "color", "crystalSystem"]
+    minerals,
+    ["name", "chemical_formula", "luster", "color", "crystal_system"]
   );
 
+  useEffect(() => {
+    fetchMinerals();
+  }, []);
+
+  const fetchMinerals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("minerals")
+        .select("*")
+        .order("name");
+
+      if (error) throw error;
+      setMinerals(data || []);
+    } catch (error) {
+      console.error("Error fetching minerals:", error);
+      toast.error("Failed to load minerals");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredAndSortedMinerals = useMemo(() => {
-    let minerals = filteredItems;
+    let filteredMinerals = filteredItems;
 
     // Filter by hardness
-    minerals = minerals.filter(
+    filteredMinerals = filteredMinerals.filter(
       (mineral) => mineral.hardness >= hardnessRange[0] && mineral.hardness <= hardnessRange[1]
     );
 
     // Sort
-    return [...minerals].sort((a, b) => {
+    return [...filteredMinerals].sort((a, b) => {
       switch (sortBy) {
         case "name":
           return a.name.localeCompare(b.name);
         case "hardness":
           return b.hardness - a.hardness;
         case "formula":
-          return a.formula.localeCompare(b.formula);
+          return (a.chemical_formula || "").localeCompare(b.chemical_formula || "");
         default:
           return 0;
       }
@@ -46,6 +88,16 @@ export default function Minerals() {
       prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
     );
   };
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <p>Loading minerals...</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

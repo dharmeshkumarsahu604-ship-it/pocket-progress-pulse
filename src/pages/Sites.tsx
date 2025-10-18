@@ -1,27 +1,79 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SiteCard } from "@/components/sites/SiteCard";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { FilterChips } from "@/components/shared/FilterChips";
-import { mockSites } from "@/data/mockSites";
 import { useSearch } from "@/hooks/useSearch";
 import { Button } from "@/components/ui/button";
 import { Map } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface GeologicalSite {
+  id: string;
+  name: string;
+  description: string;
+  country: string;
+  state: string;
+  district: string | null;
+  latitude: number;
+  longitude: number;
+  image_url: string | null;
+  rock_types: string[] | null;
+  geological_formation: string | null;
+  age: string | null;
+  significance: string | null;
+  accessibility: string | null;
+  best_visit_time: string | null;
+}
 
 export default function Sites() {
+  const [sites, setSites] = useState<GeologicalSite[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
 
   const { searchTerm, setSearchTerm, filteredItems } = useSearch(
-    mockSites,
-    ["name", "rockTypes", "formations", "description"]
+    sites,
+    ["name", "state", "description", "geological_formation"]
   );
+
+  useEffect(() => {
+    fetchSites();
+  }, []);
+
+  const fetchSites = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("geological_sites")
+        .select("*")
+        .order("name");
+
+      if (error) throw error;
+      setSites(data || []);
+    } catch (error) {
+      console.error("Error fetching sites:", error);
+      toast.error("Failed to load geological sites");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredSites = filteredItems.filter((site) =>
-    selectedState ? site.location.state === selectedState : true
+    selectedState ? site.state === selectedState : true
   );
 
-  const states = Array.from(new Set(mockSites.map((site) => site.location.state)));
+  const states = Array.from(new Set(sites.map((site) => site.state)));
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <p>Loading geological sites...</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

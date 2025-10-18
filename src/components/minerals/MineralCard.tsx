@@ -1,9 +1,18 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mineral } from "@/data/mockMinerals";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+
+interface Mineral {
+  id: string;
+  name: string;
+  chemical_formula: string | null;
+  image_url: string | null;
+  description: string;
+  luster: string | null;
+  hardness: number;
+}
 
 interface MineralCardProps {
   mineral: Mineral;
@@ -17,7 +26,7 @@ export const MineralCard = ({ mineral, isFavorite, onToggleFavorite }: MineralCa
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="relative aspect-square bg-muted">
           <img
-            src={mineral.image}
+            src={mineral.image_url || "/placeholder.svg"}
             alt={mineral.name}
             className="w-full h-full object-cover"
           />
@@ -47,9 +56,13 @@ export const MineralCard = ({ mineral, isFavorite, onToggleFavorite }: MineralCa
             {mineral.description}
           </p>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="font-mono">{mineral.formula}</span>
-            <span>•</span>
-            <span className="truncate">{mineral.luster}</span>
+            {mineral.chemical_formula && (
+              <>
+                <span className="font-mono">{mineral.chemical_formula}</span>
+                {mineral.luster && <span>•</span>}
+              </>
+            )}
+            {mineral.luster && <span className="truncate">{mineral.luster}</span>}
           </div>
         </CardContent>
       </Card>

@@ -1,9 +1,20 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Rock } from "@/data/mockRocks";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+
+interface Rock {
+  id: string;
+  name: string;
+  type: string;
+  image_url: string | null;
+  description: string;
+  composition: string | null;
+  texture: string | null;
+  color: string | null;
+  hardness: number | null;
+}
 
 interface RockCardProps {
   rock: Rock;
@@ -17,7 +28,7 @@ export const RockCard = ({ rock, isFavorite, onToggleFavorite }: RockCardProps) 
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="relative aspect-square bg-muted">
           <img
-            src={rock.image}
+            src={rock.image_url || "/placeholder.svg"}
             alt={rock.name}
             className="w-full h-full object-cover"
           />
@@ -39,7 +50,7 @@ export const RockCard = ({ rock, isFavorite, onToggleFavorite }: RockCardProps) 
         <CardContent className="p-4 space-y-2">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold text-lg truncate">{rock.name}</h3>
-            <Badge variant="secondary" className="shrink-0">
+            <Badge variant="secondary" className="shrink-0 capitalize">
               {rock.type}
             </Badge>
           </div>
@@ -47,9 +58,13 @@ export const RockCard = ({ rock, isFavorite, onToggleFavorite }: RockCardProps) 
             {rock.description}
           </p>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>Hardness: {rock.hardness}</span>
-            <span>•</span>
-            <span className="truncate">{rock.texture}</span>
+            {rock.hardness && (
+              <>
+                <span>Hardness: {rock.hardness}</span>
+                {rock.texture && <span>•</span>}
+              </>
+            )}
+            {rock.texture && <span className="truncate">{rock.texture}</span>}
           </div>
         </CardContent>
       </Card>

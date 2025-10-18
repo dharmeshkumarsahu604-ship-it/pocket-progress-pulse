@@ -1,18 +1,32 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Navigation } from "lucide-react";
-import { GeologicalSite } from "@/data/mockSites";
+import { MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+
+interface GeologicalSite {
+  id: string;
+  name: string;
+  description: string;
+  state: string;
+  district: string | null;
+  image_url: string | null;
+  rock_types: string[] | null;
+  accessibility: string | null;
+}
 
 interface SiteCardProps {
   site: GeologicalSite;
 }
 
 export const SiteCard = ({ site }: SiteCardProps) => {
-  const accessibilityColors = {
-    Easy: "bg-success/10 text-success",
-    Moderate: "bg-warning/10 text-warning",
-    Difficult: "bg-destructive/10 text-destructive",
+  const getAccessibilityStyle = (accessibility: string | null) => {
+    if (!accessibility) return "bg-muted text-muted-foreground";
+    
+    const lower = accessibility.toLowerCase();
+    if (lower.includes("easy")) return "bg-success/10 text-success";
+    if (lower.includes("moderate")) return "bg-warning/10 text-warning";
+    if (lower.includes("difficult")) return "bg-destructive/10 text-destructive";
+    return "bg-muted text-muted-foreground";
   };
 
   return (
@@ -20,13 +34,15 @@ export const SiteCard = ({ site }: SiteCardProps) => {
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="aspect-video bg-muted relative">
           <img
-            src={site.image}
+            src={site.image_url || "/placeholder.svg"}
             alt={site.name}
             className="w-full h-full object-cover"
           />
-          <Badge className={`absolute top-2 right-2 ${accessibilityColors[site.accessibility]}`}>
-            {site.accessibility}
-          </Badge>
+          {site.accessibility && (
+            <Badge className={`absolute top-2 right-2 ${getAccessibilityStyle(site.accessibility)}`}>
+              {site.accessibility}
+            </Badge>
+          )}
         </div>
 
         <CardContent className="p-4 space-y-3">
@@ -35,8 +51,8 @@ export const SiteCard = ({ site }: SiteCardProps) => {
             <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
               <MapPin className="h-3 w-3" />
               <span>
-                {site.location.district ? `${site.location.district}, ` : ""}
-                {site.location.state}
+                {site.district ? `${site.district}, ` : ""}
+                {site.state}
               </span>
             </div>
           </div>
@@ -45,18 +61,20 @@ export const SiteCard = ({ site }: SiteCardProps) => {
             {site.description}
           </p>
 
-          <div className="flex flex-wrap gap-1">
-            {site.rockTypes.slice(0, 3).map((rock, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {rock}
-              </Badge>
-            ))}
-            {site.rockTypes.length > 3 && (
-              <Badge variant="outline" className="text-xs">
-                +{site.rockTypes.length - 3}
-              </Badge>
-            )}
-          </div>
+          {site.rock_types && site.rock_types.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {site.rock_types.slice(0, 3).map((rock, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  {rock}
+                </Badge>
+              ))}
+              {site.rock_types.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{site.rock_types.length - 3}
+                </Badge>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </Link>

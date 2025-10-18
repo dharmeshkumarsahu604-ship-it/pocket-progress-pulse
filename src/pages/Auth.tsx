@@ -19,6 +19,7 @@ const loginSchema = z.object({
 const signupSchema = loginSchema.extend({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
   role: z.enum(["student", "lecturer", "professional"]),
+  institute: z.string().optional(),
 });
 
 export default function Auth() {
@@ -35,6 +36,7 @@ export default function Auth() {
   const [signupPassword, setSignupPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState("");
+  const [institute, setInstitute] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +75,7 @@ export default function Auth() {
         password: signupPassword,
         fullName,
         role,
+        institute,
       });
       
       setIsLoading(true);
@@ -81,7 +84,8 @@ export default function Auth() {
         validated.email,
         validated.password,
         validated.fullName,
-        validated.role
+        validated.role,
+        validated.institute
       );
 
       if (error) {
@@ -213,6 +217,17 @@ export default function Auth() {
                         <SelectItem value="professional">Professional</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="institute">Institute (Optional)</Label>
+                    <Input
+                      id="institute"
+                      type="text"
+                      placeholder="Your institute or organization"
+                      value={institute}
+                      onChange={(e) => setInstitute(e.target.value)}
+                      disabled={isLoading}
+                    />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Create Account"}

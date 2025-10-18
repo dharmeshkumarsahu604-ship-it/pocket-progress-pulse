@@ -3,8 +3,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Camera, Mic, FileText, Mountain, Gem, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Dashboard() {
+  const { user } = useAuth();
+
+  if (!user) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 text-center">
+          <Mountain className="h-20 w-20 text-primary" />
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold">Welcome to Geo-Smart</h1>
+            <p className="text-xl text-muted-foreground max-w-md">
+              Your AI-powered geological field companion
+            </p>
+          </div>
+          <Link to="/auth">
+            <Button size="lg">Get Started</Button>
+          </Link>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6">

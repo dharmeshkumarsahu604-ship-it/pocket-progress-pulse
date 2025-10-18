@@ -14,6 +14,198 @@ export type Database = {
   }
   public: {
     Tables: {
+      collections: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          item_type: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      field_notes: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          latitude: number | null
+          location_name: string | null
+          longitude: number | null
+          photos: string[] | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+          weather_conditions: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          photos?: string[] | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          weather_conditions?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          photos?: string[] | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          weather_conditions?: string | null
+        }
+        Relationships: []
+      }
+      geological_sites: {
+        Row: {
+          accessibility: string | null
+          age: string | null
+          best_visit_time: string | null
+          country: string
+          created_at: string
+          description: string
+          district: string | null
+          geological_formation: string | null
+          id: string
+          image_url: string | null
+          latitude: number
+          longitude: number
+          name: string
+          rock_types: string[] | null
+          significance: string | null
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          accessibility?: string | null
+          age?: string | null
+          best_visit_time?: string | null
+          country: string
+          created_at?: string
+          description: string
+          district?: string | null
+          geological_formation?: string | null
+          id?: string
+          image_url?: string | null
+          latitude: number
+          longitude: number
+          name: string
+          rock_types?: string[] | null
+          significance?: string | null
+          state: string
+          updated_at?: string
+        }
+        Update: {
+          accessibility?: string | null
+          age?: string | null
+          best_visit_time?: string | null
+          country?: string
+          created_at?: string
+          description?: string
+          district?: string | null
+          geological_formation?: string | null
+          id?: string
+          image_url?: string | null
+          latitude?: number
+          longitude?: number
+          name?: string
+          rock_types?: string[] | null
+          significance?: string | null
+          state?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      minerals: {
+        Row: {
+          chemical_formula: string | null
+          cleavage: string | null
+          color: string | null
+          created_at: string
+          crystal_system: string | null
+          description: string
+          fracture: string | null
+          hardness: number
+          id: string
+          image_url: string | null
+          locations: string[] | null
+          luster: string | null
+          name: string
+          specific_gravity: number | null
+          streak: string | null
+          updated_at: string
+          uses: string | null
+        }
+        Insert: {
+          chemical_formula?: string | null
+          cleavage?: string | null
+          color?: string | null
+          created_at?: string
+          crystal_system?: string | null
+          description: string
+          fracture?: string | null
+          hardness: number
+          id?: string
+          image_url?: string | null
+          locations?: string[] | null
+          luster?: string | null
+          name: string
+          specific_gravity?: number | null
+          streak?: string | null
+          updated_at?: string
+          uses?: string | null
+        }
+        Update: {
+          chemical_formula?: string | null
+          cleavage?: string | null
+          color?: string | null
+          created_at?: string
+          crystal_system?: string | null
+          description?: string
+          fracture?: string | null
+          hardness?: number
+          id?: string
+          image_url?: string | null
+          locations?: string[] | null
+          luster?: string | null
+          name?: string
+          specific_gravity?: number | null
+          streak?: string | null
+          updated_at?: string
+          uses?: string | null
+        }
+        Relationships: []
+      }
       pois: {
         Row: {
           caregory: string | null
@@ -80,6 +272,96 @@ export type Database = {
         }
         Relationships: []
       }
+      rocks: {
+        Row: {
+          color: string | null
+          composition: string | null
+          created_at: string
+          description: string
+          formation_process: string | null
+          grain_size: string | null
+          hardness: number | null
+          id: string
+          image_url: string | null
+          locations: string[] | null
+          name: string
+          texture: string | null
+          type: string
+          updated_at: string
+          uses: string | null
+        }
+        Insert: {
+          color?: string | null
+          composition?: string | null
+          created_at?: string
+          description: string
+          formation_process?: string | null
+          grain_size?: string | null
+          hardness?: number | null
+          id?: string
+          image_url?: string | null
+          locations?: string[] | null
+          name: string
+          texture?: string | null
+          type: string
+          updated_at?: string
+          uses?: string | null
+        }
+        Update: {
+          color?: string | null
+          composition?: string | null
+          created_at?: string
+          description?: string
+          formation_process?: string | null
+          grain_size?: string | null
+          hardness?: number | null
+          id?: string
+          image_url?: string | null
+          locations?: string[] | null
+          name?: string
+          texture?: string | null
+          type?: string
+          updated_at?: string
+          uses?: string | null
+        }
+        Relationships: []
+      }
+      scan_history: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          id: string
+          identified_as: string
+          image_url: string
+          item_id: string | null
+          item_type: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          identified_as: string
+          image_url: string
+          item_id?: string | null
+          item_type: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          identified_as?: string
+          image_url?: string
+          item_id?: string | null
+          item_type?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -97,6 +379,39 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      voice_notes: {
+        Row: {
+          audio_url: string
+          created_at: string
+          duration: number | null
+          id: string
+          language: string | null
+          title: string
+          transcription: string | null
+          user_id: string
+        }
+        Insert: {
+          audio_url: string
+          created_at?: string
+          duration?: number | null
+          id?: string
+          language?: string | null
+          title: string
+          transcription?: string | null
+          user_id: string
+        }
+        Update: {
+          audio_url?: string
+          created_at?: string
+          duration?: number | null
+          id?: string
+          language?: string | null
+          title?: string
+          transcription?: string | null
           user_id?: string
         }
         Relationships: []

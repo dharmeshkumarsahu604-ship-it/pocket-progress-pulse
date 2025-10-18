@@ -14,30 +14,66 @@ export default function Scanner() {
   const [scanResult, setScanResult] = useState<any>(null);
   const [savedScans, setSavedScans] = useLocalStorage<any[]>("saved-scans", []);
 
-  const mockScanResult = {
-    name: "Granite",
-    type: "Igneous Rock",
-    confidence: 0.89,
-    description: "A coarse-grained intrusive igneous rock composed mainly of quartz, feldspar, and mica.",
-    properties: [
-      { label: "Composition", value: "Quartz, Feldspar, Mica" },
-      { label: "Texture", value: "Coarse-grained" },
-      { label: "Hardness", value: "7 (Mohs scale)" },
-      { label: "Formation", value: "Intrusive igneous" },
-    ],
-  };
-
   const handleCapture = async (imageData: string) => {
     setScannedImage(imageData);
     setShowCamera(false);
     setIsScanning(true);
 
-    // Simulate AI processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/identify-specimen`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            imageBase64: imageData,
+          }),
+        }
+      );
 
-    setScanResult(mockScanResult);
-    setIsScanning(false);
-    toast.success("Specimen identified!");
+      if (response.status === 429) {
+        toast.error("Rate limit exceeded. Please try again later.");
+        setIsScanning(false);
+        return;
+      }
+
+      if (response.status === 402) {
+        toast.error("AI service unavailable. Please contact support.");
+        setIsScanning(false);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to identify specimen");
+      }
+
+      const result = await response.json();
+      
+      // Transform the result to match the expected format
+      const formattedResult = {
+        name: result.name || "Unknown Specimen",
+        type: result.type || "Unknown",
+        confidence: (result.confidence || 50) / 100,
+        description: result.description || "No description available",
+        properties: [
+          { label: "Composition", value: result.composition || "Unknown" },
+          { label: "Texture", value: result.texture || "Unknown" },
+          { label: "Color", value: result.color || "Unknown" },
+          { label: "Formation", value: result.formation || "Unknown" },
+        ],
+      };
+
+      setScanResult(formattedResult);
+      setIsScanning(false);
+      toast.success("Specimen identified!");
+    } catch (error) {
+      console.error("Identification error:", error);
+      toast.error("Failed to identify specimen. Please try again.");
+      setIsScanning(false);
+    }
   };
 
   const handleGallerySelect = () => {
@@ -55,11 +91,60 @@ export default function Scanner() {
         setScannedImage(imageData);
         setIsScanning(true);
 
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        try {
+          const response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/identify-specimen`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+              },
+              body: JSON.stringify({
+                imageBase64: imageData,
+              }),
+            }
+          );
 
-        setScanResult(mockScanResult);
-        setIsScanning(false);
-        toast.success("Specimen identified!");
+          if (response.status === 429) {
+            toast.error("Rate limit exceeded. Please try again later.");
+            setIsScanning(false);
+            return;
+          }
+
+          if (response.status === 402) {
+            toast.error("AI service unavailable. Please contact support.");
+            setIsScanning(false);
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error("Failed to identify specimen");
+          }
+
+          const result = await response.json();
+          
+          const formattedResult = {
+            name: result.name || "Unknown Specimen",
+            type: result.type || "Unknown",
+            confidence: (result.confidence || 50) / 100,
+            description: result.description || "No description available",
+            properties: [
+              { label: "Composition", value: result.composition || "Unknown" },
+              { label: "Texture", value: result.texture || "Unknown" },
+              { label: "Color", value: result.color || "Unknown" },
+              { label: "Formation", value: result.formation || "Unknown" },
+            ],
+          };
+
+          setScanResult(formattedResult);
+          setIsScanning(false);
+          toast.success("Specimen identified!");
+        } catch (error) {
+          console.error("Identification error:", error);
+          toast.error("Failed to identify specimen. Please try again.");
+          setIsScanning(false);
+        }
       };
       reader.readAsDataURL(file);
     };
@@ -130,7 +215,7 @@ export default function Scanner() {
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
             <p className="text-lg font-medium">Analyzing specimen...</p>
-            <p className="text-sm text-muted-foreground">This may take a few seconds</p>
+            <p className="text-sm text-muted-foreground">AI is identifying the geological specimen</p>
           </div>
         )}
 

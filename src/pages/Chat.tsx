@@ -4,6 +4,7 @@ import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -41,18 +42,102 @@ export default function Chat() {
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/geological-chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            messages: [...messages, userMessage].map(m => ({
+              role: m.role,
+              content: m.content
+            }))
+          }),
+        }
+      );
+
+      if (response.status === 429) {
+        toast.error("Rate limit exceeded. Please try again later.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (response.status === 402) {
+        toast.error("AI service unavailable. Please contact support.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (!response.ok || !response.body) {
+        throw new Error("Failed to get response");
+      }
+
+      // Handle streaming response
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantContent = "";
+      let assistantMessageId = (Date.now() + 1).toString();
+
+      // Create initial assistant message
+      const initialAssistantMessage: Message = {
+        id: assistantMessageId,
         role: "assistant",
-        content: "This is a mock response. In production, this will connect to an AI service to provide geological insights, answer questions about rocks and minerals, help identify specimens, and explain geological processes.",
+        content: "",
         timestamp: new Date(),
       };
+      setMessages((prev) => [...prev, initialAssistantMessage]);
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      let textBuffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const deltaContent = parsed.choices?.[0]?.delta?.content as string | undefined;
+            
+            if (deltaContent) {
+              assistantContent += deltaContent;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMessageId
+                    ? { ...m, content: assistantContent }
+                    : m
+                )
+              );
+            }
+          } catch {
+            // Incomplete JSON, continue to next chunk
+            continue;
+          }
+        }
+      }
+
       setIsLoading(false);
-    }, 1500);
+    } catch (error) {
+      console.error("Chat error:", error);
+      toast.error("Failed to get response. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (

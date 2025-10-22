@@ -85,22 +85,42 @@ export default function SiteDetail() {
   }
 
   const handleGetDirections = () => {
-    const url = getDirectionsUrl({
-      latitude: site.latitude,
-      longitude: site.longitude,
-    });
-    window.open(url, "_blank");
+    try {
+      const url = getDirectionsUrl({
+        latitude: site.latitude,
+        longitude: site.longitude,
+      });
+      const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+      if (!newWindow) {
+        toast.error("Please allow popups to open Google Maps");
+        // Fallback: navigate in same window
+        window.location.href = url;
+      }
+    } catch (error) {
+      console.error("Error opening directions:", error);
+      toast.error("Failed to open directions");
+    }
   };
 
   const handleViewOnMap = () => {
-    const url = getMapUrl(
-      {
-        latitude: site.latitude,
-        longitude: site.longitude,
-      },
-      site.name
-    );
-    window.open(url, "_blank");
+    try {
+      const url = getMapUrl(
+        {
+          latitude: site.latitude,
+          longitude: site.longitude,
+        },
+        site.name
+      );
+      const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+      if (!newWindow) {
+        toast.error("Please allow popups to open Google Maps");
+        // Fallback: navigate in same window
+        window.location.href = url;
+      }
+    } catch (error) {
+      console.error("Error opening map:", error);
+      toast.error("Failed to open map");
+    }
   };
 
   return (

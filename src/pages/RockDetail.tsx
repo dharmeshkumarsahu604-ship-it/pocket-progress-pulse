@@ -1,6 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useParams, useNavigate } from "react-router-dom";
-import { mockRocks } from "@/data/mockRocks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,13 +7,60 @@ import { ArrowLeft, Heart, Share2 } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+
+interface Rock {
+  id: string;
+  name: string;
+  type: string;
+  image_url: string | null;
+  description: string;
+  composition: string | null;
+  texture: string | null;
+  color: string | null;
+  hardness: number | null;
+  formation_process: string | null;
+}
 
 export default function RockDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [favorites, setFavorites] = useLocalStorage<string[]>("favorite-rocks", []);
-  
-  const rock = mockRocks.find((r) => r.id === id);
+  const [rock, setRock] = useState<Rock | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRock = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("rocks")
+          .select("*")
+          .eq("id", id)
+          .maybeSingle();
+
+        if (error) throw error;
+        setRock(data);
+      } catch (error) {
+        console.error("Error fetching rock:", error);
+        toast.error("Failed to load rock details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRock();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="text-center py-12">
+          <p>Loading...</p>
+        </div>
+      </AppLayout>
+    );
+  }
   
   if (!rock) {
     return (
@@ -78,7 +124,7 @@ export default function RockDetail() {
 
         <div className="aspect-video bg-muted rounded-lg overflow-hidden">
           <img
-            src={rock.image}
+            src={rock.image_url || "/placeholder.svg"}
             alt={rock.name}
             className="w-full h-full object-cover"
           />
@@ -102,66 +148,31 @@ export default function RockDetail() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Composition</p>
-                <p className="text-base">{rock.composition}</p>
+                <p className="text-base">{rock.composition || "Not specified"}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Texture</p>
-                <p className="text-base">{rock.texture}</p>
+                <p className="text-base">{rock.texture || "Not specified"}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Hardness</p>
-                <p className="text-base">{rock.hardness} (Mohs scale)</p>
+                <p className="text-base">{rock.hardness ? `${rock.hardness} (Mohs scale)` : "Not specified"}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Colors</p>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {rock.color.map((color) => (
-                    <Badge key={color} variant="outline">
-                      {color}
-                    </Badge>
-                  ))}
-                </div>
+                <p className="text-sm font-medium text-muted-foreground">Color</p>
+                <p className="text-base">{rock.color || "Not specified"}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Formation</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">{rock.formation}</p>
-          </CardContent>
-        </Card>
-
-        {mockRocks.filter((r) => r.type === rock.type && r.id !== rock.id).length > 0 && (
+        {rock.formation_process && (
           <Card>
             <CardHeader>
-              <CardTitle>Related Rocks</CardTitle>
+              <CardTitle>Formation</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {mockRocks
-                  .filter((r) => r.type === rock.type && r.id !== rock.id)
-                  .slice(0, 3)
-                  .map((relatedRock) => (
-                    <button
-                      key={relatedRock.id}
-                      onClick={() => navigate(`/rocks/${relatedRock.id}`)}
-                      className="text-left space-y-2 group"
-                    >
-                      <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-                        <img
-                          src={relatedRock.image}
-                          alt={relatedRock.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        />
-                      </div>
-                      <p className="font-medium text-sm">{relatedRock.name}</p>
-                    </button>
-                  ))}
-              </div>
+              <p className="text-muted-foreground">{rock.formation_process}</p>
             </CardContent>
           </Card>
         )}

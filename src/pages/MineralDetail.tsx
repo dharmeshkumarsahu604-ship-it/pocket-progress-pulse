@@ -1,6 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useParams, useNavigate } from "react-router-dom";
-import { mockMinerals } from "@/data/mockMinerals";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,13 +7,63 @@ import { ArrowLeft, Heart, Share2 } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+
+interface Mineral {
+  id: string;
+  name: string;
+  chemical_formula: string | null;
+  image_url: string | null;
+  description: string;
+  hardness: number;
+  luster: string | null;
+  color: string | null;
+  streak: string | null;
+  cleavage: string | null;
+  fracture: string | null;
+  crystal_system: string | null;
+  uses: string | null;
+}
 
 export default function MineralDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [favorites, setFavorites] = useLocalStorage<string[]>("favorite-minerals", []);
-  
-  const mineral = mockMinerals.find((m) => m.id === id);
+  const [mineral, setMineral] = useState<Mineral | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMineral = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("minerals")
+          .select("*")
+          .eq("id", id)
+          .maybeSingle();
+
+        if (error) throw error;
+        setMineral(data);
+      } catch (error) {
+        console.error("Error fetching mineral:", error);
+        toast.error("Failed to load mineral details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMineral();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="text-center py-12">
+          <p>Loading...</p>
+        </div>
+      </AppLayout>
+    );
+  }
   
   if (!mineral) {
     return (
@@ -78,7 +127,7 @@ export default function MineralDetail() {
 
         <div className="aspect-video bg-muted rounded-lg overflow-hidden">
           <img
-            src={mineral.image}
+            src={mineral.image_url || "/placeholder.svg"}
             alt={mineral.name}
             className="w-full h-full object-cover"
           />
@@ -86,12 +135,14 @@ export default function MineralDetail() {
 
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-4xl font-bold">{mineral.name}</h1>
+          <div>
+            <h1 className="text-4xl font-bold">{mineral.name}</h1>
+            {mineral.chemical_formula && (
               <p className="text-xl font-mono text-muted-foreground mt-1">
-                {mineral.formula}
+                {mineral.chemical_formula}
               </p>
-            </div>
+            )}
+          </div>
             <Badge variant="secondary" className="text-base px-4 py-1">
               Hardness: {mineral.hardness}
             </Badge>
@@ -123,36 +174,26 @@ export default function MineralDetail() {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Crystal System</p>
-                <p className="text-base">{mineral.crystalSystem}</p>
+                <p className="text-base">{mineral.crystal_system}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Colors</p>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {mineral.color.map((color) => (
-                    <Badge key={color} variant="outline">
-                      {color}
-                    </Badge>
-                  ))}
-                </div>
+                <p className="text-sm font-medium text-muted-foreground">Color</p>
+                <p className="text-base">{mineral.color || "Not specified"}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Uses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {mineral.uses.map((use) => (
-                <Badge key={use} variant="secondary">
-                  {use}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {mineral.uses && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Uses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-base">{mineral.uses}</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </AppLayout>
   );

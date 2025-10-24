@@ -15,7 +15,8 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
   useEffect(() => {
     startCamera();
     return () => stopCamera();
-  }, [startCamera, stopCamera]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCapture = () => {
     const imageData = captureImage();

@@ -32,21 +32,41 @@ export default function MineralDetail() {
   const [favorites, setFavorites] = useLocalStorage<string[]>("favorite-minerals", []);
   const [mineral, setMineral] = useState<Mineral | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMineral = async () => {
+      if (!id) {
+        setError("Invalid mineral ID");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const { data, error } = await supabase
+        setLoading(true);
+        setError(null);
+        
+        const { data, error: fetchError } = await supabase
           .from("minerals")
           .select("*")
           .eq("id", id)
           .maybeSingle();
 
-        if (error) throw error;
+        if (fetchError) {
+          console.error("Supabase error:", fetchError);
+          throw new Error(fetchError.message);
+        }
+        
+        if (!data) {
+          setError("Mineral not found in database");
+        }
+        
         setMineral(data);
       } catch (error) {
         console.error("Error fetching mineral:", error);
-        toast.error("Failed to load mineral details");
+        const errorMessage = error instanceof Error ? error.message : "Failed to load mineral details";
+        setError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -58,19 +78,28 @@ export default function MineralDetail() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="text-center py-12">
-          <p>Loading...</p>
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground">Loading mineral details...</p>
         </div>
       </AppLayout>
     );
   }
   
-  if (!mineral) {
+  if (error || !mineral) {
     return (
       <AppLayout>
-        <div className="text-center py-12">
-          <h1 className="text-2xl font-bold mb-4">Mineral not found</h1>
-          <Button onClick={() => navigate("/minerals")}>Back to Minerals</Button>
+        <div className="text-center py-12 space-y-4">
+          <h1 className="text-2xl font-bold mb-2">Mineral Not Found</h1>
+          <p className="text-muted-foreground mb-4">
+            {error || "The requested mineral could not be found."}
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button onClick={() => navigate("/minerals")}>Back to Minerals</Button>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          </div>
         </div>
       </AppLayout>
     );

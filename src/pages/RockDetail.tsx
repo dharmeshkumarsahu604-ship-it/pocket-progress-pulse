@@ -29,21 +29,41 @@ export default function RockDetail() {
   const [favorites, setFavorites] = useLocalStorage<string[]>("favorite-rocks", []);
   const [rock, setRock] = useState<Rock | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchRock = async () => {
+      if (!id) {
+        setError("Invalid rock ID");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const { data, error } = await supabase
+        setLoading(true);
+        setError(null);
+        
+        const { data, error: fetchError } = await supabase
           .from("rocks")
           .select("*")
           .eq("id", id)
           .maybeSingle();
 
-        if (error) throw error;
+        if (fetchError) {
+          console.error("Supabase error:", fetchError);
+          throw new Error(fetchError.message);
+        }
+        
+        if (!data) {
+          setError("Rock not found in database");
+        }
+        
         setRock(data);
       } catch (error) {
         console.error("Error fetching rock:", error);
-        toast.error("Failed to load rock details");
+        const errorMessage = error instanceof Error ? error.message : "Failed to load rock details";
+        setError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -55,19 +75,28 @@ export default function RockDetail() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="text-center py-12">
-          <p>Loading...</p>
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground">Loading rock details...</p>
         </div>
       </AppLayout>
     );
   }
   
-  if (!rock) {
+  if (error || !rock) {
     return (
       <AppLayout>
-        <div className="text-center py-12">
-          <h1 className="text-2xl font-bold mb-4">Rock not found</h1>
-          <Button onClick={() => navigate("/rocks")}>Back to Rocks</Button>
+        <div className="text-center py-12 space-y-4">
+          <h1 className="text-2xl font-bold mb-2">Rock Not Found</h1>
+          <p className="text-muted-foreground mb-4">
+            {error || "The requested rock could not be found."}
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button onClick={() => navigate("/rocks")}>Back to Rocks</Button>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          </div>
         </div>
       </AppLayout>
     );

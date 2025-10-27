@@ -35,16 +35,20 @@ export default function RockDetail() {
     let isMounted = true;
 
     const fetchRock = async () => {
+      console.log("RockDetail - URL params:", { id });
+      console.log("RockDetail - Current URL:", window.location.href);
+      
       if (!id) {
-        console.error("No rock ID provided");
+        console.error("No rock ID provided in URL params");
         if (isMounted) {
-          setError("Invalid rock ID");
+          setError(`Invalid rock ID. Current URL: ${window.location.pathname}`);
           setLoading(false);
         }
         return;
       }
 
       console.log("Fetching rock with ID:", id);
+      console.log("Supabase client configured:", !!supabase);
 
       try {
         if (isMounted) {
@@ -124,6 +128,12 @@ export default function RockDetail() {
           <p className="text-muted-foreground mb-4">
             {error || "The requested rock could not be found."}
           </p>
+          <div className="text-xs text-muted-foreground mb-4 p-4 bg-muted rounded">
+            <p>Debug Info:</p>
+            <p>URL: {window.location.pathname}</p>
+            <p>ID Parameter: {id || "undefined"}</p>
+            <p>Error: {error || "No error message"}</p>
+          </div>
           <div className="flex gap-4 justify-center">
             <Button onClick={() => navigate("/rocks")}>Back to Rocks</Button>
             <Button variant="outline" onClick={() => window.location.reload()}>

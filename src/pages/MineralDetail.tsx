@@ -38,16 +38,20 @@ export default function MineralDetail() {
     let isMounted = true;
 
     const fetchMineral = async () => {
+      console.log("MineralDetail - URL params:", { id });
+      console.log("MineralDetail - Current URL:", window.location.href);
+      
       if (!id) {
-        console.error("No mineral ID provided");
+        console.error("No mineral ID provided in URL params");
         if (isMounted) {
-          setError("Invalid mineral ID");
+          setError(`Invalid mineral ID. Current URL: ${window.location.pathname}`);
           setLoading(false);
         }
         return;
       }
 
       console.log("Fetching mineral with ID:", id);
+      console.log("Supabase client configured:", !!supabase);
 
       try {
         if (isMounted) {
@@ -127,6 +131,12 @@ export default function MineralDetail() {
           <p className="text-muted-foreground mb-4">
             {error || "The requested mineral could not be found."}
           </p>
+          <div className="text-xs text-muted-foreground mb-4 p-4 bg-muted rounded">
+            <p>Debug Info:</p>
+            <p>URL: {window.location.pathname}</p>
+            <p>ID Parameter: {id || "undefined"}</p>
+            <p>Error: {error || "No error message"}</p>
+          </div>
           <div className="flex gap-4 justify-center">
             <Button onClick={() => navigate("/minerals")}>Back to Minerals</Button>
             <Button variant="outline" onClick={() => window.location.reload()}>

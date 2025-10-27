@@ -33,6 +33,7 @@ export default function RockDetail() {
 
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     const fetchRock = async () => {
       console.log("RockDetail - URL params:", { id });
@@ -56,22 +57,24 @@ export default function RockDetail() {
           setError(null);
         }
 
-        // Add timeout to prevent infinite loading
-        const timeout = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Request timeout")), 10000)
-        );
+        // Set a 5-second timeout
+        timeoutId = setTimeout(() => {
+          if (isMounted && loading) {
+            console.error("Request timeout - stopping loading state");
+            setError("Request timeout. Please check your internet connection and try again.");
+            setLoading(false);
+            toast.error("Request timeout");
+          }
+        }, 5000);
 
-        const fetchPromise = supabase
+        console.log("Starting Supabase query...");
+        const { data, error: fetchError } = await supabase
           .from("rocks")
           .select("*")
           .eq("id", id)
           .maybeSingle();
 
-        const { data, error: fetchError } = await Promise.race([
-          fetchPromise,
-          timeout,
-        ]) as any;
-
+        clearTimeout(timeoutId);
         console.log("Rock fetch result:", { data, error: fetchError });
 
         if (!isMounted) return;
@@ -85,9 +88,11 @@ export default function RockDetail() {
           setError("Rock not found in database");
           toast.error("Rock not found");
         } else {
+          console.log("Rock loaded successfully:", data.name);
           setRock(data);
         }
       } catch (error) {
+        clearTimeout(timeoutId);
         console.error("Error fetching rock:", error);
         if (isMounted) {
           const errorMessage =
@@ -106,6 +111,7 @@ export default function RockDetail() {
 
     return () => {
       isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
     };
   }, [id]);
 

@@ -36,38 +36,27 @@ export default function RockDetail() {
     let timeoutId: NodeJS.Timeout;
 
     const fetchRock = async () => {
-      console.log("RockDetail - URL params:", { id });
-      console.log("RockDetail - Current URL:", window.location.href);
-      
       if (!id) {
-        console.error("No rock ID provided in URL params");
-        if (isMounted) {
-          setError(`Invalid rock ID. Current URL: ${window.location.pathname}`);
-          setLoading(false);
-        }
+        setError("No rock ID provided");
+        setLoading(false);
         return;
       }
 
-      console.log("Fetching rock with ID:", id);
-      console.log("Supabase client configured:", !!supabase);
-
       try {
-        if (isMounted) {
-          setLoading(true);
+        // Clear previous error on retry
+        if (error) {
           setError(null);
         }
 
         // Set a 5-second timeout
         timeoutId = setTimeout(() => {
           if (isMounted && loading) {
-            console.error("Request timeout - stopping loading state");
             setError("Request timeout. Please check your internet connection and try again.");
             setLoading(false);
             toast.error("Request timeout");
           }
         }, 5000);
 
-        console.log("Starting Supabase query...");
         const { data, error: fetchError } = await supabase
           .from("rocks")
           .select("*")
@@ -75,7 +64,6 @@ export default function RockDetail() {
           .maybeSingle();
 
         clearTimeout(timeoutId);
-        console.log("Rock fetch result:", { data, error: fetchError });
 
         if (!isMounted) return;
 
@@ -88,12 +76,10 @@ export default function RockDetail() {
           setError("Rock not found in database");
           toast.error("Rock not found");
         } else {
-          console.log("Rock loaded successfully:", data.name);
           setRock(data);
         }
       } catch (error) {
         clearTimeout(timeoutId);
-        console.error("Error fetching rock:", error);
         if (isMounted) {
           const errorMessage =
             error instanceof Error ? error.message : "Failed to load rock details";

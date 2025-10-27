@@ -134,7 +134,6 @@ export default function Chat() {
 
       setIsLoading(false);
     } catch (error) {
-      console.error("Chat error:", error);
       toast.error("Failed to get response. Please try again.");
       setIsLoading(false);
     }

@@ -45,7 +45,7 @@ export default function Profile() {
         if (profileData) setProfile(profileData);
         if (roleData) setUserRole(roleData.role);
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        // Error fetching profile - will show default values
       } finally {
         setLoading(false);
       }

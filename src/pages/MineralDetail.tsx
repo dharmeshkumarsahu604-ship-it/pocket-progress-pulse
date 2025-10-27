@@ -35,44 +35,77 @@ export default function MineralDetail() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchMineral = async () => {
       if (!id) {
-        setError("Invalid mineral ID");
-        setLoading(false);
+        console.error("No mineral ID provided");
+        if (isMounted) {
+          setError("Invalid mineral ID");
+          setLoading(false);
+        }
         return;
       }
 
+      console.log("Fetching mineral with ID:", id);
+
       try {
-        setLoading(true);
-        setError(null);
-        
-        const { data, error: fetchError } = await supabase
+        if (isMounted) {
+          setLoading(true);
+          setError(null);
+        }
+
+        // Add timeout to prevent infinite loading
+        const timeout = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), 10000)
+        );
+
+        const fetchPromise = supabase
           .from("minerals")
           .select("*")
           .eq("id", id)
           .maybeSingle();
 
+        const { data, error: fetchError } = await Promise.race([
+          fetchPromise,
+          timeout,
+        ]) as any;
+
+        console.log("Mineral fetch result:", { data, error: fetchError });
+
+        if (!isMounted) return;
+
         if (fetchError) {
           console.error("Supabase error:", fetchError);
-          throw new Error(fetchError.message);
+          throw new Error(fetchError.message || "Database query failed");
         }
-        
+
         if (!data) {
           setError("Mineral not found in database");
+          toast.error("Mineral not found");
+        } else {
+          setMineral(data);
         }
-        
-        setMineral(data);
       } catch (error) {
         console.error("Error fetching mineral:", error);
-        const errorMessage = error instanceof Error ? error.message : "Failed to load mineral details";
-        setError(errorMessage);
-        toast.error(errorMessage);
+        if (isMounted) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Failed to load mineral details";
+          setError(errorMessage);
+          toast.error(errorMessage);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchMineral();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   if (loading) {

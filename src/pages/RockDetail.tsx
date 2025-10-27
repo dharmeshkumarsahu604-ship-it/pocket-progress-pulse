@@ -32,44 +32,77 @@ export default function RockDetail() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchRock = async () => {
       if (!id) {
-        setError("Invalid rock ID");
-        setLoading(false);
+        console.error("No rock ID provided");
+        if (isMounted) {
+          setError("Invalid rock ID");
+          setLoading(false);
+        }
         return;
       }
 
+      console.log("Fetching rock with ID:", id);
+
       try {
-        setLoading(true);
-        setError(null);
-        
-        const { data, error: fetchError } = await supabase
+        if (isMounted) {
+          setLoading(true);
+          setError(null);
+        }
+
+        // Add timeout to prevent infinite loading
+        const timeout = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), 10000)
+        );
+
+        const fetchPromise = supabase
           .from("rocks")
           .select("*")
           .eq("id", id)
           .maybeSingle();
 
+        const { data, error: fetchError } = await Promise.race([
+          fetchPromise,
+          timeout,
+        ]) as any;
+
+        console.log("Rock fetch result:", { data, error: fetchError });
+
+        if (!isMounted) return;
+
         if (fetchError) {
           console.error("Supabase error:", fetchError);
-          throw new Error(fetchError.message);
+          throw new Error(fetchError.message || "Database query failed");
         }
-        
+
         if (!data) {
           setError("Rock not found in database");
+          toast.error("Rock not found");
+        } else {
+          setRock(data);
         }
-        
-        setRock(data);
       } catch (error) {
         console.error("Error fetching rock:", error);
-        const errorMessage = error instanceof Error ? error.message : "Failed to load rock details";
-        setError(errorMessage);
-        toast.error(errorMessage);
+        if (isMounted) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Failed to load rock details";
+          setError(errorMessage);
+          toast.error(errorMessage);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchRock();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   if (loading) {

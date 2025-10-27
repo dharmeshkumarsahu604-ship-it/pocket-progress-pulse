@@ -466,6 +466,12 @@ export type Database = {
           updated_at: string
           uses: string | null
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "minerals"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       search_rocks: {
         Args: {
@@ -491,6 +497,12 @@ export type Database = {
           updated_at: string
           uses: string | null
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "rocks"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
     }
     Enums: {

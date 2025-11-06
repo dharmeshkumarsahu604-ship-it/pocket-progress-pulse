@@ -4,7 +4,9 @@ import { SiteCard } from "@/components/sites/SiteCard";
 import { SiteMap } from "@/components/sites/SiteMap";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { LoadingSkeleton, SearchBarSkeleton } from "@/components/shared/LoadingSkeleton";
+import { PullToRefreshIndicator } from "@/components/shared/PullToRefreshIndicator";
 import { useSearch } from "@/hooks/useSearch";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { Button } from "@/components/ui/button";
 import { Map, MapPin, Mountain, Navigation, List } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,6 +76,16 @@ export default function Sites() {
       setLoading(false);
     }
   };
+
+  const handleRefresh = async () => {
+    await fetchSites();
+    toast.success("Sites refreshed!");
+  };
+
+  const { pullDistance, isRefreshing, isPulling, isOverThreshold } = usePullToRefresh({
+    onRefresh: handleRefresh,
+    enabled: !loading,
+  });
 
   // Calculate nearby sites with distances
   const nearbySites = latitude && longitude
@@ -166,6 +178,11 @@ export default function Sites() {
 
   return (
     <AppLayout>
+      <PullToRefreshIndicator
+        pullDistance={pullDistance}
+        isRefreshing={isRefreshing}
+        isOverThreshold={isOverThreshold}
+      />
       <div className="space-y-6">
         {/* Header Section */}
         <div className="space-y-4">

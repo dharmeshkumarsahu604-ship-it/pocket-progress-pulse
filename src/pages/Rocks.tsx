@@ -3,8 +3,10 @@ import { RockCard } from "@/components/rocks/RockCard";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { FilterChips } from "@/components/shared/FilterChips";
 import { LoadingSkeleton, SearchBarSkeleton, FilterSkeleton } from "@/components/shared/LoadingSkeleton";
+import { PullToRefreshIndicator } from "@/components/shared/PullToRefreshIndicator";
 import { useSearch } from "@/hooks/useSearch";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useState, useMemo, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -61,6 +63,16 @@ export default function Rocks() {
       setLoading(false);
     }
   };
+
+  const handleRefresh = async () => {
+    await fetchRocks();
+    toast.success("Rocks refreshed!");
+  };
+
+  const { pullDistance, isRefreshing, isPulling, isOverThreshold } = usePullToRefresh({
+    onRefresh: handleRefresh,
+    enabled: !loading,
+  });
 
   const filteredAndSortedRocks = useMemo(() => {
     let filteredRocks = filteredItems;
@@ -121,6 +133,11 @@ export default function Rocks() {
 
   return (
     <AppLayout>
+      <PullToRefreshIndicator
+        pullDistance={pullDistance}
+        isRefreshing={isRefreshing}
+        isOverThreshold={isOverThreshold}
+      />
       <div className="space-y-6">
         <div className="animate-fade-in">
           <h1 className="text-3xl font-bold">Rock Database</h1>

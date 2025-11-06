@@ -2,10 +2,12 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { RockCard } from "@/components/rocks/RockCard";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { FilterChips } from "@/components/shared/FilterChips";
+import { LoadingSkeleton, SearchBarSkeleton, FilterSkeleton } from "@/components/shared/LoadingSkeleton";
 import { useSearch } from "@/hooks/useSearch";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useState, useMemo, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -92,8 +94,26 @@ export default function Rocks() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <p>Loading rocks...</p>
+        <div className="space-y-6">
+          <div className="animate-fade-in">
+            <Skeleton className="h-10 w-64 mb-2 animate-pulse" />
+            <Skeleton className="h-5 w-48 animate-pulse" />
+          </div>
+          
+          <div className="space-y-4">
+            <SearchBarSkeleton />
+            
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <div className="space-y-2 w-full sm:w-auto">
+                <Skeleton className="h-5 w-32 animate-pulse" />
+                <FilterSkeleton />
+              </div>
+              
+              <Skeleton className="h-10 w-full sm:w-48 animate-pulse" />
+            </div>
+          </div>
+
+          <LoadingSkeleton count={9} />
         </div>
       </AppLayout>
     );
@@ -102,14 +122,14 @@ export default function Rocks() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
+        <div className="animate-fade-in">
           <h1 className="text-3xl font-bold">Rock Database</h1>
           <p className="text-muted-foreground">
             {filteredAndSortedRocks.length} specimens available
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 animate-fade-in" style={{ animationDelay: '100ms' }}>
           <SearchBar
             value={searchTerm}
             onChange={setSearchTerm}
@@ -142,18 +162,23 @@ export default function Rocks() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredAndSortedRocks.map((rock) => (
-            <RockCard
+          {filteredAndSortedRocks.map((rock, index) => (
+            <div 
               key={rock.id}
-              rock={rock}
-              isFavorite={favorites.includes(rock.id)}
-              onToggleFavorite={toggleFavorite}
-            />
+              className="animate-fade-in"
+              style={{ animationDelay: `${200 + index * 50}ms` }}
+            >
+              <RockCard
+                rock={rock}
+                isFavorite={favorites.includes(rock.id)}
+                onToggleFavorite={toggleFavorite}
+              />
+            </div>
           ))}
         </div>
 
         {filteredAndSortedRocks.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-12 animate-fade-in">
             <p className="text-muted-foreground">No rocks found matching your criteria</p>
           </div>
         )}

@@ -1,11 +1,13 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MineralCard } from "@/components/minerals/MineralCard";
 import { SearchBar } from "@/components/shared/SearchBar";
+import { LoadingSkeleton, SearchBarSkeleton } from "@/components/shared/LoadingSkeleton";
 import { useSearch } from "@/hooks/useSearch";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useState, useMemo, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -92,8 +94,26 @@ export default function Minerals() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <p>Loading minerals...</p>
+        <div className="space-y-6">
+          <div className="animate-fade-in">
+            <Skeleton className="h-10 w-64 mb-2 animate-pulse" />
+            <Skeleton className="h-5 w-48 animate-pulse" />
+          </div>
+          
+          <div className="space-y-4">
+            <SearchBarSkeleton />
+            
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between animate-fade-in" style={{ animationDelay: '100ms' }}>
+              <div className="space-y-3 w-full sm:w-64">
+                <Skeleton className="h-5 w-40 animate-pulse" />
+                <Skeleton className="h-2 w-full animate-pulse" />
+              </div>
+              
+              <Skeleton className="h-10 w-full sm:w-48 animate-pulse" />
+            </div>
+          </div>
+
+          <LoadingSkeleton count={9} />
         </div>
       </AppLayout>
     );
@@ -102,14 +122,14 @@ export default function Minerals() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
+        <div className="animate-fade-in">
           <h1 className="text-3xl font-bold">Mineral Database</h1>
           <p className="text-muted-foreground">
             {filteredAndSortedMinerals.length} specimens available
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 animate-fade-in" style={{ animationDelay: '100ms' }}>
           <SearchBar
             value={searchTerm}
             onChange={setSearchTerm}
@@ -147,18 +167,23 @@ export default function Minerals() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredAndSortedMinerals.map((mineral) => (
-            <MineralCard
+          {filteredAndSortedMinerals.map((mineral, index) => (
+            <div 
               key={mineral.id}
-              mineral={mineral}
-              isFavorite={favorites.includes(mineral.id)}
-              onToggleFavorite={toggleFavorite}
-            />
+              className="animate-fade-in"
+              style={{ animationDelay: `${200 + index * 50}ms` }}
+            >
+              <MineralCard
+                mineral={mineral}
+                isFavorite={favorites.includes(mineral.id)}
+                onToggleFavorite={toggleFavorite}
+              />
+            </div>
           ))}
         </div>
 
         {filteredAndSortedMinerals.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-12 animate-fade-in">
             <p className="text-muted-foreground">No minerals found matching your criteria</p>
           </div>
         )}

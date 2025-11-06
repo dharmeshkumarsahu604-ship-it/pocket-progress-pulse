@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { SiteCard } from "@/components/sites/SiteCard";
 import { SiteMap } from "@/components/sites/SiteMap";
 import { SearchBar } from "@/components/shared/SearchBar";
+import { LoadingSkeleton, SearchBarSkeleton } from "@/components/shared/LoadingSkeleton";
 import { useSearch } from "@/hooks/useSearch";
 import { Button } from "@/components/ui/button";
 import { Map, MapPin, Mountain, Navigation, List } from "lucide-react";
@@ -12,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { calculateDistance, formatDistance } from "@/lib/geolocation";
 
@@ -106,11 +108,57 @@ export default function Sites() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center space-y-4">
-            <Mountain className="h-12 w-12 animate-pulse mx-auto text-primary" />
-            <p className="text-muted-foreground">Loading geological sites...</p>
+        <div className="space-y-6">
+          {/* Header Skeleton */}
+          <div className="space-y-4 animate-fade-in">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-96 animate-pulse" />
+                <Skeleton className="h-6 w-80 animate-pulse" />
+              </div>
+              <div className="flex gap-2">
+                <Skeleton className="h-10 w-32 animate-pulse" />
+                <Skeleton className="h-10 w-32 animate-pulse" />
+              </div>
+            </div>
+
+            {/* Statistics Cards Skeleton */}
+            <div className="grid gap-4 sm:grid-cols-3 animate-fade-in" style={{ animationDelay: '100ms' }}>
+              {[1, 2, 3].map((i) => (
+                <Card key={i}>
+                  <CardHeader className="pb-3">
+                    <Skeleton className="h-4 w-24 animate-pulse" />
+                    <Skeleton className="h-8 w-16 animate-pulse" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-3 w-full animate-pulse" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
+
+          {/* View Mode Skeleton */}
+          <div className="flex gap-3 flex-wrap animate-fade-in" style={{ animationDelay: '200ms' }}>
+            <Skeleton className="h-10 w-28 animate-pulse" />
+            <Skeleton className="h-10 w-32 animate-pulse" />
+          </div>
+
+          {/* Search Skeleton */}
+          <div className="space-y-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
+            <SearchBarSkeleton />
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-32 animate-pulse" />
+              <div className="flex gap-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-10 w-24 animate-pulse" />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Content Skeleton */}
+          <LoadingSkeleton count={9} />
         </div>
       </AppLayout>
     );

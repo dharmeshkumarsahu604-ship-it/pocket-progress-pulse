@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SiteCard } from "@/components/sites/SiteCard";
+import { SiteMap } from "@/components/sites/SiteMap";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { useSearch } from "@/hooks/useSearch";
 import { Button } from "@/components/ui/button";
-import { Map, MapPin, Mountain, Navigation } from "lucide-react";
+import { Map, MapPin, Mountain, Navigation, List } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -40,7 +41,7 @@ export default function Sites() {
   const [sites, setSites] = useState<GeologicalSite[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedState, setSelectedState] = useState<string>("all");
-  const [showMap, setShowMap] = useState(false);
+  const [displayMode, setDisplayMode] = useState<"list" | "map">("list");
   const [viewMode, setViewMode] = useState<"all" | "nearby">("all");
   const [radius, setRadius] = useState<number>(50);
 
@@ -146,9 +147,21 @@ export default function Sites() {
                   </SelectContent>
                 </Select>
               )}
-              <Button variant="outline" size="lg" onClick={() => setShowMap(!showMap)}>
+              <Button 
+                variant={displayMode === "list" ? "default" : "outline"} 
+                size="lg" 
+                onClick={() => setDisplayMode("list")}
+              >
+                <List className="mr-2 h-5 w-5" />
+                List View
+              </Button>
+              <Button 
+                variant={displayMode === "map" ? "default" : "outline"} 
+                size="lg" 
+                onClick={() => setDisplayMode("map")}
+              >
                 <Map className="mr-2 h-5 w-5" />
-                {showMap ? "List View" : "Map View"}
+                Map View
               </Button>
             </div>
           </div>
@@ -268,17 +281,22 @@ export default function Sites() {
         </div>
 
         {/* Content Section */}
-        {showMap ? (
+        {displayMode === "map" ? (
           <Card>
-            <CardContent className="p-0">
-              <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                <div className="text-center space-y-2 p-6">
-                  <MapPin className="h-12 w-12 text-muted-foreground mx-auto" />
-                  <p className="text-muted-foreground">Interactive map view coming soon</p>
-                  <p className="text-sm text-muted-foreground">
-                    View all {totalSites} geological sites on an interactive map
-                  </p>
-                </div>
+            <CardContent className="p-4">
+              <div className="h-[600px] rounded-lg overflow-hidden">
+                <SiteMap 
+                  sites={filteredSites.map(site => ({
+                    id: site.id,
+                    name: site.name,
+                    state: site.state,
+                    latitude: site.latitude,
+                    longitude: site.longitude,
+                    rock_types: site.rock_types || [],
+                    image_url: site.image_url || undefined
+                  }))}
+                  userLocation={latitude && longitude ? { latitude, longitude } : null}
+                />
               </div>
             </CardContent>
           </Card>

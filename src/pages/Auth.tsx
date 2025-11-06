@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mountain } from "lucide-react";
+import { Mountain, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +41,8 @@ export default function Auth() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [role, setRole] = useState("");
   const [institute, setInstitute] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
   
   // Forgot password
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -75,6 +77,28 @@ export default function Auth() {
     }
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type and size
+      if (!file.type.startsWith('image/')) {
+        toast.error("Please select an image file");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image must be less than 5MB");
+        return;
+      }
+      
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -96,7 +120,8 @@ export default function Auth() {
         validated.fullName,
         validated.role,
         validated.institute,
-        validated.phoneNumber
+        validated.phoneNumber,
+        avatarFile || undefined
       );
 
       if (error) {
@@ -211,6 +236,30 @@ export default function Auth() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="avatar-upload">Profile Picture (Optional)</Label>
+                    <div className="flex items-center gap-4">
+                      {avatarPreview ? (
+                        <img 
+                          src={avatarPreview} 
+                          alt="Avatar preview" 
+                          className="h-20 w-20 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
+                          <Upload className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <Input
+                        id="avatar-upload"
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        onChange={handleAvatarChange}
+                        disabled={isLoading}
+                        className="cursor-pointer"
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Full Name</Label>
                     <Input

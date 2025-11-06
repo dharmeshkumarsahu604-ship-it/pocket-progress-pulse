@@ -7,7 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, role: string, institute?: string, phoneNumber?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, role: string, institute?: string, phoneNumber?: string, avatarFile?: File) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -45,10 +45,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const signUp = async (email: string, password: string, fullName: string, role: string, institute?: string, phoneNumber?: string) => {
+  const signUp = async (email: string, password: string, fullName: string, role: string, institute?: string, phoneNumber?: string, avatarFile?: File) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    // First, create the user account
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -61,6 +62,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         },
       },
     });
+
+    // If signup successful and avatar file provided, upload it
+    if (!error && avatarFile && data.user) {
+      const fileExt = avatarFile.name.split('.').pop();
+      const fileName = `${data.user.id}/avatar.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, avatarFile, {
+          upsert: true,
+        });
+
+      if (!uploadError) {
+        // Get public URL and update profile
+        const { data: { publicUrl } } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(fileName);
+
+        // Update profile with avatar URL
+        await supabase
+          .from('profiles')
+          .update({ avatar_url: publicUrl })
+          .eq('id', data.user.id);
+      }
+    }
 
     return { error };
   };

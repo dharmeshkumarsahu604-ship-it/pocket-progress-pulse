@@ -182,7 +182,7 @@ export default function Scanner() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
+        <div className="animate-fade-in">
           <h1 className="text-3xl font-bold">AI Scanner</h1>
           <p className="text-muted-foreground">
             Identify rocks and minerals with AI
@@ -190,11 +190,11 @@ export default function Scanner() {
         </div>
 
         {!scannedImage && !isScanning && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fade-in">
             <Button
               size="lg"
               onClick={() => setShowCamera(true)}
-              className="w-full"
+              className="w-full hover-scale transition-all duration-300"
             >
               <Camera className="mr-2 h-5 w-5" />
               Open Camera
@@ -203,7 +203,7 @@ export default function Scanner() {
               variant="outline"
               size="lg"
               onClick={handleGallerySelect}
-              className="w-full"
+              className="w-full hover-scale transition-all duration-300"
             >
               <ImageIcon className="mr-2 h-5 w-5" />
               Choose from Gallery
@@ -212,20 +212,22 @@ export default function Scanner() {
         )}
 
         {isScanning && (
-          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="flex flex-col items-center justify-center py-12 space-y-4 animate-fade-in">
             <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-lg font-medium">Analyzing specimen...</p>
+            <p className="text-lg font-medium animate-pulse">Analyzing specimen...</p>
             <p className="text-sm text-muted-foreground">AI is identifying the geological specimen</p>
           </div>
         )}
 
         {scannedImage && scanResult && !isScanning && (
-          <ScanResults
-            imageData={scannedImage}
-            result={scanResult}
-            onBack={handleReset}
-            onSave={handleSave}
-          />
+          <div className="animate-scale-in">
+            <ScanResults
+              imageData={scannedImage}
+              result={scanResult}
+              onBack={handleReset}
+              onSave={handleSave}
+            />
+          </div>
         )}
       </div>
     </AppLayout>

@@ -26,12 +26,17 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background">
+    <div className="fixed inset-0 z-50 bg-background animate-fade-in">
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex items-center justify-between p-4 border-b border-border animate-slide-in-right">
           <h2 className="text-lg font-semibold">Camera</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onClose}
+            className="hover-scale transition-all duration-200"
+          >
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -39,7 +44,7 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
         {/* Camera View */}
         <div className="flex-1 relative bg-black">
           {error ? (
-            <div className="absolute inset-0 flex items-center justify-center p-4">
+            <div className="absolute inset-0 flex items-center justify-center p-4 animate-scale-in">
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
@@ -50,16 +55,22 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover animate-fade-in"
             />
           )}
 
           {/* Camera Grid Overlay */}
           {isActive && (
-            <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute inset-0 pointer-events-none animate-fade-in">
               <div className="w-full h-full grid grid-cols-3 grid-rows-3">
                 {[...Array(9)].map((_, i) => (
-                  <div key={i} className="border border-white/20" />
+                  <div 
+                    key={i} 
+                    className="border border-white/20 transition-all duration-300"
+                    style={{
+                      animationDelay: `${i * 50}ms`
+                    }}
+                  />
                 ))}
               </div>
             </div>
@@ -67,12 +78,12 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
         </div>
 
         {/* Controls */}
-        <div className="p-6 border-t border-border">
+        <div className="p-6 border-t border-border animate-slide-in-right" style={{ animationDelay: '100ms' }}>
           <div className="flex items-center justify-center gap-8">
             <Button
               variant="outline"
               size="icon"
-              className="h-12 w-12"
+              className="h-12 w-12 hover-scale transition-all duration-200"
               disabled={!isActive}
             >
               <FlipHorizontal className="h-5 w-5" />
@@ -80,7 +91,7 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
 
             <Button
               size="icon"
-              className="h-16 w-16 rounded-full"
+              className="h-16 w-16 rounded-full animate-pulse hover:animate-none hover:scale-110 transition-all duration-300"
               onClick={handleCapture}
               disabled={!isActive}
             >

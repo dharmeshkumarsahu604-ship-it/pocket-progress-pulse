@@ -4,12 +4,15 @@ import { SiteCard } from "@/components/sites/SiteCard";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { useSearch } from "@/hooks/useSearch";
 import { Button } from "@/components/ui/button";
-import { Map, MapPin, Mountain } from "lucide-react";
+import { Map, MapPin, Mountain, Navigation } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { calculateDistance, formatDistance } from "@/lib/geolocation";
 
 interface GeologicalSite {
   id: string;
@@ -29,16 +32,24 @@ interface GeologicalSite {
   best_visit_time: string | null;
 }
 
+interface GeologicalSiteWithDistance extends GeologicalSite {
+  distance: number;
+}
+
 export default function Sites() {
   const [sites, setSites] = useState<GeologicalSite[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedState, setSelectedState] = useState<string>("all");
   const [showMap, setShowMap] = useState(false);
+  const [viewMode, setViewMode] = useState<"all" | "nearby">("all");
+  const [radius, setRadius] = useState<number>(50);
 
   const { searchTerm, setSearchTerm, filteredItems } = useSearch(
     sites,
     ["name", "state", "description", "geological_formation", "district"]
   );
+
+  const { latitude, longitude, loading: locationLoading, getCurrentLocation } = useGeolocation();
 
   useEffect(() => {
     fetchSites();
@@ -61,9 +72,22 @@ export default function Sites() {
     }
   };
 
-  const filteredSites = filteredItems.filter((site) =>
-    selectedState === "all" ? true : site.state === selectedState
-  );
+  // Calculate nearby sites with distances
+  const nearbySites = latitude && longitude
+    ? filteredItems
+        .map(site => ({
+          ...site,
+          distance: calculateDistance(latitude, longitude, Number(site.latitude), Number(site.longitude))
+        }))
+        .filter(site => site.distance <= radius)
+        .sort((a, b) => a.distance - b.distance)
+    : [];
+
+  const filteredSites = viewMode === "nearby"
+    ? nearbySites
+    : filteredItems.filter((site) =>
+        selectedState === "all" ? true : site.state === selectedState
+      );
 
   // Group sites by state
   const sitesByState = filteredSites.reduce((acc, site) => {
@@ -102,13 +126,31 @@ export default function Sites() {
                 Geological Sites of India
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl">
-                Explore India's rich geological heritage across {states.length} states with {sites.length} documented sites
+                {viewMode === "nearby" && latitude && longitude
+                  ? `${nearbySites.length} geological sites within ${radius}km of your location`
+                  : `Explore India's rich geological heritage across ${states.length} states with ${sites.length} documented sites`}
               </p>
             </div>
-            <Button variant="outline" size="lg" onClick={() => setShowMap(!showMap)}>
-              <Map className="mr-2 h-5 w-5" />
-              {showMap ? "List View" : "Map View"}
-            </Button>
+            <div className="flex gap-2">
+              {viewMode === "nearby" && latitude && longitude && (
+                <Select value={radius.toString()} onValueChange={(value) => setRadius(Number(value))}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="25">Within 25km</SelectItem>
+                    <SelectItem value="50">Within 50km</SelectItem>
+                    <SelectItem value="100">Within 100km</SelectItem>
+                    <SelectItem value="200">Within 200km</SelectItem>
+                    <SelectItem value="500">Within 500km</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+              <Button variant="outline" size="lg" onClick={() => setShowMap(!showMap)}>
+                <Map className="mr-2 h-5 w-5" />
+                {showMap ? "List View" : "Map View"}
+              </Button>
+            </div>
           </div>
 
           {/* Statistics Cards */}
@@ -151,6 +193,32 @@ export default function Sites() {
           </div>
         </div>
 
+        {/* View Mode Selector */}
+        <div className="flex gap-3 flex-wrap">
+          <Button
+            variant={viewMode === "all" ? "default" : "outline"}
+            onClick={() => setViewMode("all")}
+            className="flex items-center gap-2"
+          >
+            <Mountain className="h-4 w-4" />
+            All Sites
+          </Button>
+          <Button
+            variant={viewMode === "nearby" ? "default" : "outline"}
+            onClick={() => {
+              setViewMode("nearby");
+              if (!latitude && !longitude) {
+                getCurrentLocation();
+              }
+            }}
+            disabled={locationLoading}
+            className="flex items-center gap-2"
+          >
+            <Navigation className="h-4 w-4" />
+            {locationLoading ? "Getting Location..." : "Nearby Sites"}
+          </Button>
+        </div>
+
         {/* Search and Filter Section */}
         <div className="space-y-4">
           <SearchBar
@@ -159,42 +227,44 @@ export default function Sites() {
             placeholder="Search by name, location, rock types, or geological formations..."
           />
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Filter by State:</p>
-              {selectedState !== "all" && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedState("all")}
-                >
-                  Clear Filter
-                </Button>
-              )}
+          {viewMode === "all" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Filter by State:</p>
+                {selectedState !== "all" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedState("all")}
+                  >
+                    Clear Filter
+                  </Button>
+                )}
+              </div>
+              
+              <Tabs value={selectedState} onValueChange={setSelectedState}>
+                <TabsList className="w-full justify-start overflow-x-auto flex-wrap h-auto">
+                  <TabsTrigger value="all" className="gap-2">
+                    All States
+                    <Badge variant="secondary" className="ml-1">
+                      {sites.length}
+                    </Badge>
+                  </TabsTrigger>
+                  {states.map((state) => {
+                    const count = sites.filter(s => s.state === state).length;
+                    return (
+                      <TabsTrigger key={state} value={state} className="gap-2">
+                        {state}
+                        <Badge variant="secondary" className="ml-1">
+                          {count}
+                        </Badge>
+                      </TabsTrigger>
+                    );
+                  })}
+                </TabsList>
+              </Tabs>
             </div>
-            
-            <Tabs value={selectedState} onValueChange={setSelectedState}>
-              <TabsList className="w-full justify-start overflow-x-auto flex-wrap h-auto">
-                <TabsTrigger value="all" className="gap-2">
-                  All States
-                  <Badge variant="secondary" className="ml-1">
-                    {sites.length}
-                  </Badge>
-                </TabsTrigger>
-                {states.map((state) => {
-                  const count = sites.filter(s => s.state === state).length;
-                  return (
-                    <TabsTrigger key={state} value={state} className="gap-2">
-                      {state}
-                      <Badge variant="secondary" className="ml-1">
-                        {count}
-                      </Badge>
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-            </Tabs>
-          </div>
+          )}
         </div>
 
         {/* Content Section */}
@@ -212,6 +282,46 @@ export default function Sites() {
               </div>
             </CardContent>
           </Card>
+        ) : viewMode === "nearby" && !latitude && !longitude ? (
+          <Card>
+            <CardContent className="py-12">
+              <div className="text-center space-y-4">
+                <Navigation className="h-16 w-16 mx-auto text-muted-foreground" />
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Enable Location Access</h3>
+                  <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+                    To find geological sites near you, we need access to your location.
+                  </p>
+                  <Button onClick={getCurrentLocation} disabled={locationLoading} size="lg">
+                    <Navigation className="mr-2 h-5 w-5" />
+                    {locationLoading ? "Getting Location..." : "Enable Location"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : viewMode === "nearby" ? (
+          // Nearby sites view with distances
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold">Nearby Geological Sites</h2>
+              <Badge variant="secondary">{nearbySites.length} sites</Badge>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {nearbySites.map((site) => (
+                <div key={site.id} className="relative">
+                  <SiteCard site={site} />
+                  <Badge 
+                    className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm shadow-lg"
+                    variant="default"
+                  >
+                    <Navigation className="h-3 w-3 mr-1" />
+                    {formatDistance(site.distance)}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
         ) : selectedState === "all" ? (
           // Show sites grouped by state
           <div className="space-y-8">

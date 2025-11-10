@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { CameraInterface } from "@/components/scanner/CameraInterface";
 import { ScanResults } from "@/components/scanner/ScanResults";
+import { PermissionGate } from "@/components/shared/PermissionGate";
 import { Camera, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -181,13 +182,18 @@ export default function Scanner() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <div className="animate-fade-in">
-          <h1 className="text-3xl font-bold">AI Scanner</h1>
-          <p className="text-muted-foreground">
-            Identify rocks and minerals with AI
-          </p>
-        </div>
+      <PermissionGate 
+        permissions={['camera', 'storage']}
+        title="Scanner Permissions"
+        description="The AI Scanner needs access to:"
+      >
+        <div className="space-y-6">
+          <div className="animate-fade-in">
+            <h1 className="text-3xl font-bold">AI Scanner</h1>
+            <p className="text-muted-foreground">
+              Identify rocks and minerals with AI
+            </p>
+          </div>
 
         {!scannedImage && !isScanning && (
           <div className="space-y-4 animate-fade-in">
@@ -229,7 +235,8 @@ export default function Scanner() {
             />
           </div>
         )}
-      </div>
+        </div>
+      </PermissionGate>
     </AppLayout>
   );
 }

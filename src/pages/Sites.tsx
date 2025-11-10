@@ -5,6 +5,7 @@ import { SiteMap } from "@/components/sites/SiteMap";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { LoadingSkeleton, SearchBarSkeleton } from "@/components/shared/LoadingSkeleton";
 import { PullToRefreshIndicator } from "@/components/shared/PullToRefreshIndicator";
+import { PermissionGate } from "@/components/shared/PermissionGate";
 import { useSearch } from "@/hooks/useSearch";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { Button } from "@/components/ui/button";
@@ -178,19 +179,24 @@ export default function Sites() {
 
   return (
     <AppLayout>
-      <PullToRefreshIndicator
-        pullDistance={pullDistance}
-        isRefreshing={isRefreshing}
-        isOverThreshold={isOverThreshold}
-      />
-      <div className="space-y-6">
-        {/* Header Section */}
-        <div className="space-y-4">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div className="space-y-2">
-              <h1 className="text-4xl font-bold tracking-tight">
-                Geological Sites of India
-              </h1>
+      <PermissionGate 
+        permissions={['geolocation']}
+        title="Location Permission"
+        description="To show nearby geological sites, we need:"
+      >
+        <PullToRefreshIndicator
+          pullDistance={pullDistance}
+          isRefreshing={isRefreshing}
+          isOverThreshold={isOverThreshold}
+        />
+        <div className="space-y-6">
+          {/* Header Section */}
+          <div className="space-y-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold tracking-tight">
+                  Geological Sites of India
+                </h1>
               <p className="text-lg text-muted-foreground max-w-2xl">
                 {viewMode === "nearby" && latitude && longitude
                   ? `${nearbySites.length} geological sites within ${radius}km of your location`
@@ -474,6 +480,7 @@ export default function Sites() {
           </Card>
         )}
       </div>
+      </PermissionGate>
     </AppLayout>
   );
 }

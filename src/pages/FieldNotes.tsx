@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { FieldNoteEditor, FieldNote } from "@/components/fieldnotes/FieldNoteEditor";
 import { FieldNoteCard } from "@/components/fieldnotes/FieldNoteCard";
+import { PermissionGate } from "@/components/shared/PermissionGate";
 import { Button } from "@/components/ui/button";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Plus } from "lucide-react";
@@ -43,21 +44,26 @@ export default function FieldNotes() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Field Notes</h1>
-            <p className="text-muted-foreground">
-              {notes.length} note{notes.length !== 1 ? "s" : ""}
-            </p>
+      <PermissionGate 
+        permissions={['geolocation', 'camera', 'storage']}
+        title="Field Notes Permissions"
+        description="Field Notes needs access to:"
+      >
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Field Notes</h1>
+              <p className="text-muted-foreground">
+                {notes.length} note{notes.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+            {!showEditor && (
+              <Button onClick={() => setShowEditor(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                New Note
+              </Button>
+            )}
           </div>
-          {!showEditor && (
-            <Button onClick={() => setShowEditor(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Note
-            </Button>
-          )}
-        </div>
 
         {showEditor && (
           <FieldNoteEditor onSave={handleSave} onCancel={handleCancel} />
@@ -82,10 +88,11 @@ export default function FieldNotes() {
                 onDelete={handleDelete}
                 onEdit={handleEdit}
               />
-            ))}
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
+        </div>
+      </PermissionGate>
     </AppLayout>
   );
 }

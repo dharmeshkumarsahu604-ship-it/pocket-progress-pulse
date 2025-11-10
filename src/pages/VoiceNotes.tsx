@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { VoiceRecorder } from "@/components/voice/VoiceRecorder";
 import { VoiceNoteCard } from "@/components/voice/VoiceNoteCard";
+import { PermissionGate } from "@/components/shared/PermissionGate";
 import { Button } from "@/components/ui/button";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Plus } from "lucide-react";
@@ -43,21 +44,26 @@ export default function VoiceNotes() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Voice Notes</h1>
-            <p className="text-muted-foreground">
-              {notes.length} recording{notes.length !== 1 ? "s" : ""}
-            </p>
+      <PermissionGate 
+        permissions={['microphone', 'storage']}
+        title="Voice Notes Permissions"
+        description="Voice Notes needs access to:"
+      >
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Voice Notes</h1>
+              <p className="text-muted-foreground">
+                {notes.length} recording{notes.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+            {!showRecorder && (
+              <Button onClick={() => setShowRecorder(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                New Recording
+              </Button>
+            )}
           </div>
-          {!showRecorder && (
-            <Button onClick={() => setShowRecorder(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Recording
-            </Button>
-          )}
-        </div>
 
         {showRecorder && (
           <div className="space-y-4">
@@ -90,10 +96,11 @@ export default function VoiceNotes() {
                 {...note}
                 onDelete={handleDelete}
               />
-            ))}
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
+        </div>
+      </PermissionGate>
     </AppLayout>
   );
 }

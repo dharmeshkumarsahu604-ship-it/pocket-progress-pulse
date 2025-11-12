@@ -1,10 +1,10 @@
 project_id = "gknkwiwfwzjfcijjrlac"
 
 [functions.geological-chat]
-verify_jwt = false
+verify_jwt = true
 
 [functions.identify-specimen]
-verify_jwt = false
+verify_jwt = true
 
 [functions.transcribe-audio]
-verify_jwt = false
+verify_jwt = true

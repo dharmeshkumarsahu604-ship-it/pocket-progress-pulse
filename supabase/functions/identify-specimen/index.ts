@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,23 @@ serve(async (req) => {
   }
 
   try {
+    // Get user from JWT
+    const authHeader = req.headers.get('Authorization');
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader || '' } } }
+    );
+    
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { imageUrl, imageBase64 } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
@@ -28,7 +46,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("Processing specimen identification request");
+    console.log("Processing specimen identification request for user:", user.id);
 
     // Construct image content
     const imageContent = imageUrl 

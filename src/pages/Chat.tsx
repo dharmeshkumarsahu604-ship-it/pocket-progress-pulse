@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { chatMessageSchema } from "@/lib/validation";
 
 interface Message {
   id: string;
@@ -33,10 +34,17 @@ export default function Chat() {
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
+    // Validate input
+    const validation = chatMessageSchema.safeParse({ content });
+    if (!validation.success) {
+      toast.error(validation.error.issues[0].message);
+      return;
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content,
+      content: validation.data.content,
       timestamp: new Date(),
     };
 

@@ -49,7 +49,7 @@ export default function Profile() {
         if (profileData) setProfile(profileData);
         if (roleData) setUserRole(roleData.role);
       } catch (error) {
-        // Error fetching profile - will show default values
+        // Error fetching profile - will use user metadata as fallback
       } finally {
         setLoading(false);
       }
@@ -58,7 +58,9 @@ export default function Profile() {
     fetchProfile();
   }, [user]);
 
-  const fullName = profile?.full_name || "User";
+  // Use profile data first, then fall back to user metadata, then default
+  const userMetadata = user?.user_metadata || {};
+  const fullName = profile?.full_name || userMetadata.full_name || "User";
   const role = userRole;
 
   const handleSignOut = async () => {
@@ -94,26 +96,44 @@ export default function Profile() {
         .from('avatars')
         .upload(fileName, file, { upsert: true });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        toast.error(`Upload failed: ${uploadError.message}`);
+        return;
+      }
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Update profile
+      // Update profile - insert if not exists
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ avatar_url: publicUrl })
+        .upsert({ 
+          id: user.id,
+          avatar_url: publicUrl,
+          full_name: fullName,
+        })
         .eq('id', user.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("Update error:", updateError);
+        toast.error(`Profile update failed: ${updateError.message}`);
+        return;
+      }
 
       // Update local state
-      setProfile(prev => prev ? { ...prev, avatar_url: publicUrl } : null);
+      setProfile(prev => prev ? { ...prev, avatar_url: publicUrl } : { 
+        full_name: fullName, 
+        institute: null, 
+        bio: null, 
+        avatar_url: publicUrl 
+      });
       toast.success("Profile picture updated successfully!");
-    } catch (error) {
-      toast.error("Failed to upload profile picture");
+    } catch (error: any) {
+      console.error("Error:", error);
+      toast.error(error?.message || "Failed to upload profile picture");
     } finally {
       setUploading(false);
     }

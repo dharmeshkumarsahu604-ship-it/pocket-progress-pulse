@@ -5,13 +5,60 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [locationServices, setLocationServices] = useState(true);
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem("geo-smart-notifications");
+    return saved ? JSON.parse(saved) : true;
+  });
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("geo-smart-dark-mode");
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [locationServices, setLocationServices] = useState(() => {
+    const saved = localStorage.getItem("geo-smart-location");
+    return saved ? JSON.parse(saved) : true;
+  });
+
+  // Apply dark mode on mount
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  // Handle dark mode toggle
+  const handleDarkModeChange = (checked: boolean) => {
+    setDarkMode(checked);
+    localStorage.setItem("geo-smart-dark-mode", JSON.stringify(checked));
+    
+    if (checked) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    
+    toast.success(checked ? "Dark mode enabled" : "Light mode enabled");
+  };
+
+  // Handle notifications toggle
+  const handleNotificationsChange = (checked: boolean) => {
+    setNotifications(checked);
+    localStorage.setItem("geo-smart-notifications", JSON.stringify(checked));
+    toast.success(checked ? "Notifications enabled" : "Notifications disabled");
+  };
+
+  // Handle location services toggle
+  const handleLocationChange = (checked: boolean) => {
+    setLocationServices(checked);
+    localStorage.setItem("geo-smart-location", JSON.stringify(checked));
+    toast.success(checked ? "Location services enabled" : "Location services disabled");
+  };
 
   return (
     <AppLayout>
@@ -41,7 +88,7 @@ export default function Settings() {
               <Switch
                 id="notifications"
                 checked={notifications}
-                onCheckedChange={setNotifications}
+                onCheckedChange={handleNotificationsChange}
               />
             </div>
           </CardContent>
@@ -62,7 +109,7 @@ export default function Settings() {
               <Switch
                 id="dark-mode"
                 checked={darkMode}
-                onCheckedChange={setDarkMode}
+                onCheckedChange={handleDarkModeChange}
               />
             </div>
           </CardContent>
@@ -83,7 +130,7 @@ export default function Settings() {
               <Switch
                 id="location"
                 checked={locationServices}
-                onCheckedChange={setLocationServices}
+                onCheckedChange={handleLocationChange}
               />
             </div>
           </CardContent>

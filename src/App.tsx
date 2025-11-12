@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { Suspense, lazy } from "react";
 import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
+import { useDarkMode } from "@/hooks/useDarkMode";
 
 // Lazy load pages for better performance
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -43,6 +44,34 @@ const LoadingFallback = () => (
   </div>
 );
 
+const AppContent = () => {
+  useDarkMode(); // Initialize dark mode
+  
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/rocks" element={<Rocks />} />
+        <Route path="/rocks/:id" element={<RockDetail />} />
+        <Route path="/minerals" element={<Minerals />} />
+        <Route path="/minerals/:id" element={<MineralDetail />} />
+        <Route path="/scanner" element={<Scanner />} />
+        <Route path="/more" element={<More />} />
+        <Route path="/voice-notes" element={<VoiceNotes />} />
+        <Route path="/field-notes" element={<FieldNotes />} />
+        <Route path="/sites" element={<Sites />} />
+        <Route path="/sites/:id" element={<SiteDetail />} />
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
+  );
+};
+
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
@@ -51,27 +80,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/rocks" element={<Rocks />} />
-                <Route path="/rocks/:id" element={<RockDetail />} />
-                <Route path="/minerals" element={<Minerals />} />
-                <Route path="/minerals/:id" element={<MineralDetail />} />
-                <Route path="/scanner" element={<Scanner />} />
-                <Route path="/more" element={<More />} />
-                <Route path="/voice-notes" element={<VoiceNotes />} />
-                <Route path="/field-notes" element={<FieldNotes />} />
-                <Route path="/sites" element={<Sites />} />
-                <Route path="/sites/:id" element={<SiteDetail />} />
-                <Route path="/chat" element={<Chat />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
+            <AppContent />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

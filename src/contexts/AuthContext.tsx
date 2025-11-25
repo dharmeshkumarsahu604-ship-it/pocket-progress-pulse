@@ -45,6 +45,56 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Auto-refresh session when user returns to the app
+  useEffect(() => {
+    const refreshSession = async () => {
+      try {
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        if (error || !currentSession) {
+          console.log('Session refresh needed');
+          // Try to refresh the session
+          const { data: { session: refreshedSession }, error: refreshError } = 
+            await supabase.auth.refreshSession();
+          
+          if (!refreshError && refreshedSession) {
+            setSession(refreshedSession);
+            setUser(refreshedSession.user);
+            console.log('Session refreshed successfully');
+          } else if (refreshError) {
+            console.error('Session refresh failed:', refreshError);
+            // If refresh fails, sign out the user
+            await signOut();
+          }
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && user) {
+        // Refresh session when user returns to the tab
+        refreshSession();
+      }
+    };
+
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Set up periodic refresh (every 30 minutes)
+    const refreshInterval = setInterval(() => {
+      if (user && document.visibilityState === 'visible') {
+        refreshSession();
+      }
+    }, 30 * 60 * 1000); // 30 minutes
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(refreshInterval);
+    };
+  }, [user]);
+
   const signUp = async (email: string, password: string, fullName: string, role: string, institute?: string, phoneNumber?: string, avatarFile?: File) => {
     const redirectUrl = `${window.location.origin}/`;
     

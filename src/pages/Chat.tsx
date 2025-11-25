@@ -53,10 +53,10 @@ export default function Chat() {
 
     try {
       // Get the user's session token
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (!session) {
-        toast.error("Please sign in to use the chat feature.");
+      if (sessionError || !session) {
+        toast.error("Your session has expired. Please sign in again.");
         setIsLoading(false);
         return;
       }

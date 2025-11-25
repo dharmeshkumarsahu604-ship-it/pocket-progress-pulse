@@ -14,6 +14,8 @@ serve(async (req) => {
   try {
     // Get user from JWT
     const authHeader = req.headers.get('Authorization');
+    console.log('Auth header present:', !!authHeader);
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -22,12 +24,23 @@ serve(async (req) => {
     
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     
-    if (authError || !user) {
+    if (authError) {
+      console.error('Auth error in geological-chat:', authError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized", details: authError.message }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    if (!user) {
+      console.error('No user found in geological-chat');
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log('User authenticated:', user.id);
 
     const { messages } = await req.json();
     

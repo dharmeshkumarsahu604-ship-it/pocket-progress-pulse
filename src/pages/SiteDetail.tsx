@@ -5,9 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Navigation, MapPin, Calendar, Info } from "lucide-react";
+import { SiteGallery } from "@/components/sites/SiteGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getDirectionsUrl, getMapUrl } from "@/lib/maps";
+
+interface SiteImage {
+  url: string;
+  caption: string;
+  type: string;
+  season?: string;
+}
 
 interface Site {
   id: string;
@@ -18,6 +26,7 @@ interface Site {
   latitude: number;
   longitude: number;
   image_url: string | null;
+  images: SiteImage[] | null;
   rock_types: string[] | null;
   geological_formation: string | null;
   age: string | null;
@@ -54,7 +63,13 @@ export default function SiteDetail() {
         return;
       }
 
-      setSite(data);
+      // Parse images from JSON if present
+      const siteData: Site = {
+        ...data,
+        images: data.images ? (data.images as unknown as SiteImage[]) : null,
+      };
+
+      setSite(siteData);
     } catch (error) {
       console.error("Error fetching site:", error);
       toast.error("Failed to load site details");
@@ -131,13 +146,17 @@ export default function SiteDetail() {
           Back to Sites
         </Button>
 
-        <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-          <img
-            src={site.image_url || "/placeholder.svg"}
-            alt={site.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
+{site.images && site.images.length > 0 ? (
+          <SiteGallery images={site.images} siteName={site.name} />
+        ) : (
+          <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+            <img
+              src={site.image_url || "/placeholder.svg"}
+              alt={site.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
 
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-4 flex-wrap">

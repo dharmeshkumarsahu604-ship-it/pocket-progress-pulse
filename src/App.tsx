@@ -21,6 +21,8 @@ const VoiceNotes = lazy(() => import("./pages/VoiceNotes"));
 const FieldNotes = lazy(() => import("./pages/FieldNotes"));
 const Sites = lazy(() => import("./pages/Sites"));
 const SiteDetail = lazy(() => import("./pages/SiteDetail"));
+const FieldTrips = lazy(() => import("./pages/FieldTrips"));
+const FieldTripView = lazy(() => import("./pages/FieldTripView"));
 const Chat = lazy(() => import("./pages/Chat"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -59,8 +61,10 @@ const AppContent = () => {
         <Route path="/more" element={<More />} />
         <Route path="/voice-notes" element={<VoiceNotes />} />
         <Route path="/field-notes" element={<FieldNotes />} />
-        <Route path="/sites" element={<Sites />} />
-        <Route path="/sites/:id" element={<SiteDetail />} />
+            <Route path="/sites" element={<Sites />} />
+            <Route path="/sites/:id" element={<SiteDetail />} />
+            <Route path="/field-trips" element={<FieldTrips />} />
+            <Route path="/field-trips/:id" element={<FieldTripView />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/reset-password" element={<ResetPassword />} />

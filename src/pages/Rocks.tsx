@@ -108,8 +108,8 @@ export default function Rocks() {
       <AppLayout>
         <div className="space-y-6">
           <div className="animate-fade-in">
-            <Skeleton className="h-10 w-64 mb-2 animate-pulse" />
-            <Skeleton className="h-5 w-48 animate-pulse" />
+            <Skeleton className="h-10 w-64 mb-2 shimmer" />
+            <Skeleton className="h-5 w-48 shimmer" />
           </div>
           
           <div className="space-y-4">
@@ -117,11 +117,11 @@ export default function Rocks() {
             
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div className="space-y-2 w-full sm:w-auto">
-                <Skeleton className="h-5 w-32 animate-pulse" />
+                <Skeleton className="h-5 w-32 shimmer" />
                 <FilterSkeleton />
               </div>
               
-              <Skeleton className="h-10 w-full sm:w-48 animate-pulse" />
+              <Skeleton className="h-10 w-full sm:w-48 shimmer" />
             </div>
           </div>
 

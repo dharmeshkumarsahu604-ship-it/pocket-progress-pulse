@@ -35,12 +35,13 @@ export const SiteCard = ({ site, siteIndex, totalSitesInState }: SiteCardProps) 
 
   return (
     <Link to={`/sites/${site.id}`} className="block group">
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 h-full">
+      <Card className="overflow-hidden transition-all duration-300 border-2 hover:border-primary/20 h-full hover-lift">
         <div className="aspect-video bg-gradient-to-br from-muted via-muted to-primary/5 relative overflow-hidden">
           <img
             src={site.image_url || "/placeholder.svg"}
             alt={site.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
           

@@ -24,20 +24,21 @@ interface RockCardProps {
 
 export const RockCard = ({ rock, isFavorite, onToggleFavorite }: RockCardProps) => {
   return (
-    <Link to={`/rocks/${rock.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-        <div className="relative aspect-square bg-muted">
+    <Link to={`/rocks/${rock.id}`} className="block group">
+      <Card className="overflow-hidden transition-all duration-300 border-2 hover:border-primary/20 h-full hover-lift">
+        <div className="relative aspect-square bg-muted overflow-hidden">
           <img
             src={rock.image_url || "/placeholder.svg"}
             alt={rock.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            loading="lazy"
           />
           <button
             onClick={(e) => {
               e.preventDefault();
               onToggleFavorite(rock.id);
             }}
-            className="absolute top-2 right-2 p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card transition-colors"
+            className="absolute top-2 right-2 p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card transition-all duration-200 hover:scale-110"
           >
             <Heart
               className={cn(
@@ -49,7 +50,7 @@ export const RockCard = ({ rock, isFavorite, onToggleFavorite }: RockCardProps) 
         </div>
         <CardContent className="p-4 space-y-2">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-lg truncate">{rock.name}</h3>
+            <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors duration-200">{rock.name}</h3>
             <Badge variant="secondary" className="shrink-0 capitalize">
               {rock.type}
             </Badge>

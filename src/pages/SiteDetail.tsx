@@ -4,8 +4,9 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Navigation, MapPin, Calendar, Info } from "lucide-react";
+import { ArrowLeft, Navigation, MapPin, Calendar, Info, Eye } from "lucide-react";
 import { SiteGallery } from "@/components/sites/SiteGallery";
+import { PanoramaViewer } from "@/components/sites/PanoramaViewer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getDirectionsUrl, getMapUrl } from "@/lib/maps";
@@ -15,6 +16,19 @@ interface SiteImage {
   caption: string;
   type: string;
   season?: string;
+}
+
+interface Hotspot {
+  position: { x: number; y: number; z: number };
+  title: string;
+  description: string;
+  feature_type: string;
+}
+
+interface PanoramaImage {
+  url: string;
+  title: string;
+  hotspots: Hotspot[];
 }
 
 interface Site {
@@ -27,6 +41,7 @@ interface Site {
   longitude: number;
   image_url: string | null;
   images: SiteImage[] | null;
+  panorama_images: PanoramaImage[] | null;
   rock_types: string[] | null;
   geological_formation: string | null;
   age: string | null;
@@ -40,6 +55,8 @@ export default function SiteDetail() {
   const navigate = useNavigate();
   const [site, setSite] = useState<Site | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showPanorama, setShowPanorama] = useState(false);
+  const [selectedPanorama, setSelectedPanorama] = useState<PanoramaImage | null>(null);
   
   useEffect(() => {
     fetchSite();
@@ -63,13 +80,19 @@ export default function SiteDetail() {
         return;
       }
 
-      // Parse images from JSON if present
+      // Parse images and panoramas from JSON if present
       const siteData: Site = {
         ...data,
         images: data.images ? (data.images as unknown as SiteImage[]) : null,
+        panorama_images: data.panorama_images ? (data.panorama_images as unknown as PanoramaImage[]) : null,
       };
 
       setSite(siteData);
+      
+      // Auto-show first panorama if available
+      if (siteData.panorama_images && siteData.panorama_images.length > 0) {
+        setSelectedPanorama(siteData.panorama_images[0]);
+      }
     } catch (error) {
       console.error("Error fetching site:", error);
       toast.error("Failed to load site details");
@@ -141,12 +164,31 @@ export default function SiteDetail() {
   return (
     <AppLayout>
       <div className="space-y-6 max-w-4xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate("/sites")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Sites
-        </Button>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+          <Button variant="ghost" onClick={() => navigate("/sites")}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Sites
+          </Button>
+          
+          {site.panorama_images && site.panorama_images.length > 0 && (
+            <Button
+              variant={showPanorama ? "default" : "outline"}
+              onClick={() => setShowPanorama(!showPanorama)}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              {showPanorama ? "Hide" : "View"} 360° Panorama
+            </Button>
+          )}
+        </div>
 
-{site.images && site.images.length > 0 ? (
+        {showPanorama && selectedPanorama && (
+          <PanoramaViewer
+            panorama={selectedPanorama}
+            onClose={() => setShowPanorama(false)}
+          />
+        )}
+
+        {site.images && site.images.length > 0 ? (
           <SiteGallery images={site.images} siteName={site.name} />
         ) : (
           <div className="aspect-video bg-muted rounded-lg overflow-hidden">

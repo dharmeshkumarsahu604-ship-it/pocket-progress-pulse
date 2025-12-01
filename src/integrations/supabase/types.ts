@@ -102,6 +102,7 @@ export type Database = {
           latitude: number
           longitude: number
           name: string
+          panorama_images: Json | null
           rock_types: string[] | null
           significance: string | null
           state: string
@@ -122,6 +123,7 @@ export type Database = {
           latitude: number
           longitude: number
           name: string
+          panorama_images?: Json | null
           rock_types?: string[] | null
           significance?: string | null
           state: string
@@ -142,6 +144,7 @@ export type Database = {
           latitude?: number
           longitude?: number
           name?: string
+          panorama_images?: Json | null
           rock_types?: string[] | null
           significance?: string | null
           state?: string

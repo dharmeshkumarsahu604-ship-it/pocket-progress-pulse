@@ -22,20 +22,21 @@ interface MineralCardProps {
 
 export const MineralCard = ({ mineral, isFavorite, onToggleFavorite }: MineralCardProps) => {
   return (
-    <Link to={`/minerals/${mineral.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-        <div className="relative aspect-square bg-muted">
+    <Link to={`/minerals/${mineral.id}`} className="block group">
+      <Card className="overflow-hidden transition-all duration-300 border-2 hover:border-primary/20 h-full hover-lift">
+        <div className="relative aspect-square bg-muted overflow-hidden">
           <img
             src={mineral.image_url || "/placeholder.svg"}
             alt={mineral.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            loading="lazy"
           />
           <button
             onClick={(e) => {
               e.preventDefault();
               onToggleFavorite(mineral.id);
             }}
-            className="absolute top-2 right-2 p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card transition-colors"
+            className="absolute top-2 right-2 p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card transition-all duration-200 hover:scale-110"
           >
             <Heart
               className={cn(
@@ -47,7 +48,7 @@ export const MineralCard = ({ mineral, isFavorite, onToggleFavorite }: MineralCa
         </div>
         <CardContent className="p-4 space-y-2">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-lg truncate">{mineral.name}</h3>
+            <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors duration-200">{mineral.name}</h3>
             <Badge variant="outline" className="shrink-0 font-mono text-xs">
               {mineral.hardness}
             </Badge>

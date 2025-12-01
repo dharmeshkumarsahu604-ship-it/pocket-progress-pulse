@@ -140,8 +140,8 @@ export default function Sites() {
                 <Skeleton className="h-6 w-80 animate-pulse" />
               </div>
               <div className="flex gap-2">
-                <Skeleton className="h-10 w-32 animate-pulse" />
-                <Skeleton className="h-10 w-32 animate-pulse" />
+                <Skeleton className="h-10 w-32 shimmer" />
+                <Skeleton className="h-10 w-32 shimmer" />
               </div>
             </div>
 
@@ -150,11 +150,11 @@ export default function Sites() {
               {[1, 2, 3].map((i) => (
                 <Card key={i}>
                   <CardHeader className="pb-3">
-                    <Skeleton className="h-4 w-24 animate-pulse" />
-                    <Skeleton className="h-8 w-16 animate-pulse" />
+                    <Skeleton className="h-4 w-24 shimmer" />
+                    <Skeleton className="h-8 w-16 shimmer" />
                   </CardHeader>
                   <CardContent>
-                    <Skeleton className="h-3 w-full animate-pulse" />
+                    <Skeleton className="h-3 w-full shimmer" />
                   </CardContent>
                 </Card>
               ))}
@@ -163,18 +163,18 @@ export default function Sites() {
 
           {/* View Mode Skeleton */}
           <div className="flex gap-3 flex-wrap animate-fade-in" style={{ animationDelay: '200ms' }}>
-            <Skeleton className="h-10 w-28 animate-pulse" />
-            <Skeleton className="h-10 w-32 animate-pulse" />
+            <Skeleton className="h-10 w-28 shimmer" />
+            <Skeleton className="h-10 w-32 shimmer" />
           </div>
 
           {/* Search Skeleton */}
           <div className="space-y-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
             <SearchBarSkeleton />
             <div className="space-y-3">
-              <Skeleton className="h-5 w-32 animate-pulse" />
+              <Skeleton className="h-5 w-32 shimmer" />
               <div className="flex gap-2">
                 {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-10 w-24 animate-pulse" />
+                  <Skeleton key={i} className="h-10 w-24 shimmer" />
                 ))}
               </div>
             </div>

@@ -18,9 +18,11 @@ interface GeologicalSite {
 
 interface SiteCardProps {
   site: GeologicalSite;
+  siteIndex?: number;
+  totalSitesInState?: number;
 }
 
-export const SiteCard = ({ site }: SiteCardProps) => {
+export const SiteCard = ({ site, siteIndex, totalSitesInState }: SiteCardProps) => {
   const getAccessibilityStyle = (accessibility: string | null) => {
     if (!accessibility) return "bg-muted text-muted-foreground";
     
@@ -58,9 +60,16 @@ export const SiteCard = ({ site }: SiteCardProps) => {
 
         <CardContent className="p-5 space-y-3">
           <div className="space-y-2">
-            <h3 className="font-bold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-              {site.name}
-            </h3>
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-bold text-lg line-clamp-2 group-hover:text-primary transition-colors flex-1">
+                {site.name}
+              </h3>
+              {siteIndex !== undefined && totalSitesInState !== undefined && (
+                <Badge variant="secondary" className="shrink-0 text-xs">
+                  {site.state} · Site {siteIndex} of {totalSitesInState}
+                </Badge>
+              )}
+            </div>
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 flex-shrink-0" />
               <span className="line-clamp-1">

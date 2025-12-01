@@ -407,9 +407,13 @@ export default function Sites() {
               <Badge variant="secondary">{nearbySites.length} sites</Badge>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {nearbySites.map((site) => (
+              {nearbySites.map((site, index) => (
                 <div key={site.id} className="relative">
-                  <SiteCard site={site} />
+                  <SiteCard 
+                    site={site} 
+                    siteIndex={index + 1}
+                    totalSitesInState={nearbySites.length}
+                  />
                   <Badge 
                     className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm shadow-lg"
                     variant="default"
@@ -442,8 +446,13 @@ export default function Sites() {
                   </Button>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {stateSites.slice(0, 6).map((site) => (
-                    <SiteCard key={site.id} site={site} />
+                  {stateSites.slice(0, 6).map((site, index) => (
+                    <SiteCard 
+                      key={site.id} 
+                      site={site} 
+                      siteIndex={index + 1}
+                      totalSitesInState={stateSites.length}
+                    />
                   ))}
                 </div>
                 {stateSites.length > 6 && (
@@ -466,8 +475,13 @@ export default function Sites() {
               <Badge variant="secondary">{filteredSites.length} sites</Badge>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredSites.map((site) => (
-                <SiteCard key={site.id} site={site} />
+              {filteredSites.map((site, index) => (
+                <SiteCard 
+                  key={site.id} 
+                  site={site} 
+                  siteIndex={index + 1}
+                  totalSitesInState={filteredSites.length}
+                />
               ))}
             </div>
           </div>

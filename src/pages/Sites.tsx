@@ -70,7 +70,17 @@ export default function Sites() {
         .order("name");
 
       if (error) throw error;
-      setSites(data || []);
+
+      // De-duplicate sites by name + state + district to avoid repeated entries
+      const uniqueSites = (data || []).reduce<GeologicalSite[]>((acc, site) => {
+        const key = `${site.name}-${site.state}-${site.district ?? ""}`;
+        if (!acc.some((s) => `${s.name}-${s.state}-${s.district ?? ""}` === key)) {
+          acc.push(site as GeologicalSite);
+        }
+        return acc;
+      }, []);
+
+      setSites(uniqueSites);
     } catch (error) {
       toast.error("Failed to load geological sites");
     } finally {

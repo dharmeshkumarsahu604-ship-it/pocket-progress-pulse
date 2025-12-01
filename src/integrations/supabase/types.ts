@@ -86,6 +86,208 @@ export type Database = {
         }
         Relationships: []
       }
+      field_trip_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          current_waypoint_id: string | null
+          field_trip_id: string
+          id: string
+          score: number | null
+          started_at: string
+          time_spent_seconds: number | null
+          total_possible_points: number | null
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          current_waypoint_id?: string | null
+          field_trip_id: string
+          id?: string
+          score?: number | null
+          started_at?: string
+          time_spent_seconds?: number | null
+          total_possible_points?: number | null
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          current_waypoint_id?: string | null
+          field_trip_id?: string
+          id?: string
+          score?: number | null
+          started_at?: string
+          time_spent_seconds?: number | null
+          total_possible_points?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_trip_progress_current_waypoint_id_fkey"
+            columns: ["current_waypoint_id"]
+            isOneToOne: false
+            referencedRelation: "field_trip_waypoints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_trip_progress_field_trip_id_fkey"
+            columns: ["field_trip_id"]
+            isOneToOne: false
+            referencedRelation: "field_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      field_trip_quizzes: {
+        Row: {
+          correct_answer: string
+          created_at: string
+          explanation: string | null
+          field_trip_id: string
+          id: string
+          options: Json | null
+          points: number | null
+          question: string
+          question_type: string | null
+          waypoint_id: string | null
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string
+          explanation?: string | null
+          field_trip_id: string
+          id?: string
+          options?: Json | null
+          points?: number | null
+          question: string
+          question_type?: string | null
+          waypoint_id?: string | null
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string
+          explanation?: string | null
+          field_trip_id?: string
+          id?: string
+          options?: Json | null
+          points?: number | null
+          question?: string
+          question_type?: string | null
+          waypoint_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_trip_quizzes_field_trip_id_fkey"
+            columns: ["field_trip_id"]
+            isOneToOne: false
+            referencedRelation: "field_trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_trip_quizzes_waypoint_id_fkey"
+            columns: ["waypoint_id"]
+            isOneToOne: false
+            referencedRelation: "field_trip_waypoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      field_trip_waypoints: {
+        Row: {
+          auto_advance: boolean | null
+          camera_position: Json
+          created_at: string
+          duration_seconds: number | null
+          field_trip_id: string
+          id: string
+          narration_audio_url: string | null
+          narration_text: string
+          sequence_number: number
+        }
+        Insert: {
+          auto_advance?: boolean | null
+          camera_position: Json
+          created_at?: string
+          duration_seconds?: number | null
+          field_trip_id: string
+          id?: string
+          narration_audio_url?: string | null
+          narration_text: string
+          sequence_number: number
+        }
+        Update: {
+          auto_advance?: boolean | null
+          camera_position?: Json
+          created_at?: string
+          duration_seconds?: number | null
+          field_trip_id?: string
+          id?: string
+          narration_audio_url?: string | null
+          narration_text?: string
+          sequence_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_trip_waypoints_field_trip_id_fkey"
+            columns: ["field_trip_id"]
+            isOneToOne: false
+            referencedRelation: "field_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      field_trips: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string | null
+          difficulty_level: string | null
+          duration_minutes: number | null
+          id: string
+          panorama_url: string
+          published: boolean | null
+          site_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          difficulty_level?: string | null
+          duration_minutes?: number | null
+          id?: string
+          panorama_url: string
+          published?: boolean | null
+          site_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          difficulty_level?: string | null
+          duration_minutes?: number | null
+          id?: string
+          panorama_url?: string
+          published?: boolean | null
+          site_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_trips_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "geological_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       geological_sites: {
         Row: {
           accessibility: string | null
@@ -277,6 +479,54 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      quiz_submissions: {
+        Row: {
+          answer: string
+          field_trip_id: string
+          id: string
+          is_correct: boolean
+          points_earned: number | null
+          quiz_id: string
+          submitted_at: string
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          field_trip_id: string
+          id?: string
+          is_correct: boolean
+          points_earned?: number | null
+          quiz_id: string
+          submitted_at?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          field_trip_id?: string
+          id?: string
+          is_correct?: boolean
+          points_earned?: number | null
+          quiz_id?: string
+          submitted_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_submissions_field_trip_id_fkey"
+            columns: ["field_trip_id"]
+            isOneToOne: false
+            referencedRelation: "field_trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_submissions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "field_trip_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rocks: {
         Row: {

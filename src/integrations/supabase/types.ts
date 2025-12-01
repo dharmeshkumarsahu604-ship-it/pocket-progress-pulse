@@ -98,6 +98,7 @@ export type Database = {
           geological_formation: string | null
           id: string
           image_url: string | null
+          images: Json | null
           latitude: number
           longitude: number
           name: string
@@ -117,6 +118,7 @@ export type Database = {
           geological_formation?: string | null
           id?: string
           image_url?: string | null
+          images?: Json | null
           latitude: number
           longitude: number
           name: string
@@ -136,6 +138,7 @@ export type Database = {
           geological_formation?: string | null
           id?: string
           image_url?: string | null
+          images?: Json | null
           latitude?: number
           longitude?: number
           name?: string

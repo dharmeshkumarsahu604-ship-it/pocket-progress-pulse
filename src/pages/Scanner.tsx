@@ -192,12 +192,13 @@ export default function Scanner() {
         .from("images")
         .getPublicUrl(fileName);
 
-      // Save to scan_history
+      // Save to scan_history - normalize item_type to 'rock' or 'mineral'
+      const normalizedType = scanResult.type.toLowerCase().includes("mineral") ? "mineral" : "rock";
       const { error: insertError } = await supabase.from("scan_history").insert({
         user_id: user.id,
         image_url: publicUrl,
         identified_as: scanResult.name,
-        item_type: scanResult.type,
+        item_type: normalizedType,
         confidence: Math.round(scanResult.confidence * 100),
         notes: scanResult.description,
       });

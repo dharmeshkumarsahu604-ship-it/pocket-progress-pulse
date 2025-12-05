@@ -150,9 +150,9 @@ Return as JSON:
       }
     );
   } catch (error) {
-    console.error("Transcription error:", error);
+    console.error("Transcription error:", error instanceof Error ? error.message : "Unknown error", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "Transcription service temporarily unavailable. Please try again." }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

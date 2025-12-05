@@ -1,9 +1,8 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Save, Share2 } from "lucide-react";
+import { ArrowLeft, Save, Share2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ScanResult {
@@ -19,9 +18,10 @@ interface ScanResultsProps {
   result: ScanResult;
   onBack: () => void;
   onSave: () => void;
+  isSaving?: boolean;
 }
 
-export const ScanResults = ({ imageData, result, onBack, onSave }: ScanResultsProps) => {
+export const ScanResults = ({ imageData, result, onBack, onSave, isSaving }: ScanResultsProps) => {
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -59,10 +59,15 @@ export const ScanResults = ({ imageData, result, onBack, onSave }: ScanResultsPr
           </Button>
           <Button 
             onClick={onSave}
+            disabled={isSaving}
             className="hover-scale transition-all duration-200"
           >
-            <Save className="mr-2 h-4 w-4" />
-            Save to Collection
+            {isSaving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
+            {isSaving ? "Saving..." : "Save to Collection"}
           </Button>
         </div>
       </div>

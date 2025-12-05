@@ -1,20 +1,73 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CameraInterface } from "@/components/scanner/CameraInterface";
 import { ScanResults } from "@/components/scanner/ScanResults";
 import { PermissionGate } from "@/components/shared/PermissionGate";
-import { Camera, Image as ImageIcon } from "lucide-react";
+import { Camera, Image as ImageIcon, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+interface SavedScan {
+  id: string;
+  image_url: string;
+  identified_as: string;
+  item_type: string;
+  confidence: number | null;
+  notes: string | null;
+  created_at: string;
+}
 
 export default function Scanner() {
+  const { user } = useAuth();
   const [showCamera, setShowCamera] = useState(false);
   const [scannedImage, setScannedImage] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<any>(null);
-  const [savedScans, setSavedScans] = useLocalStorage<any[]>("saved-scans", []);
+  const [savedScans, setSavedScans] = useState<SavedScan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Fetch saved scans on mount
+  useEffect(() => {
+    if (user) {
+      fetchSavedScans();
+    } else {
+      setIsLoading(false);
+    }
+  }, [user]);
+
+  const fetchSavedScans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("scan_history")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setSavedScans(data || []);
+    } catch (error) {
+      console.error("Error fetching saved scans:", error);
+      toast.error("Failed to load saved scans");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCapture = async (imageData: string) => {
     setScannedImage(imageData);
@@ -22,44 +75,25 @@ export default function Scanner() {
     setIsScanning(true);
 
     try {
-      // Get the user's session token with detailed error logging
-      console.log('Getting session for scanner...');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      console.log('Session status:', { 
-        hasSession: !!session, 
-        sessionError: sessionError?.message,
-        hasAccessToken: !!session?.access_token 
-      });
-      
-      if (sessionError) {
-        console.error('Session error details:', sessionError);
-        toast.error(`Authentication error: ${sessionError.message}. Please sign out and sign in again.`);
-        setIsScanning(false);
-        return;
-      }
-      
-      if (!session) {
-        toast.error("Your session has expired. Please sign in again.");
+      if (sessionError || !session) {
+        toast.error("Please sign in to use the scanner");
         setIsScanning(false);
         return;
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/identify-specimen`,
+        `https://gknkwiwfwzjfcijjrlac.supabase.co/functions/v1/identify-specimen`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({
-            imageBase64: imageData,
-          }),
+          body: JSON.stringify({ imageBase64: imageData }),
         }
       );
-
-      console.log('Scanner API response status:', response.status);
 
       if (response.status === 429) {
         toast.error("Rate limit exceeded. Please try again later.");
@@ -74,20 +108,17 @@ export default function Scanner() {
       }
 
       if (response.status === 401) {
-        toast.error("Authentication failed. Please sign out and sign in again.");
+        toast.error("Authentication failed. Please sign in again.");
         setIsScanning(false);
         return;
       }
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Scanner API error:', errorText);
-        throw new Error(`Failed to identify specimen: ${errorText}`);
+        throw new Error("Failed to identify specimen");
       }
 
       const result = await response.json();
       
-      // Transform the result to match the expected format
       const formattedResult = {
         name: result.name || "Unknown Specimen",
         type: result.type || "Unknown",
@@ -105,7 +136,7 @@ export default function Scanner() {
       setIsScanning(false);
       toast.success("Specimen identified!");
     } catch (error) {
-      console.error("Identification error details:", error);
+      console.error("Identification error:", error);
       toast.error("Failed to identify specimen. Please try again.");
       setIsScanning(false);
     }
@@ -123,96 +154,7 @@ export default function Scanner() {
       const reader = new FileReader();
       reader.onload = async (event) => {
         const imageData = event.target?.result as string;
-        setScannedImage(imageData);
-        setIsScanning(true);
-
-        try {
-          // Get the user's session token with detailed error logging
-          console.log('Getting session for gallery scanner...');
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          
-          console.log('Session status:', { 
-            hasSession: !!session, 
-            sessionError: sessionError?.message,
-            hasAccessToken: !!session?.access_token 
-          });
-          
-          if (sessionError) {
-            console.error('Session error details:', sessionError);
-            toast.error(`Authentication error: ${sessionError.message}. Please sign out and sign in again.`);
-            setIsScanning(false);
-            return;
-          }
-          
-          if (!session) {
-            toast.error("Your session has expired. Please sign in again.");
-            setIsScanning(false);
-            return;
-          }
-
-          const response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/identify-specimen`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${session.access_token}`,
-              },
-              body: JSON.stringify({
-                imageBase64: imageData,
-              }),
-            }
-          );
-
-          console.log('Gallery scanner API response status:', response.status);
-
-          if (response.status === 429) {
-            toast.error("Rate limit exceeded. Please try again later.");
-            setIsScanning(false);
-            return;
-          }
-
-          if (response.status === 402) {
-            toast.error("AI service unavailable. Please contact support.");
-            setIsScanning(false);
-            return;
-          }
-
-          if (response.status === 401) {
-            toast.error("Authentication failed. Please sign out and sign in again.");
-            setIsScanning(false);
-            return;
-          }
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Gallery scanner API error:', errorText);
-            throw new Error(`Failed to identify specimen: ${errorText}`);
-          }
-
-          const result = await response.json();
-          
-          const formattedResult = {
-            name: result.name || "Unknown Specimen",
-            type: result.type || "Unknown",
-            confidence: (result.confidence || 50) / 100,
-            description: result.description || "No description available",
-            properties: [
-              { label: "Composition", value: result.composition || "Unknown" },
-              { label: "Texture", value: result.texture || "Unknown" },
-              { label: "Color", value: result.color || "Unknown" },
-              { label: "Formation", value: result.formation || "Unknown" },
-            ],
-          };
-
-          setScanResult(formattedResult);
-          setIsScanning(false);
-          toast.success("Specimen identified!");
-        } catch (error) {
-          console.error("Gallery identification error details:", error);
-          toast.error("Failed to identify specimen. Please try again.");
-          setIsScanning(false);
-        }
+        await handleCapture(imageData);
       };
       reader.readAsDataURL(file);
     };
@@ -220,16 +162,77 @@ export default function Scanner() {
     input.click();
   };
 
-  const handleSave = () => {
-    const scan = {
-      id: Date.now().toString(),
-      image: scannedImage,
-      result: scanResult,
-      date: new Date().toISOString(),
-    };
-    setSavedScans((prev) => [scan, ...prev]);
-    toast.success("Saved to collection");
-    handleReset();
+  const handleSave = async () => {
+    if (!user || !scannedImage || !scanResult) {
+      toast.error("Please sign in to save scans");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Upload image to storage
+      const base64Data = scannedImage.split(",")[1];
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "image/jpeg" });
+
+      const fileName = `${user.id}/${Date.now()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from("images")
+        .upload(fileName, blob);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("images")
+        .getPublicUrl(fileName);
+
+      // Save to scan_history
+      const { error: insertError } = await supabase.from("scan_history").insert({
+        user_id: user.id,
+        image_url: publicUrl,
+        identified_as: scanResult.name,
+        item_type: scanResult.type,
+        confidence: Math.round(scanResult.confidence * 100),
+        notes: scanResult.description,
+      });
+
+      if (insertError) throw insertError;
+
+      toast.success("Saved to collection");
+      fetchSavedScans();
+      handleReset();
+    } catch (error) {
+      console.error("Error saving scan:", error);
+      toast.error("Failed to save scan");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    try {
+      const { error } = await supabase
+        .from("scan_history")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setSavedScans((prev) => prev.filter((scan) => scan.id !== id));
+      toast.success("Scan deleted");
+    } catch (error) {
+      console.error("Error deleting scan:", error);
+      toast.error("Failed to delete scan");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleReset = () => {
@@ -262,46 +265,135 @@ export default function Scanner() {
             </p>
           </div>
 
-        {!scannedImage && !isScanning && (
-          <div className="space-y-4 animate-fade-in">
-            <Button
-              size="lg"
-              onClick={() => setShowCamera(true)}
-              className="w-full hover-scale transition-all duration-300"
-            >
-              <Camera className="mr-2 h-5 w-5" />
-              Open Camera
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={handleGallerySelect}
-              className="w-full hover-scale transition-all duration-300"
-            >
-              <ImageIcon className="mr-2 h-5 w-5" />
-              Choose from Gallery
-            </Button>
-          </div>
-        )}
+          {!scannedImage && !isScanning && (
+            <div className="space-y-4 animate-fade-in">
+              <Button
+                size="lg"
+                onClick={() => setShowCamera(true)}
+                className="w-full hover-scale transition-all duration-300"
+              >
+                <Camera className="mr-2 h-5 w-5" />
+                Open Camera
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleGallerySelect}
+                className="w-full hover-scale transition-all duration-300"
+              >
+                <ImageIcon className="mr-2 h-5 w-5" />
+                Choose from Gallery
+              </Button>
+            </div>
+          )}
 
-        {isScanning && (
-          <div className="flex flex-col items-center justify-center py-12 space-y-4 animate-fade-in">
-            <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-lg font-medium animate-pulse">Analyzing specimen...</p>
-            <p className="text-sm text-muted-foreground">AI is identifying the geological specimen</p>
-          </div>
-        )}
+          {isScanning && (
+            <div className="flex flex-col items-center justify-center py-12 space-y-4 animate-fade-in">
+              <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              <p className="text-lg font-medium animate-pulse">Analyzing specimen...</p>
+              <p className="text-sm text-muted-foreground">AI is identifying the geological specimen</p>
+            </div>
+          )}
 
-        {scannedImage && scanResult && !isScanning && (
-          <div className="animate-scale-in">
-            <ScanResults
-              imageData={scannedImage}
-              result={scanResult}
-              onBack={handleReset}
-              onSave={handleSave}
-            />
-          </div>
-        )}
+          {scannedImage && scanResult && !isScanning && (
+            <div className="animate-scale-in">
+              <ScanResults
+                imageData={scannedImage}
+                result={scanResult}
+                onBack={handleReset}
+                onSave={handleSave}
+                isSaving={isSaving}
+              />
+            </div>
+          )}
+
+          {/* Saved Scans Section */}
+          {!scannedImage && !isScanning && (
+            <div className="space-y-4 animate-fade-in">
+              <h2 className="text-xl font-semibold">Saved Scans</h2>
+              
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : savedScans.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8 text-center">
+                    <p className="text-muted-foreground">
+                      No saved scans yet. Start scanning to build your collection!
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4">
+                  {savedScans.map((scan) => (
+                    <Card key={scan.id} className="overflow-hidden">
+                      <div className="flex">
+                        <div className="w-24 h-24 flex-shrink-0">
+                          <img
+                            src={scan.image_url}
+                            alt={scan.identified_as}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <CardContent className="flex-1 p-4">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-semibold">{scan.identified_as}</h3>
+                              <Badge variant="secondary" className="mt-1">
+                                {scan.item_type}
+                              </Badge>
+                              {scan.confidence && (
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  {scan.confidence}% confidence
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {new Date(scan.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-destructive hover:text-destructive"
+                                  disabled={deletingId === scan.id}
+                                >
+                                  {deletingId === scan.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Scan</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this scan? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(scan.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </CardContent>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </PermissionGate>
     </AppLayout>

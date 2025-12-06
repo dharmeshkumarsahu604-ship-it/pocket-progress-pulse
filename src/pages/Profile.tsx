@@ -21,10 +21,18 @@ interface UserRole {
   role: string;
 }
 
+interface UserStats {
+  total_scans: number;
+  total_field_notes: number;
+  total_voice_notes: number;
+  total_bookmarks: number;
+}
+
 export default function Profile() {
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userRole, setUserRole] = useState<string>("student");
+  const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,20 +42,23 @@ export default function Profile() {
       if (!user) return;
 
       try {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("full_name, institute, bio, avatar_url")
-          .eq("id", user.id)
-          .single();
+        const [profileResult, roleResult, statsResult] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("full_name, institute, bio, avatar_url")
+            .eq("id", user.id)
+            .single(),
+          supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", user.id)
+            .single(),
+          supabase.rpc("get_user_stats", { user_uuid: user.id })
+        ]);
 
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .single();
-
-        if (profileData) setProfile(profileData);
-        if (roleData) setUserRole(roleData.role);
+        if (profileResult.data) setProfile(profileResult.data);
+        if (roleResult.data) setUserRole(roleResult.data.role);
+        if (statsResult.data && statsResult.data[0]) setStats(statsResult.data[0]);
       } catch (error) {
         // Error fetching profile - will use user metadata as fallback
       } finally {
@@ -217,19 +228,19 @@ export default function Profile() {
           <CardContent className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">Scanned Specimens</p>
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-2xl font-bold">{stats?.total_scans ?? 0}</p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">Field Notes</p>
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-2xl font-bold">{stats?.total_field_notes ?? 0}</p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">Voice Notes</p>
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-2xl font-bold">{stats?.total_voice_notes ?? 0}</p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">Bookmarks</p>
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-2xl font-bold">{stats?.total_bookmarks ?? 0}</p>
             </div>
           </CardContent>
         </Card>

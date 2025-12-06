@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CameraInterface } from "@/components/scanner/CameraInterface";
 import { ScanResults } from "@/components/scanner/ScanResults";
 import { PermissionGate } from "@/components/shared/PermissionGate";
-import { Camera, Image as ImageIcon, Trash2, Loader2 } from "lucide-react";
+import { Camera, Image as ImageIcon, Trash2, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +21,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface SavedScan {
   id: string;
@@ -42,6 +48,7 @@ export default function Scanner() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selectedScan, setSelectedScan] = useState<SavedScan | null>(null);
 
   // Fetch saved scans on mount
   useEffect(() => {
@@ -328,7 +335,11 @@ export default function Scanner() {
               ) : (
                 <div className="grid gap-4">
                   {savedScans.map((scan) => (
-                    <Card key={scan.id} className="overflow-hidden">
+                    <Card 
+                      key={scan.id} 
+                      className="overflow-hidden cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => setSelectedScan(scan)}
+                    >
                       <div className="flex">
                         <div className="w-24 h-24 flex-shrink-0">
                           <img
@@ -360,6 +371,7 @@ export default function Scanner() {
                                   size="icon"
                                   className="text-destructive hover:text-destructive"
                                   disabled={deletingId === scan.id}
+                                  onClick={(e) => e.stopPropagation()}
                                 >
                                   {deletingId === scan.id ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -368,7 +380,7 @@ export default function Scanner() {
                                   )}
                                 </Button>
                               </AlertDialogTrigger>
-                              <AlertDialogContent>
+                              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Delete Scan</AlertDialogTitle>
                                   <AlertDialogDescription>
@@ -395,6 +407,49 @@ export default function Scanner() {
               )}
             </div>
           )}
+
+          {/* Scan Detail Dialog */}
+          <Dialog open={!!selectedScan} onOpenChange={(open) => !open && setSelectedScan(null)}>
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+              {selectedScan && (
+                <>
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      {selectedScan.identified_as}
+                      <Badge variant="secondary">{selectedScan.item_type}</Badge>
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="rounded-lg overflow-hidden">
+                      <img
+                        src={selectedScan.image_url}
+                        alt={selectedScan.identified_as}
+                        className="w-full h-64 object-cover"
+                      />
+                    </div>
+                    {selectedScan.confidence && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Confidence:</span>
+                        <Badge variant={selectedScan.confidence >= 70 ? "default" : "secondary"}>
+                          {selectedScan.confidence}%
+                        </Badge>
+                      </div>
+                    )}
+                    {selectedScan.notes && (
+                      <div>
+                        <h4 className="font-medium mb-1">Description</h4>
+                        <p className="text-sm text-muted-foreground">{selectedScan.notes}</p>
+                      </div>
+                    )}
+                    <div className="text-xs text-muted-foreground">
+                      Scanned on {new Date(selectedScan.created_at).toLocaleDateString()} at{" "}
+                      {new Date(selectedScan.created_at).toLocaleTimeString()}
+                    </div>
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </PermissionGate>
     </AppLayout>

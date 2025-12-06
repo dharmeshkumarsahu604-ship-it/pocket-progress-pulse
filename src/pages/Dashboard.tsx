@@ -1,12 +1,46 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Camera, Mic, FileText, Mountain, Gem, MapPin } from "lucide-react";
+import { Camera, Mic, FileText, Mountain, Gem, MapPin, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+
+interface FieldNote {
+  id: string;
+  title: string;
+  content: string;
+  photos: string[];
+  latitude?: number;
+  longitude?: number;
+  locationName?: string;
+  weatherConditions?: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [scanCount, setScanCount] = useState(0);
+  const [fieldNotes] = useLocalStorage<FieldNote[]>("field-notes", []);
+
+  useEffect(() => {
+    if (user) {
+      fetchScanCount();
+    }
+  }, [user]);
+
+  const fetchScanCount = async () => {
+    const { count } = await supabase
+      .from("scan_history")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user?.id);
+    
+    setScanCount(count || 0);
+  };
 
   if (!user) {
     return (
@@ -36,20 +70,30 @@ export default function Dashboard() {
           <p className="text-muted-foreground">Your AI-powered geological field companion</p>
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick Stats - Clickable */}
         <div className="grid grid-cols-2 gap-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Specimens</CardDescription>
-              <CardTitle className="text-2xl">0</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Field Notes</CardDescription>
-              <CardTitle className="text-2xl">0</CardTitle>
-            </CardHeader>
-          </Card>
+          <Link to="/scanner">
+            <Card className="cursor-pointer hover:bg-accent/50 transition-colors">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardDescription>Specimens</CardDescription>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <CardTitle className="text-2xl">{scanCount}</CardTitle>
+              </CardHeader>
+            </Card>
+          </Link>
+          <Link to="/field-notes">
+            <Card className="cursor-pointer hover:bg-accent/50 transition-colors">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardDescription>Field Notes</CardDescription>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <CardTitle className="text-2xl">{fieldNotes.length}</CardTitle>
+              </CardHeader>
+            </Card>
+          </Link>
         </div>
 
         {/* Quick Actions */}

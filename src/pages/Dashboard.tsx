@@ -1,7 +1,8 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Camera, Mic, FileText, Mountain, Gem, MapPin, ChevronRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Camera, Mic, FileText, Mountain, Gem, MapPin, ChevronRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
@@ -22,12 +23,31 @@ interface FieldNote {
   updatedAt: string;
 }
 
+interface SpecimenOfDay {
+  id: string;
+  name: string;
+  description: string;
+  image_url: string | null;
+  type: "rock" | "mineral";
+  subtype?: string; // rock type (igneous, etc.) or mineral hardness
+}
+
+// Generate a deterministic "random" index based on date
+function getDailyIndex(max: number): number {
+  const today = new Date();
+  const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+  return seed % max;
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [scanCount, setScanCount] = useState(0);
   const [fieldNotes] = useLocalStorage<FieldNote[]>("field-notes", []);
+  const [specimenOfDay, setSpecimenOfDay] = useState<SpecimenOfDay | null>(null);
+  const [loadingSpecimen, setLoadingSpecimen] = useState(true);
 
   useEffect(() => {
+    fetchSpecimenOfDay();
     if (user) {
       fetchScanCount();
     }
@@ -40,6 +60,48 @@ export default function Dashboard() {
       .eq("user_id", user?.id);
     
     setScanCount(count || 0);
+  };
+
+  const fetchSpecimenOfDay = async () => {
+    try {
+      // Fetch all rocks and minerals
+      const [rocksResult, mineralsResult] = await Promise.all([
+        supabase.from("rocks").select("id, name, description, image_url, type"),
+        supabase.from("minerals").select("id, name, description, image_url, hardness")
+      ]);
+
+      const rocks = rocksResult.data || [];
+      const minerals = mineralsResult.data || [];
+
+      // Combine into one array
+      const allSpecimens: SpecimenOfDay[] = [
+        ...rocks.map(r => ({
+          id: r.id,
+          name: r.name,
+          description: r.description,
+          image_url: r.image_url,
+          type: "rock" as const,
+          subtype: r.type
+        })),
+        ...minerals.map(m => ({
+          id: m.id,
+          name: m.name,
+          description: m.description,
+          image_url: m.image_url,
+          type: "mineral" as const,
+          subtype: m.hardness ? `Hardness: ${m.hardness}` : undefined
+        }))
+      ];
+
+      if (allSpecimens.length > 0) {
+        const index = getDailyIndex(allSpecimens.length);
+        setSpecimenOfDay(allSpecimens[index]);
+      }
+    } catch (error) {
+      console.error("Error fetching specimen of the day:", error);
+    } finally {
+      setLoadingSpecimen(false);
+    }
   };
 
   if (!user) {
@@ -69,6 +131,58 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-foreground">Welcome to Geo-Smart</h1>
           <p className="text-muted-foreground">Your AI-powered geological field companion</p>
         </div>
+
+        {/* Specimen of the Day */}
+        {!loadingSpecimen && specimenOfDay && (
+          <Link to={specimenOfDay.type === "rock" ? `/rocks/${specimenOfDay.id}` : `/minerals/${specimenOfDay.id}`}>
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="relative">
+                {specimenOfDay.image_url ? (
+                  <img
+                    src={specimenOfDay.image_url}
+                    alt={specimenOfDay.name}
+                    className="w-full h-40 object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-40 bg-muted flex items-center justify-center">
+                    {specimenOfDay.type === "rock" ? (
+                      <Mountain className="h-16 w-16 text-muted-foreground" />
+                    ) : (
+                      <Gem className="h-16 w-16 text-muted-foreground" />
+                    )}
+                  </div>
+                )}
+                <div className="absolute top-3 left-3 flex items-center gap-2">
+                  <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    Specimen of the Day
+                  </Badge>
+                </div>
+              </div>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-lg">{specimenOfDay.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="outline" className="capitalize text-xs">
+                        {specimenOfDay.type}
+                      </Badge>
+                      {specimenOfDay.subtype && (
+                        <span className="text-xs text-muted-foreground capitalize">
+                          {specimenOfDay.subtype}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                      {specimenOfDay.description}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
 
         {/* Quick Stats - Clickable */}
         <div className="grid grid-cols-2 gap-4">

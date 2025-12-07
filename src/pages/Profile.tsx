@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { User, Mail, LogOut, Settings, Building2, Camera } from "lucide-react";
+import { User, Mail, LogOut, Settings, Building2, Camera, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef } from "react";
@@ -35,7 +35,21 @@ export default function Profile() {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [refreshingStats, setRefreshingStats] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchStats = async () => {
+    if (!user) return;
+    const { data } = await supabase.rpc("get_user_stats", { user_uuid: user.id });
+    if (data && data[0]) setStats(data[0]);
+  };
+
+  const handleRefreshStats = async () => {
+    setRefreshingStats(true);
+    await fetchStats();
+    setRefreshingStats(false);
+    toast.success("Statistics updated");
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -222,8 +236,16 @@ export default function Profile() {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Statistics</CardTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleRefreshStats}
+              disabled={refreshingStats}
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshingStats ? "animate-spin" : ""}`} />
+            </Button>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-muted rounded-lg">

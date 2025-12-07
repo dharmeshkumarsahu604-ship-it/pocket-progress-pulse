@@ -2,9 +2,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { User, Mail, LogOut, Settings, Building2, Camera, RefreshCw } from "lucide-react";
+import { User, Mail, LogOut, Settings, Building2, Camera, RefreshCw, Pencil, X, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef } from "react";
@@ -36,6 +39,9 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [refreshingStats, setRefreshingStats] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editForm, setEditForm] = useState({ full_name: "", bio: "", institute: "" });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchStats = async () => {
@@ -90,6 +96,68 @@ export default function Profile() {
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleEditClick = () => {
+    setEditForm({
+      full_name: profile?.full_name || fullName,
+      bio: profile?.bio || "",
+      institute: profile?.institute || "",
+    });
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    if (!editForm.full_name.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+    if (editForm.full_name.length > 100) {
+      toast.error("Name must be less than 100 characters");
+      return;
+    }
+    if (editForm.bio && editForm.bio.length > 500) {
+      toast.error("Bio must be less than 500 characters");
+      return;
+    }
+    if (editForm.institute && editForm.institute.length > 200) {
+      toast.error("Institute must be less than 200 characters");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({
+          id: user.id,
+          full_name: editForm.full_name.trim(),
+          bio: editForm.bio.trim() || null,
+          institute: editForm.institute.trim() || null,
+          avatar_url: profile?.avatar_url || null,
+        });
+
+      if (error) throw error;
+
+      setProfile(prev => ({
+        ...prev,
+        full_name: editForm.full_name.trim(),
+        bio: editForm.bio.trim() || null,
+        institute: editForm.institute.trim() || null,
+        avatar_url: prev?.avatar_url || null,
+      }));
+      setIsEditing(false);
+      toast.success("Profile updated successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleAvatarClick = () => {
@@ -183,7 +251,24 @@ export default function Profile() {
         </div>
 
         <Card>
-          <CardContent className="p-6 space-y-6">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-lg">Profile Information</CardTitle>
+            {!isEditing ? (
+              <Button variant="ghost" size="icon" onClick={handleEditClick}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+            ) : (
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" onClick={handleCancelEdit} disabled={saving}>
+                  <X className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={handleSaveProfile} disabled={saving}>
+                  <Check className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-6">
             <div className="flex items-center gap-4">
               <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
                 <Avatar className="h-20 w-20">
@@ -206,32 +291,77 @@ export default function Profile() {
                 className="hidden"
               />
               <div className="flex-1">
-                <h2 className="text-2xl font-bold">{fullName}</h2>
-                <Badge variant="secondary" className="mt-1 capitalize">
-                  {role}
-                </Badge>
-                {uploading && (
-                  <p className="text-sm text-muted-foreground mt-1">Uploading...</p>
+                {!isEditing ? (
+                  <>
+                    <h2 className="text-2xl font-bold">{fullName}</h2>
+                    <Badge variant="secondary" className="mt-1 capitalize">
+                      {role}
+                    </Badge>
+                    {uploading && (
+                      <p className="text-sm text-muted-foreground mt-1">Uploading...</p>
+                    )}
+                  </>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="full_name">Full Name</Label>
+                    <Input
+                      id="full_name"
+                      value={editForm.full_name}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, full_name: e.target.value }))}
+                      maxLength={100}
+                    />
+                  </div>
                 )}
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-                <Mail className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm">{user?.email}</span>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-                <User className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm capitalize">{role}</span>
-              </div>
-              {profile?.institute && (
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-                  <Building2 className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm">{profile.institute}</span>
+            {isEditing ? (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="institute">Institute / Organization</Label>
+                  <Input
+                    id="institute"
+                    value={editForm.institute}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, institute: e.target.value }))}
+                    placeholder="Your university or organization"
+                    maxLength={200}
+                  />
                 </div>
-              )}
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Bio</Label>
+                  <Textarea
+                    id="bio"
+                    value={editForm.bio}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                    placeholder="Tell us about yourself..."
+                    rows={3}
+                    maxLength={500}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                  <Mail className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm">{user?.email}</span>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                  <User className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm capitalize">{role}</span>
+                </div>
+                {profile?.institute && (
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                    <Building2 className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm">{profile.institute}</span>
+                  </div>
+                )}
+                {profile?.bio && (
+                  <div className="p-3 rounded-lg bg-muted">
+                    <p className="text-sm text-muted-foreground">{profile.bio}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 

@@ -82,13 +82,23 @@ export default function Scanner() {
     setIsScanning(true);
 
     try {
+      // Get fresh session to ensure valid token
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (sessionError || !session) {
+      if (sessionError) {
+        console.error("Session error:", sessionError);
+        toast.error("Session error. Please sign in again.");
+        setIsScanning(false);
+        return;
+      }
+      
+      if (!session?.access_token) {
         toast.error("Please sign in to use the scanner");
         setIsScanning(false);
         return;
       }
+
+      console.log("Calling identify-specimen with valid session");
 
       const response = await fetch(
         `https://gknkwiwfwzjfcijjrlac.supabase.co/functions/v1/identify-specimen`,

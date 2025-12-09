@@ -12,22 +12,34 @@ serve(async (req) => {
   }
 
   try {
-    // Get user from JWT
+    // Get authorization header
     const authHeader = req.headers.get('Authorization');
     console.log('Auth header present:', !!authHeader);
+    
+    if (!authHeader) {
+      console.error('No authorization header provided');
+      return new Response(
+        JSON.stringify({ error: "Authorization header required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Extract JWT token
+    const token = authHeader.replace('Bearer ', '');
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader || '' } } }
+      { global: { headers: { Authorization: authHeader } } }
     );
     
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    // Use getUser with the token directly for more reliable authentication
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError) {
-      console.error('Auth error in identify-specimen:', authError);
+      console.error('Auth error in identify-specimen:', authError.message);
       return new Response(
-        JSON.stringify({ error: "Unauthorized", details: authError.message }),
+        JSON.stringify({ error: "Authentication failed. Please sign in again." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -35,12 +47,12 @@ serve(async (req) => {
     if (!user) {
       console.error('No user found in identify-specimen');
       return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
+        JSON.stringify({ error: "User not found. Please sign in again." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log('User authenticated:', user.id);
+    console.log('User authenticated successfully:', user.id);
 
     const { imageUrl, imageBase64 } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");

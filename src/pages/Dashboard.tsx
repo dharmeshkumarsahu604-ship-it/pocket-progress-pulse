@@ -172,51 +172,60 @@ export default function Dashboard() {
         {/* Specimen of the Day */}
         {!loadingSpecimen && specimenOfDay && (
           <Link to={specimenOfDay.type === "rock" ? `/rocks/${specimenOfDay.id}` : `/minerals/${specimenOfDay.id}`}>
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-              <div className="relative">
-                {specimenOfDay.image_url ? (
-                  <img
-                    src={specimenOfDay.image_url}
-                    alt={specimenOfDay.name}
-                    className="w-full h-40 object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-40 bg-muted flex items-center justify-center">
-                    {specimenOfDay.type === "rock" ? (
-                      <Mountain className="h-16 w-16 text-muted-foreground" />
-                    ) : (
-                      <Gem className="h-16 w-16 text-muted-foreground" />
-                    )}
-                  </div>
-                )}
-                <div className="absolute top-3 left-3 flex items-center gap-2">
-                  <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
-                    <Sparkles className="h-3 w-3 mr-1" />
-                    Specimen of the Day
-                  </Badge>
+            <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer border-primary/20 bg-gradient-to-br from-background to-muted/30">
+              <div className="flex gap-4 p-4">
+                {/* Image Section */}
+                <div className="relative flex-shrink-0">
+                  {specimenOfDay.image_url ? (
+                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden shadow-md ring-2 ring-primary/10">
+                      <img
+                        src={specimenOfDay.image_url}
+                        alt={specimenOfDay.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl bg-muted flex items-center justify-center shadow-md">
+                      {specimenOfDay.type === "rock" ? (
+                        <Mountain className="h-12 w-12 text-muted-foreground" />
+                      ) : (
+                        <Gem className="h-12 w-12 text-muted-foreground" />
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg">{specimenOfDay.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
+
+                {/* Details Section */}
+                <div className="flex-1 flex flex-col justify-between min-w-0 py-1">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className="bg-primary/10 text-primary border-0 text-xs font-medium">
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Today's Specimen
+                      </Badge>
+                    </div>
+                    <h3 className="font-bold text-xl text-foreground leading-tight">{specimenOfDay.name}</h3>
+                    <div className="flex items-center gap-2 mt-1.5">
                       <Badge variant="outline" className="capitalize text-xs">
                         {specimenOfDay.type}
                       </Badge>
                       {specimenOfDay.subtype && (
                         <span className="text-xs text-muted-foreground capitalize">
-                          {specimenOfDay.subtype}
+                          • {specimenOfDay.subtype}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                      {specimenOfDay.description}
-                    </p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
+                  <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                    {specimenOfDay.description}
+                  </p>
                 </div>
-              </CardContent>
+
+                {/* Arrow Indicator */}
+                <div className="flex items-center flex-shrink-0">
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </div>
+              </div>
             </Card>
           </Link>
         )}

@@ -325,95 +325,70 @@ export default function Scanner() {
             </div>
           )}
 
-          {/* Saved Scans Section */}
+          {/* Recent Scans Thumbnail Gallery */}
           {!scannedImage && !isScanning && (
             <div className="space-y-4 animate-fade-in">
-              <h2 className="text-xl font-semibold">Saved Scans</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Recent Scans</h2>
+                {savedScans.length > 0 && (
+                  <span className="text-sm text-muted-foreground">{savedScans.length} scans</span>
+                )}
+              </div>
               
               {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <div className="grid grid-cols-4 gap-2">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="aspect-square bg-muted rounded-lg animate-pulse" />
+                  ))}
                 </div>
               ) : savedScans.length === 0 ? (
-                <Card>
+                <Card className="border-dashed">
                   <CardContent className="py-8 text-center">
-                    <p className="text-muted-foreground">
-                      No saved scans yet. Start scanning to build your collection!
+                    <Camera className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      No scans yet. Start scanning to build your collection!
                     </p>
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid gap-4">
-                  {savedScans.map((scan) => (
-                    <Card 
-                      key={scan.id} 
-                      className="overflow-hidden cursor-pointer hover:bg-accent/50 transition-colors"
+                <div className="grid grid-cols-4 gap-2">
+                  {savedScans.slice(0, 12).map((scan, index) => (
+                    <div
+                      key={scan.id}
+                      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group hover-scale transition-all duration-200"
+                      style={{ animationDelay: `${index * 50}ms` }}
                       onClick={() => setSelectedScan(scan)}
                     >
-                      <div className="flex">
-                        <div className="w-24 h-24 flex-shrink-0">
-                          <img
-                            src={scan.image_url}
-                            alt={scan.identified_as}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <CardContent className="flex-1 p-4">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3 className="font-semibold">{scan.identified_as}</h3>
-                              <Badge variant="secondary" className="mt-1">
-                                {scan.item_type}
-                              </Badge>
-                              {scan.confidence && (
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {scan.confidence}% confidence
-                                </p>
-                              )}
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(scan.created_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="text-destructive hover:text-destructive"
-                                  disabled={deletingId === scan.id}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {deletingId === scan.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Scan</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete this scan? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDelete(scan.id)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </CardContent>
+                      <img
+                        src={scan.image_url}
+                        alt={scan.identified_as}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-1">
+                        <span className="text-white text-[10px] font-medium text-center line-clamp-2 leading-tight">
+                          {scan.identified_as}
+                        </span>
+                        {scan.confidence && (
+                          <span className="text-white/80 text-[9px] mt-0.5">
+                            {scan.confidence}%
+                          </span>
+                        )}
                       </div>
-                    </Card>
+                      {/* Type badge */}
+                      <div className="absolute top-1 right-1">
+                        <div className={`w-2 h-2 rounded-full ${scan.item_type === 'mineral' ? 'bg-blue-400' : 'bg-amber-500'}`} />
+                      </div>
+                    </div>
                   ))}
                 </div>
+              )}
+
+              {/* View All Button */}
+              {savedScans.length > 12 && (
+                <Button variant="ghost" className="w-full text-sm" onClick={() => {}}>
+                  View all {savedScans.length} scans
+                </Button>
               )}
             </div>
           )}
@@ -451,9 +426,48 @@ export default function Scanner() {
                         <p className="text-sm text-muted-foreground">{selectedScan.notes}</p>
                       </div>
                     )}
-                    <div className="text-xs text-muted-foreground">
-                      Scanned on {new Date(selectedScan.created_at).toLocaleDateString()} at{" "}
-                      {new Date(selectedScan.created_at).toLocaleTimeString()}
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(selectedScan.created_at).toLocaleDateString()} at{" "}
+                        {new Date(selectedScan.created_at).toLocaleTimeString()}
+                      </div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            disabled={deletingId === selectedScan.id}
+                          >
+                            {deletingId === selectedScan.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                            ) : (
+                              <Trash2 className="h-4 w-4 mr-1" />
+                            )}
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Scan</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this scan? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                handleDelete(selectedScan.id);
+                                setSelectedScan(null);
+                              }}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </>

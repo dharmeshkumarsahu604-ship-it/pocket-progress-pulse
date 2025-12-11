@@ -6,7 +6,8 @@ import { CameraInterface } from "@/components/scanner/CameraInterface";
 import { ScanResults } from "@/components/scanner/ScanResults";
 import { PermissionGate } from "@/components/shared/PermissionGate";
 import { FullscreenImageViewer } from "@/components/shared/FullscreenImageViewer";
-import { Camera, Image as ImageIcon, Trash2, Loader2, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import { ImageAnnotator } from "@/components/shared/ImageAnnotator";
+import { Camera, Image as ImageIcon, Trash2, Loader2, ChevronLeft, ChevronRight, Maximize2, PenTool } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,6 +53,7 @@ export default function Scanner() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedScanIndex, setSelectedScanIndex] = useState<number | null>(null);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  const [isAnnotatorOpen, setIsAnnotatorOpen] = useState(false);
 
   const selectedScan = selectedScanIndex !== null ? savedScans[selectedScanIndex] : null;
 
@@ -493,14 +495,23 @@ export default function Scanner() {
                         className="w-full h-64 object-cover transition-transform duration-200 cursor-pointer"
                         onClick={() => setIsFullscreenOpen(true)}
                       />
-                      {/* Fullscreen button */}
-                      <button
-                        onClick={() => setIsFullscreenOpen(true)}
-                        className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        aria-label="View fullscreen"
-                      >
-                        <Maximize2 className="h-4 w-4" />
-                      </button>
+                      {/* Action buttons */}
+                      <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => setIsAnnotatorOpen(true)}
+                          className="bg-black/50 hover:bg-black/70 text-white rounded-full p-2"
+                          aria-label="Annotate image"
+                        >
+                          <PenTool className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setIsFullscreenOpen(true)}
+                          className="bg-black/50 hover:bg-black/70 text-white rounded-full p-2"
+                          aria-label="View fullscreen"
+                        >
+                          <Maximize2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -575,12 +586,20 @@ export default function Scanner() {
 
           {/* Fullscreen Image Viewer */}
           {selectedScan && (
-            <FullscreenImageViewer
-              src={selectedScan.image_url}
-              alt={selectedScan.identified_as}
-              isOpen={isFullscreenOpen}
-              onClose={() => setIsFullscreenOpen(false)}
-            />
+            <>
+              <FullscreenImageViewer
+                src={selectedScan.image_url}
+                alt={selectedScan.identified_as}
+                isOpen={isFullscreenOpen}
+                onClose={() => setIsFullscreenOpen(false)}
+              />
+              <ImageAnnotator
+                src={selectedScan.image_url}
+                alt={selectedScan.identified_as}
+                isOpen={isAnnotatorOpen}
+                onClose={() => setIsAnnotatorOpen(false)}
+              />
+            </>
           )}
         </div>
       </PermissionGate>

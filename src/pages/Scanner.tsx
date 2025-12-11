@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CameraInterface } from "@/components/scanner/CameraInterface";
 import { ScanResults } from "@/components/scanner/ScanResults";
 import { PermissionGate } from "@/components/shared/PermissionGate";
-import { Camera, Image as ImageIcon, Trash2, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { FullscreenImageViewer } from "@/components/shared/FullscreenImageViewer";
+import { Camera, Image as ImageIcon, Trash2, Loader2, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -50,6 +51,7 @@ export default function Scanner() {
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedScanIndex, setSelectedScanIndex] = useState<number | null>(null);
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
 
   const selectedScan = selectedScanIndex !== null ? savedScans[selectedScanIndex] : null;
 
@@ -484,12 +486,21 @@ export default function Scanner() {
                       </button>
                     )}
                     
-                    <div className="overflow-hidden">
+                    <div className="overflow-hidden relative group">
                       <img
                         src={selectedScan.image_url}
                         alt={selectedScan.identified_as}
-                        className="w-full h-64 object-cover transition-transform duration-200"
+                        className="w-full h-64 object-cover transition-transform duration-200 cursor-pointer"
+                        onClick={() => setIsFullscreenOpen(true)}
                       />
+                      {/* Fullscreen button */}
+                      <button
+                        onClick={() => setIsFullscreenOpen(true)}
+                        className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="View fullscreen"
+                      >
+                        <Maximize2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
 
@@ -561,6 +572,16 @@ export default function Scanner() {
               )}
             </DialogContent>
           </Dialog>
+
+          {/* Fullscreen Image Viewer */}
+          {selectedScan && (
+            <FullscreenImageViewer
+              src={selectedScan.image_url}
+              alt={selectedScan.identified_as}
+              isOpen={isFullscreenOpen}
+              onClose={() => setIsFullscreenOpen(false)}
+            />
+          )}
         </div>
       </PermissionGate>
     </AppLayout>

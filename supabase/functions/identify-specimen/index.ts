@@ -24,17 +24,14 @@ serve(async (req) => {
       );
     }
 
-    // Extract JWT token
-    const token = authHeader.replace('Bearer ', '');
-    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
     );
     
-    // Use getUser with the token directly for more reliable authentication
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    // Use getUser without arguments - it will use the auth header from the client
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     
     if (authError) {
       console.error('Auth error in identify-specimen:', authError.message);

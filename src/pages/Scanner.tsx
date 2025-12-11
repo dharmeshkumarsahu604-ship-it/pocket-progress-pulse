@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CameraInterface } from "@/components/scanner/CameraInterface";
 import { ScanResults } from "@/components/scanner/ScanResults";
 import { PermissionGate } from "@/components/shared/PermissionGate";
-import { Camera, Image as ImageIcon, Trash2, Loader2, X } from "lucide-react";
+import { Camera, Image as ImageIcon, Trash2, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,7 +49,37 @@ export default function Scanner() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [selectedScan, setSelectedScan] = useState<SavedScan | null>(null);
+  const [selectedScanIndex, setSelectedScanIndex] = useState<number | null>(null);
+
+  const selectedScan = selectedScanIndex !== null ? savedScans[selectedScanIndex] : null;
+
+  // Navigate to next/prev scan
+  const goToNextScan = useCallback(() => {
+    if (selectedScanIndex !== null && selectedScanIndex < savedScans.length - 1) {
+      setSelectedScanIndex(selectedScanIndex + 1);
+    }
+  }, [selectedScanIndex, savedScans.length]);
+
+  const goToPrevScan = useCallback(() => {
+    if (selectedScanIndex !== null && selectedScanIndex > 0) {
+      setSelectedScanIndex(selectedScanIndex - 1);
+    }
+  }, [selectedScanIndex]);
+
+  // Swipe gesture handlers
+  const swipeHandlers = useSwipeGesture({
+    onSwipeLeft: goToNextScan,
+    onSwipeRight: goToPrevScan,
+  });
+
+  const openScanDetail = (scan: SavedScan) => {
+    const index = savedScans.findIndex((s) => s.id === scan.id);
+    setSelectedScanIndex(index);
+  };
+
+  const closeScanDetail = () => {
+    setSelectedScanIndex(null);
+  };
 
   // Fetch saved scans on mount
   useEffect(() => {
@@ -357,7 +388,7 @@ export default function Scanner() {
                       key={scan.id}
                       className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group hover-scale transition-all duration-200"
                       style={{ animationDelay: `${index * 50}ms` }}
-                      onClick={() => setSelectedScan(scan)}
+                      onClick={() => openScanDetail(scan)}
                     >
                       <img
                         src={scan.image_url}
@@ -393,25 +424,55 @@ export default function Scanner() {
             </div>
           )}
 
-          {/* Scan Detail Dialog */}
-          <Dialog open={!!selectedScan} onOpenChange={(open) => !open && setSelectedScan(null)}>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          {/* Scan Detail Dialog with Swipe Navigation */}
+          <Dialog open={selectedScanIndex !== null} onOpenChange={(open) => !open && closeScanDetail()}>
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0">
               {selectedScan && (
-                <>
-                  <DialogHeader>
+                <div {...swipeHandlers} className="touch-pan-y">
+                  <DialogHeader className="p-6 pb-0">
                     <DialogTitle className="flex items-center gap-2">
                       {selectedScan.identified_as}
                       <Badge variant="secondary">{selectedScan.item_type}</Badge>
                     </DialogTitle>
+                    {/* Navigation indicator */}
+                    <div className="flex items-center justify-center gap-2 pt-2">
+                      <span className="text-xs text-muted-foreground">
+                        {(selectedScanIndex ?? 0) + 1} of {savedScans.length}
+                      </span>
+                    </div>
                   </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="rounded-lg overflow-hidden">
+                  
+                  <div className="relative">
+                    {/* Navigation arrows */}
+                    {selectedScanIndex !== null && selectedScanIndex > 0 && (
+                      <button
+                        onClick={goToPrevScan}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                        aria-label="Previous scan"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                    )}
+                    {selectedScanIndex !== null && selectedScanIndex < savedScans.length - 1 && (
+                      <button
+                        onClick={goToNextScan}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                        aria-label="Next scan"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    )}
+                    
+                    <div className="overflow-hidden">
                       <img
                         src={selectedScan.image_url}
                         alt={selectedScan.identified_as}
-                        className="w-full h-64 object-cover"
+                        className="w-full h-64 object-cover transition-transform duration-200"
                       />
                     </div>
+                  </div>
+
+                  <div className="p-6 pt-4 space-y-4">
                     {selectedScan.confidence && (
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">Confidence:</span>
@@ -459,7 +520,7 @@ export default function Scanner() {
                             <AlertDialogAction
                               onClick={() => {
                                 handleDelete(selectedScan.id);
-                                setSelectedScan(null);
+                                closeScanDetail();
                               }}
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
@@ -469,8 +530,13 @@ export default function Scanner() {
                         </AlertDialogContent>
                       </AlertDialog>
                     </div>
+                    
+                    {/* Swipe hint */}
+                    <p className="text-xs text-center text-muted-foreground">
+                      Swipe left/right to navigate
+                    </p>
                   </div>
-                </>
+                </div>
               )}
             </DialogContent>
           </Dialog>

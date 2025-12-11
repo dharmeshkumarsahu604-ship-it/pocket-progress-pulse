@@ -72,14 +72,35 @@ export default function Scanner() {
     onSwipeRight: goToPrevScan,
   });
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedScanIndex === null) return;
+      
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        goToPrevScan();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        goToNextScan();
+      } else if (e.key === "Escape") {
+        closeScanDetail();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedScanIndex, goToNextScan, goToPrevScan]);
+
+  const closeScanDetail = useCallback(() => {
+    setSelectedScanIndex(null);
+  }, []);
+
   const openScanDetail = (scan: SavedScan) => {
     const index = savedScans.findIndex((s) => s.id === scan.id);
     setSelectedScanIndex(index);
   };
 
-  const closeScanDetail = () => {
-    setSelectedScanIndex(null);
-  };
 
   // Fetch saved scans on mount
   useEffect(() => {

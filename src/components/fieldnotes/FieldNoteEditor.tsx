@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, MapPin, Calendar, X } from "lucide-react";
+import { Camera, MapPin, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface FieldNoteEditorProps {
   onSave: (note: FieldNote) => void;
   onCancel: () => void;
+  initialNote?: FieldNote;
 }
 
 export interface FieldNote {
@@ -21,11 +22,22 @@ export interface FieldNote {
   photos: string[];
 }
 
-export const FieldNoteEditor = ({ onSave, onCancel }: FieldNoteEditorProps) => {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [photos, setPhotos] = useState<string[]>([]);
-  const [location, setLocation] = useState<string>("");
+export const FieldNoteEditor = ({ onSave, onCancel, initialNote }: FieldNoteEditorProps) => {
+  const [title, setTitle] = useState(initialNote?.title || "");
+  const [content, setContent] = useState(initialNote?.content || "");
+  const [photos, setPhotos] = useState<string[]>(initialNote?.photos || []);
+  const [location, setLocation] = useState<string>(
+    initialNote?.location ? `${initialNote.location.lat}, ${initialNote.location.lng}` : ""
+  );
+
+  useEffect(() => {
+    if (initialNote) {
+      setTitle(initialNote.title);
+      setContent(initialNote.content);
+      setPhotos(initialNote.photos);
+      setLocation(initialNote.location ? `${initialNote.location.lat}, ${initialNote.location.lng}` : "");
+    }
+  }, [initialNote]);
 
   const handlePhotoCapture = () => {
     const input = document.createElement("input");
@@ -80,11 +92,25 @@ export const FieldNoteEditor = ({ onSave, onCancel }: FieldNoteEditorProps) => {
       return;
     }
 
+    // Parse location string into lat/lng
+    let parsedLocation: { lat: number; lng: number; name: string } | undefined;
+    if (location.trim()) {
+      const parts = location.split(',').map(p => p.trim());
+      if (parts.length === 2) {
+        const lat = parseFloat(parts[0]);
+        const lng = parseFloat(parts[1]);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          parsedLocation = { lat, lng, name: location };
+        }
+      }
+    }
+
     const note: FieldNote = {
-      id: Date.now().toString(),
+      id: initialNote?.id || Date.now().toString(),
       title: title.trim(),
       content: content.trim(),
-      date: new Date(),
+      date: initialNote?.date || new Date(),
+      location: parsedLocation,
       photos,
     };
 
@@ -95,7 +121,7 @@ export const FieldNoteEditor = ({ onSave, onCancel }: FieldNoteEditorProps) => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>New Field Note</CardTitle>
+          <CardTitle>{initialNote ? "Edit Field Note" : "New Field Note"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

@@ -165,7 +165,7 @@ export function FullscreenImageViewer({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+      className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
       ref={containerRef}
     >
       {/* Controls */}

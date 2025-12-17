@@ -98,9 +98,14 @@ export default function Scanner() {
 
   const closeScanDetail = useCallback(() => {
     setSelectedScanIndex(null);
+    setIsFullscreenOpen(false);
+    setIsAnnotatorOpen(false);
   }, []);
 
   const openScanDetail = (scan: SavedScan) => {
+    // Reset fullscreen/annotator state when opening a new specimen
+    setIsFullscreenOpen(false);
+    setIsAnnotatorOpen(false);
     const index = savedScans.findIndex((s) => s.id === scan.id);
     setSelectedScanIndex(index);
   };

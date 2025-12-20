@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Mountain, Satellite } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface SiteLocationMapProps {
@@ -32,6 +31,44 @@ export const SiteLocationMap: React.FC<SiteLocationMapProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [mapStyle, setMapStyle] = useState<MapStyle>('terrain');
   const [token, setToken] = useState<string | null>(null);
+  const isInitialized = useRef(false);
+
+  // Create marker element
+  const createMarkerElement = useCallback(() => {
+    const markerEl = document.createElement('div');
+    markerEl.className = 'custom-marker';
+    markerEl.innerHTML = `
+      <div style="width: 32px; height: 32px; background: #8B4513; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 2px solid white;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+      </div>
+    `;
+    return markerEl;
+  }, []);
+
+  // Add marker to map
+  const addMarker = useCallback(() => {
+    if (!map.current) return;
+    
+    // Remove existing marker
+    if (markerRef.current) {
+      markerRef.current.remove();
+    }
+
+    markerRef.current = new mapboxgl.Marker({ element: createMarkerElement() })
+      .setLngLat([longitude, latitude])
+      .setPopup(
+        new mapboxgl.Popup({ offset: 25 }).setHTML(`
+          <div style="padding: 8px; background: white; border-radius: 4px;">
+            <h3 style="font-weight: 600; font-size: 14px; margin: 0; color: #333;">${siteName}</h3>
+            <p style="font-size: 12px; color: #666; margin: 4px 0 0 0;">${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E</p>
+          </div>
+        `)
+      )
+      .addTo(map.current);
+  }, [latitude, longitude, siteName, createMarkerElement]);
 
   // Fetch token on mount
   useEffect(() => {
@@ -62,13 +99,14 @@ export const SiteLocationMap: React.FC<SiteLocationMapProps> = ({
 
   // Initialize map when token is available
   useEffect(() => {
-    if (!mapContainer.current || !token) return;
+    if (!mapContainer.current || !token || isInitialized.current) return;
 
+    isInitialized.current = true;
     mapboxgl.accessToken = token;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: MAP_STYLES[mapStyle],
+      style: MAP_STYLES.terrain,
       center: [longitude, latitude],
       zoom: 12,
       interactive: true,
@@ -91,80 +129,43 @@ export const SiteLocationMap: React.FC<SiteLocationMapProps> = ({
       'bottom-left'
     );
 
-    // Create custom marker element
-    const markerEl = document.createElement('div');
-    markerEl.className = 'custom-marker';
-    markerEl.innerHTML = `
-      <div style="width: 32px; height: 32px; background: hsl(var(--primary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 2px solid white;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-      </div>
-    `;
-
-    // Add marker at site location
-    markerRef.current = new mapboxgl.Marker({ element: markerEl })
-      .setLngLat([longitude, latitude])
-      .setPopup(
-        new mapboxgl.Popup({ offset: 25 }).setHTML(`
-          <div style="padding: 8px;">
-            <h3 style="font-weight: 600; font-size: 14px; margin: 0;">${siteName}</h3>
-            <p style="font-size: 12px; color: #666; margin: 4px 0 0 0;">${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E</p>
-          </div>
-        `)
-      )
-      .addTo(map.current);
-
     map.current.on('load', () => {
       setMapLoaded(true);
+      addMarker();
     });
 
     return () => {
-      markerRef.current?.remove();
-      map.current?.remove();
+      if (markerRef.current) {
+        markerRef.current.remove();
+      }
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      isInitialized.current = false;
     };
-  }, [token, latitude, longitude, siteName]);
+  }, [token, latitude, longitude, addMarker]);
 
-  // Handle style changes
+  // Handle style changes - only after map is loaded
   useEffect(() => {
-    if (map.current && mapLoaded) {
-      map.current.setStyle(MAP_STYLES[mapStyle]);
+    if (!map.current || !mapLoaded) return;
+    
+    const currentStyle = map.current.getStyle();
+    const targetStyle = MAP_STYLES[mapStyle];
+    
+    // Only change if style is different
+    if (currentStyle?.name !== targetStyle) {
+      map.current.setStyle(targetStyle);
       
       // Re-add marker after style change
       map.current.once('style.load', () => {
-        if (markerRef.current) {
-          markerRef.current.remove();
-        }
-        
-        const markerEl = document.createElement('div');
-        markerEl.className = 'custom-marker';
-        markerEl.innerHTML = `
-          <div style="width: 32px; height: 32px; background: hsl(var(--primary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 2px solid white;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-          </div>
-        `;
-
-        markerRef.current = new mapboxgl.Marker({ element: markerEl })
-          .setLngLat([longitude, latitude])
-          .setPopup(
-            new mapboxgl.Popup({ offset: 25 }).setHTML(`
-              <div style="padding: 8px;">
-                <h3 style="font-weight: 600; font-size: 14px; margin: 0;">${siteName}</h3>
-                <p style="font-size: 12px; color: #666; margin: 4px 0 0 0;">${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E</p>
-              </div>
-            `)
-          )
-          .addTo(map.current!);
+        addMarker();
       });
     }
-  }, [mapStyle, mapLoaded, latitude, longitude, siteName]);
+  }, [mapStyle, mapLoaded, addMarker]);
 
   const handleStyleChange = (value: string) => {
-    if (value === 'terrain' || value === 'satellite') {
+    if (value && (value === 'terrain' || value === 'satellite')) {
       setMapStyle(value);
     }
   };
@@ -195,36 +196,41 @@ export const SiteLocationMap: React.FC<SiteLocationMapProps> = ({
             <MapPin className="h-5 w-5" />
             Location
           </CardTitle>
-          <ToggleGroup
-            type="single"
-            value={mapStyle}
-            onValueChange={handleStyleChange}
-            className="bg-muted rounded-lg p-1"
-          >
-            <ToggleGroupItem
-              value="terrain"
-              aria-label="Terrain view"
-              className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-3 py-1.5 text-xs"
+          {mapLoaded && (
+            <ToggleGroup
+              type="single"
+              value={mapStyle}
+              onValueChange={handleStyleChange}
+              className="bg-muted rounded-lg p-1"
             >
-              <Mountain className="h-3.5 w-3.5 mr-1.5" />
-              Terrain
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="satellite"
-              aria-label="Satellite view"
-              className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-3 py-1.5 text-xs"
-            >
-              <Satellite className="h-3.5 w-3.5 mr-1.5" />
-              Satellite
-            </ToggleGroupItem>
-          </ToggleGroup>
+              <ToggleGroupItem
+                value="terrain"
+                aria-label="Terrain view"
+                className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-3 py-1.5 text-xs"
+              >
+                <Mountain className="h-3.5 w-3.5 mr-1.5" />
+                Terrain
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="satellite"
+                aria-label="Satellite view"
+                className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-3 py-1.5 text-xs"
+              >
+                <Satellite className="h-3.5 w-3.5 mr-1.5" />
+                Satellite
+              </ToggleGroupItem>
+            </ToggleGroup>
+          )}
         </div>
       </CardHeader>
       <CardContent>
-        <div className="relative aspect-video rounded-lg overflow-hidden">
+        <div className="relative aspect-video rounded-lg overflow-hidden border border-border">
           {!mapLoaded && (
             <div className="absolute inset-0 bg-muted flex items-center justify-center z-10">
-              <p className="text-muted-foreground text-sm">Loading map...</p>
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <p className="text-muted-foreground text-sm">Loading map...</p>
+              </div>
             </div>
           )}
           <div ref={mapContainer} className="absolute inset-0" />

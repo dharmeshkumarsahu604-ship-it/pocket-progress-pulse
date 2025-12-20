@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Navigation, MapPin, Calendar, Info, Eye } from "lucide-react";
 import { SiteGallery } from "@/components/sites/SiteGallery";
 import { PanoramaViewer } from "@/components/sites/PanoramaViewer";
+import { SiteLocationMap } from "@/components/sites/SiteLocationMap";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getDirectionsUrl, getMapUrl } from "@/lib/maps";
@@ -258,6 +259,12 @@ export default function SiteDetail() {
             </CardContent>
           </Card>
         )}
+
+        <SiteLocationMap
+          latitude={site.latitude}
+          longitude={site.longitude}
+          siteName={site.name}
+        />
 
         <Card>
           <CardHeader>

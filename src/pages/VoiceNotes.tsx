@@ -16,6 +16,7 @@ interface VoiceNote {
   duration: number;
   audioUrl: string;
   transcript?: string;
+  language?: string;
 }
 
 export default function VoiceNotes() {
@@ -52,7 +53,8 @@ export default function VoiceNotes() {
         date: new Date(note.created_at),
         duration: note.duration || 0,
         audioUrl: note.audio_url,
-        transcript: note.transcription || undefined
+        transcript: note.transcription || undefined,
+        language: note.language || undefined
       }));
 
       setNotes(mappedNotes);

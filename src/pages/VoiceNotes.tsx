@@ -285,6 +285,28 @@ export default function VoiceNotes() {
     }
   };
 
+  const handleUpdateTitle = async (id: string, newTitle: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('voice_notes')
+        .update({ title: newTitle })
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      
+      setNotes((prev) => prev.map((note) => 
+        note.id === id ? { ...note, name: newTitle } : note
+      ));
+      toast.success("Title updated");
+    } catch (error) {
+      console.error('Error updating voice note title:', error);
+      toast.error('Failed to update title');
+    }
+  };
+
   if (!user) {
     return (
       <AppLayout>
@@ -355,6 +377,7 @@ export default function VoiceNotes() {
                   key={note.id}
                   {...note}
                   onDelete={handleDelete}
+                  onUpdateTitle={handleUpdateTitle}
                   onRetryTranscription={handleRetryTranscription}
                   isRetrying={retryingNoteId === note.id}
                 />

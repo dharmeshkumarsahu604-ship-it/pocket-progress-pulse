@@ -64,6 +64,55 @@ export default function VoiceNotes() {
     }
   };
 
+  const transcribeAudio = async (audioBlob: Blob, noteId: string) => {
+    try {
+      // Convert blob to base64
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const base64 = btoa(
+        new Uint8Array(arrayBuffer).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ''
+        )
+      );
+      
+      const mimeType = audioBlob.type || 'audio/webm';
+      const audioBase64 = `data:${mimeType};base64,${base64}`;
+
+      console.log('Sending audio for transcription, size:', audioBlob.size);
+
+      const { data, error } = await supabase.functions.invoke('transcribe-audio', {
+        body: { audioBase64, language: 'en' }
+      });
+
+      if (error) {
+        console.error('Transcription error:', error);
+        throw error;
+      }
+
+      console.log('Transcription result:', data);
+
+      // Update the note with transcription
+      const transcription = data.transcription || data.summary || 'Transcription completed';
+      
+      const { error: updateError } = await supabase
+        .from('voice_notes')
+        .update({ transcription })
+        .eq('id', noteId);
+
+      if (updateError) {
+        console.error('Failed to update transcription:', updateError);
+        throw updateError;
+      }
+
+      // Refresh notes to show the transcription
+      await fetchNotes();
+      toast.success('Transcription completed!');
+    } catch (error) {
+      console.error('Transcription failed:', error);
+      toast.error('Transcription failed. You can try again later.');
+    }
+  };
+
   const handleRecordingComplete = async (audioBlob: Blob, duration: number) => {
     if (!user) {
       toast.error('Please sign in to save recordings');
@@ -73,6 +122,9 @@ export default function VoiceNotes() {
     try {
       // Upload audio to Supabase Storage
       const fileName = `${user.id}/${Date.now()}.webm`;
+      let audioUrl = '';
+      let noteId = '';
+
       const { error: uploadError } = await supabase.storage
         .from('voice-recordings')
         .upload(fileName, audioBlob, {
@@ -85,40 +137,37 @@ export default function VoiceNotes() {
         console.error('Storage upload error:', uploadError);
         
         // Fall back to saving without storage (audio_url will be temporary)
-        const tempUrl = URL.createObjectURL(audioBlob);
-        const { error: insertError } = await supabase
-          .from('voice_notes')
-          .insert({
-            user_id: user.id,
-            title: `Recording ${new Date().toLocaleString()}`,
-            audio_url: tempUrl,
-            duration: Math.round(duration),
-            transcription: "Transcription will be available after processing..."
-          });
-
-        if (insertError) throw insertError;
+        audioUrl = URL.createObjectURL(audioBlob);
       } else {
         // Get public URL
         const { data: urlData } = supabase.storage
           .from('voice-recordings')
           .getPublicUrl(fileName);
-
-        const { error: insertError } = await supabase
-          .from('voice_notes')
-          .insert({
-            user_id: user.id,
-            title: `Recording ${new Date().toLocaleString()}`,
-            audio_url: urlData.publicUrl,
-            duration: Math.round(duration),
-            transcription: "Transcription will be available after processing..."
-          });
-
-        if (insertError) throw insertError;
+        audioUrl = urlData.publicUrl;
       }
+
+      // Insert the note
+      const { data: insertedNote, error: insertError } = await supabase
+        .from('voice_notes')
+        .insert({
+          user_id: user.id,
+          title: `Recording ${new Date().toLocaleString()}`,
+          audio_url: audioUrl,
+          duration: Math.round(duration),
+          transcription: "Transcribing..."
+        })
+        .select('id')
+        .single();
+
+      if (insertError) throw insertError;
+      noteId = insertedNote.id;
 
       await fetchNotes();
       setShowRecorder(false);
-      toast.success("Recording saved!");
+      toast.success("Recording saved! Transcribing...");
+
+      // Start transcription in background
+      transcribeAudio(audioBlob, noteId);
     } catch (error) {
       console.error('Error saving voice note:', error);
       toast.error('Failed to save recording');

@@ -1,14 +1,43 @@
+import { useState } from "react";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mic, Square, Pause, Play } from "lucide-react";
+import { Mic, Square, Pause, Play, Globe } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+
+const LANGUAGES = [
+  { code: "en", name: "English" },
+  { code: "hi", name: "Hindi" },
+  { code: "or", name: "Odia" },
+  { code: "bn", name: "Bengali" },
+  { code: "te", name: "Telugu" },
+  { code: "ta", name: "Tamil" },
+  { code: "mr", name: "Marathi" },
+  { code: "gu", name: "Gujarati" },
+  { code: "kn", name: "Kannada" },
+  { code: "ml", name: "Malayalam" },
+  { code: "pa", name: "Punjabi" },
+  { code: "es", name: "Spanish" },
+  { code: "fr", name: "French" },
+  { code: "de", name: "German" },
+  { code: "auto", name: "Auto-detect" },
+];
 
 interface VoiceRecorderProps {
-  onRecordingComplete: (audioBlob: Blob, duration: number) => void;
+  onRecordingComplete: (audioBlob: Blob, duration: number, language: string) => void;
 }
 
 export const VoiceRecorder = ({ onRecordingComplete }: VoiceRecorderProps) => {
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
+  
   const {
     isRecording,
     isPaused,
@@ -23,7 +52,7 @@ export const VoiceRecorder = ({ onRecordingComplete }: VoiceRecorderProps) => {
 
   const handleStop = async () => {
     const audioBlob = await stopRecording();
-    onRecordingComplete(audioBlob, recordingTime);
+    onRecordingComplete(audioBlob, recordingTime, selectedLanguage);
   };
 
   return (
@@ -33,6 +62,31 @@ export const VoiceRecorder = ({ onRecordingComplete }: VoiceRecorderProps) => {
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
+        )}
+
+        {/* Language Selection */}
+        {!isRecording && (
+          <div className="space-y-2">
+            <Label htmlFor="language" className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              Recording Language
+            </Label>
+            <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+              <SelectTrigger id="language" className="w-full bg-background">
+                <SelectValue placeholder="Select language" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border shadow-lg z-50">
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.code} value={lang.code}>
+                    {lang.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Select the language you'll be speaking for better transcription accuracy
+            </p>
+          </div>
         )}
 
         {/* Recording Visualization */}

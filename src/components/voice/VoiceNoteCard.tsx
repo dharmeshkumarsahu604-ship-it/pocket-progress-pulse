@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Trash2, Download } from "lucide-react";
+import { Play, Pause, Trash2, Download, Loader2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { formatDistanceToNow } from "date-fns";
 
@@ -134,7 +134,14 @@ export const VoiceNoteCard = ({
 
         {transcript && (
           <div className="p-3 bg-muted rounded-lg">
-            <p className="text-sm">{transcript}</p>
+            {transcript === "Transcribing..." ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Transcribing audio...</span>
+              </div>
+            ) : (
+              <p className="text-sm">{transcript}</p>
+            )}
           </div>
         )}
       </CardContent>

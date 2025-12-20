@@ -64,6 +64,79 @@ export default function VoiceNotes() {
     }
   };
 
+  const [retryingNoteId, setRetryingNoteId] = useState<string | null>(null);
+
+  const transcribeAudioFromUrl = async (audioUrl: string, noteId: string) => {
+    try {
+      setRetryingNoteId(noteId);
+      
+      // Update note to show transcribing state
+      await supabase
+        .from('voice_notes')
+        .update({ transcription: "Transcribing..." })
+        .eq('id', noteId);
+      
+      await fetchNotes();
+
+      // Fetch the audio file from URL
+      const response = await fetch(audioUrl);
+      if (!response.ok) {
+        throw new Error('Failed to fetch audio file');
+      }
+      const audioBlob = await response.blob();
+      
+      // Convert blob to base64
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const base64 = btoa(
+        new Uint8Array(arrayBuffer).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ''
+        )
+      );
+      
+      const mimeType = audioBlob.type || 'audio/webm';
+      const audioBase64 = `data:${mimeType};base64,${base64}`;
+
+      console.log('Retrying transcription for note:', noteId);
+
+      const { data, error } = await supabase.functions.invoke('transcribe-audio', {
+        body: { audioBase64, language: 'en' }
+      });
+
+      if (error) {
+        console.error('Transcription error:', error);
+        throw error;
+      }
+
+      console.log('Transcription result:', data);
+
+      const transcription = data.transcription || data.summary || 'Transcription completed';
+      
+      const { error: updateError } = await supabase
+        .from('voice_notes')
+        .update({ transcription })
+        .eq('id', noteId);
+
+      if (updateError) throw updateError;
+
+      await fetchNotes();
+      toast.success('Transcription completed!');
+    } catch (error) {
+      console.error('Transcription failed:', error);
+      
+      // Update with error message
+      await supabase
+        .from('voice_notes')
+        .update({ transcription: "Transcription failed. Try again." })
+        .eq('id', noteId);
+      
+      await fetchNotes();
+      toast.error('Transcription failed. You can try again.');
+    } finally {
+      setRetryingNoteId(null);
+    }
+  };
+
   const transcribeAudio = async (audioBlob: Blob, noteId: string) => {
     try {
       // Convert blob to base64
@@ -109,7 +182,22 @@ export default function VoiceNotes() {
       toast.success('Transcription completed!');
     } catch (error) {
       console.error('Transcription failed:', error);
+      
+      // Update with error message
+      await supabase
+        .from('voice_notes')
+        .update({ transcription: "Transcription failed. Try again." })
+        .eq('id', noteId);
+      
+      await fetchNotes();
       toast.error('Transcription failed. You can try again later.');
+    }
+  };
+
+  const handleRetryTranscription = (noteId: string) => {
+    const note = notes.find(n => n.id === noteId);
+    if (note) {
+      transcribeAudioFromUrl(note.audioUrl, noteId);
     }
   };
 
@@ -264,6 +352,8 @@ export default function VoiceNotes() {
                   key={note.id}
                   {...note}
                   onDelete={handleDelete}
+                  onRetryTranscription={handleRetryTranscription}
+                  isRetrying={retryingNoteId === note.id}
                 />
               ))}
             </div>

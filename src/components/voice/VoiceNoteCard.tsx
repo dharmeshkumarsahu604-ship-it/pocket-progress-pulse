@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Trash2, Download, Loader2 } from "lucide-react";
+import { Play, Pause, Trash2, Download, Loader2, RefreshCw } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { formatDistanceToNow } from "date-fns";
 
@@ -13,6 +13,8 @@ interface VoiceNoteCardProps {
   audioUrl: string;
   transcript?: string;
   onDelete: (id: string) => void;
+  onRetryTranscription?: (id: string) => void;
+  isRetrying?: boolean;
 }
 
 export const VoiceNoteCard = ({
@@ -23,6 +25,8 @@ export const VoiceNoteCard = ({
   audioUrl,
   transcript,
   onDelete,
+  onRetryTranscription,
+  isRetrying,
 }: VoiceNoteCardProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -134,10 +138,27 @@ export const VoiceNoteCard = ({
 
         {transcript && (
           <div className="p-3 bg-muted rounded-lg">
-            {transcript === "Transcribing..." ? (
+            {transcript === "Transcribing..." || isRetrying ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Transcribing audio...</span>
+              </div>
+            ) : transcript.toLowerCase().includes("failed") || 
+               transcript.toLowerCase().includes("unavailable") ||
+               transcript.toLowerCase().includes("error") ? (
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm text-destructive">{transcript}</p>
+                {onRetryTranscription && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onRetryTranscription(id)}
+                    className="shrink-0"
+                  >
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                    Retry
+                  </Button>
+                )}
               </div>
             ) : (
               <p className="text-sm">{transcript}</p>

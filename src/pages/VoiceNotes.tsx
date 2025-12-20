@@ -137,7 +137,7 @@ export default function VoiceNotes() {
     }
   };
 
-  const transcribeAudio = async (audioBlob: Blob, noteId: string) => {
+  const transcribeAudio = async (audioBlob: Blob, noteId: string, language: string = 'en') => {
     try {
       // Convert blob to base64
       const arrayBuffer = await audioBlob.arrayBuffer();
@@ -151,10 +151,10 @@ export default function VoiceNotes() {
       const mimeType = audioBlob.type || 'audio/webm';
       const audioBase64 = `data:${mimeType};base64,${base64}`;
 
-      console.log('Sending audio for transcription, size:', audioBlob.size);
+      console.log('Sending audio for transcription, size:', audioBlob.size, 'language:', language);
 
       const { data, error } = await supabase.functions.invoke('transcribe-audio', {
-        body: { audioBase64, language: 'en' }
+        body: { audioBase64, language: language === 'auto' ? undefined : language }
       });
 
       if (error) {
@@ -201,7 +201,7 @@ export default function VoiceNotes() {
     }
   };
 
-  const handleRecordingComplete = async (audioBlob: Blob, duration: number) => {
+  const handleRecordingComplete = async (audioBlob: Blob, duration: number, language: string) => {
     if (!user) {
       toast.error('Please sign in to save recordings');
       return;
@@ -234,7 +234,7 @@ export default function VoiceNotes() {
         audioUrl = urlData.publicUrl;
       }
 
-      // Insert the note
+      // Insert the note with language
       const { data: insertedNote, error: insertError } = await supabase
         .from('voice_notes')
         .insert({
@@ -242,6 +242,7 @@ export default function VoiceNotes() {
           title: `Recording ${new Date().toLocaleString()}`,
           audio_url: audioUrl,
           duration: Math.round(duration),
+          language: language,
           transcription: "Transcribing..."
         })
         .select('id')
@@ -254,8 +255,8 @@ export default function VoiceNotes() {
       setShowRecorder(false);
       toast.success("Recording saved! Transcribing...");
 
-      // Start transcription in background
-      transcribeAudio(audioBlob, noteId);
+      // Start transcription in background with selected language
+      transcribeAudio(audioBlob, noteId, language);
     } catch (error) {
       console.error('Error saving voice note:', error);
       toast.error('Failed to save recording');

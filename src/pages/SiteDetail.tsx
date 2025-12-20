@@ -122,44 +122,18 @@ export default function SiteDetail() {
     );
   }
 
-  const handleGetDirections = () => {
-    try {
-      const url = getDirectionsUrl({
-        latitude: site.latitude,
-        longitude: site.longitude,
-      });
-      const newWindow = window.open(url, "_blank", "noopener,noreferrer");
-      if (!newWindow) {
-        toast.error("Please allow popups to open Google Maps");
-        // Fallback: navigate in same window
-        window.location.href = url;
-      }
-    } catch (error) {
-      console.error("Error opening directions:", error);
-      toast.error("Failed to open directions");
-    }
-  };
+  const directionsUrl = getDirectionsUrl({
+    latitude: site.latitude,
+    longitude: site.longitude,
+  });
 
-  const handleViewOnMap = () => {
-    try {
-      const url = getMapUrl(
-        {
-          latitude: site.latitude,
-          longitude: site.longitude,
-        },
-        site.name
-      );
-      const newWindow = window.open(url, "_blank", "noopener,noreferrer");
-      if (!newWindow) {
-        toast.error("Please allow popups to open Google Maps");
-        // Fallback: navigate in same window
-        window.location.href = url;
-      }
-    } catch (error) {
-      console.error("Error opening map:", error);
-      toast.error("Failed to open map");
-    }
-  };
+  const mapUrl = getMapUrl(
+    {
+      latitude: site.latitude,
+      longitude: site.longitude,
+    },
+    site.name
+  );
 
   return (
     <AppLayout>
@@ -216,13 +190,17 @@ export default function SiteDetail() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleViewOnMap}>
-                <MapPin className="mr-2 h-4 w-4" />
-                View on Map
+              <Button variant="outline" asChild>
+                <a href={mapUrl} target="_blank" rel="noopener noreferrer">
+                  <MapPin className="mr-2 h-4 w-4" />
+                  View on Map
+                </a>
               </Button>
-              <Button onClick={handleGetDirections}>
-                <Navigation className="mr-2 h-4 w-4" />
-                Directions
+              <Button asChild>
+                <a href={directionsUrl} target="_blank" rel="noopener noreferrer">
+                  <Navigation className="mr-2 h-4 w-4" />
+                  Directions
+                </a>
               </Button>
             </div>
           </div>

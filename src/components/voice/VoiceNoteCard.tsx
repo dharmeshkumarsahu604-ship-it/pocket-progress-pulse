@@ -1,9 +1,28 @@
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Trash2, Download, Loader2, RefreshCw } from "lucide-react";
+import { Play, Pause, Trash2, Download, Loader2, RefreshCw, Globe } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: "English",
+  hi: "Hindi",
+  or: "Odia",
+  bn: "Bengali",
+  te: "Telugu",
+  ta: "Tamil",
+  mr: "Marathi",
+  gu: "Gujarati",
+  kn: "Kannada",
+  ml: "Malayalam",
+  pa: "Punjabi",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  auto: "Auto",
+};
 
 interface VoiceNoteCardProps {
   id: string;
@@ -12,6 +31,7 @@ interface VoiceNoteCardProps {
   duration: number;
   audioUrl: string;
   transcript?: string;
+  language?: string;
   onDelete: (id: string) => void;
   onRetryTranscription?: (id: string) => void;
   isRetrying?: boolean;
@@ -24,6 +44,7 @@ export const VoiceNoteCard = ({
   duration,
   audioUrl,
   transcript,
+  language,
   onDelete,
   onRetryTranscription,
   isRetrying,
@@ -87,7 +108,15 @@ export const VoiceNoteCard = ({
 
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold truncate">{name}</h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold truncate">{name}</h3>
+              {language && (
+                <Badge variant="secondary" className="text-xs shrink-0">
+                  <Globe className="h-3 w-3 mr-1" />
+                  {LANGUAGE_NAMES[language] || language}
+                </Badge>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground">
               {formatDistanceToNow(date, { addSuffix: true })}
             </p>

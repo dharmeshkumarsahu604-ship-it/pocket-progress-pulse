@@ -43,6 +43,14 @@ export const SiteLocationMap: React.FC<SiteLocationMapProps> = ({
           setError('Map unavailable - missing API key');
           return;
         }
+
+        // Validate token format - must be a public token (pk.*)
+        if (!data.token.startsWith('pk.')) {
+          console.error('Invalid Mapbox token: Must use a public token (pk.*), not a secret token (sk.*)');
+          setError('Invalid Mapbox token - please use a public token (pk.*)');
+          return;
+        }
+
         setToken(data.token);
       } catch (err) {
         console.error('Error fetching token:', err);

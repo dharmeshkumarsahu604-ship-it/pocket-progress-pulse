@@ -165,21 +165,22 @@ const Compass: React.FC = () => {
   };
 
   return (
-    <AppLayout title="Brunton Compass" showBack>
+    <AppLayout>
       <div className="container max-w-lg mx-auto px-4 pb-24 space-y-6">
-        {/* Header controls */}
-        <div className="flex items-center justify-between">
+        {/* Header with title and controls */}
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-bold">Brunton Compass</h1>
           <Button variant="outline" size="sm" onClick={() => setShowHowTo(true)}>
-            <HelpCircle className="h-4 w-4 mr-1" /> How to Use
+            <HelpCircle className="h-4 w-4 mr-1" /> Help
           </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsDemo(!isDemo)}>
-              {isDemo ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowCalibration(true)}>
-              <Settings className="h-4 w-4" />
-            </Button>
-          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setIsDemo(!isDemo)}>
+            {isDemo ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowCalibration(true)}>
+            <Settings className="h-4 w-4" />
+          </Button>
         </div>
 
         {/* Compass dial */}

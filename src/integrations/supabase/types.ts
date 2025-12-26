@@ -41,6 +41,63 @@ export type Database = {
         }
         Relationships: []
       }
+      compass_readings: {
+        Row: {
+          azimuth: number
+          bearing: number | null
+          created_at: string
+          dip: number | null
+          id: string
+          latitude: number | null
+          lithology: string | null
+          longitude: number | null
+          mode: string
+          notes: string | null
+          photos: string[] | null
+          plunge: number | null
+          strike: number | null
+          structure_type: string | null
+          trend: number | null
+          user_id: string
+        }
+        Insert: {
+          azimuth: number
+          bearing?: number | null
+          created_at?: string
+          dip?: number | null
+          id?: string
+          latitude?: number | null
+          lithology?: string | null
+          longitude?: number | null
+          mode: string
+          notes?: string | null
+          photos?: string[] | null
+          plunge?: number | null
+          strike?: number | null
+          structure_type?: string | null
+          trend?: number | null
+          user_id: string
+        }
+        Update: {
+          azimuth?: number
+          bearing?: number | null
+          created_at?: string
+          dip?: number | null
+          id?: string
+          latitude?: number | null
+          lithology?: string | null
+          longitude?: number | null
+          mode?: string
+          notes?: string | null
+          photos?: string[] | null
+          plunge?: number | null
+          strike?: number | null
+          structure_type?: string | null
+          trend?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       field_notes: {
         Row: {
           content: string

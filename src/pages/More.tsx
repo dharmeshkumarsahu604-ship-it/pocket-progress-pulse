@@ -1,9 +1,10 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Mic, FileText, MapPin, MessageCircle, User, ChevronRight, GraduationCap } from "lucide-react";
+import { Mic, FileText, MapPin, MessageCircle, User, ChevronRight, GraduationCap, Compass } from "lucide-react";
 
 const menuItems = [
+  { icon: Compass, label: "Brunton Compass", path: "/compass" },
   { icon: Mic, label: "Voice Notes", path: "/voice-notes" },
   { icon: FileText, label: "Field Notes", path: "/field-notes" },
   { icon: MapPin, label: "Geological Sites", path: "/sites" },

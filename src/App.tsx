@@ -71,6 +71,7 @@ const AppContent = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/compass" element={<Compass />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

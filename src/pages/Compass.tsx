@@ -12,10 +12,13 @@ import { ReadingsList } from '@/components/compass/ReadingsList';
 import { useDeviceOrientation } from '@/hooks/useDeviceOrientation';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { exportReadings } from '@/lib/compassExport';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Settings, HelpCircle, Play, Pause } from 'lucide-react';
+import { Settings, HelpCircle, Play, Pause, LogIn } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Compass: React.FC = () => {
   // Compass state
@@ -38,6 +41,11 @@ const Compass: React.FC = () => {
   // Saved readings
   const [readings, setReadings] = useState<CompassReadingData[]>([]);
   const [currentReading, setCurrentReading] = useState<CompassReadingData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Auth
+  const { user } = useAuth();
 
   // Device sensors
   const orientation = useDeviceOrientation({ magneticDeclination: declination, useTrueNorth });
@@ -63,6 +71,50 @@ const Compass: React.FC = () => {
       orientation.startListening();
     }
   }, []);
+
+  // Load readings from database
+  useEffect(() => {
+    if (!user) return;
+    
+    const loadReadings = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('compass_readings')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const loadedReadings: CompassReadingData[] = (data || []).map((r) => ({
+          id: r.id,
+          mode: r.mode as MeasurementMode,
+          strike: r.strike ? Number(r.strike) : null,
+          dip: r.dip ? Number(r.dip) : null,
+          trend: r.trend ? Number(r.trend) : null,
+          plunge: r.plunge ? Number(r.plunge) : null,
+          bearing: r.bearing ? Number(r.bearing) : null,
+          azimuth: Number(r.azimuth),
+          timestamp: new Date(r.created_at),
+          latitude: r.latitude ? Number(r.latitude) : null,
+          longitude: r.longitude ? Number(r.longitude) : null,
+          notes: r.notes || '',
+          photos: r.photos || [],
+          lithology: r.lithology || '',
+          structureType: r.structure_type || '',
+        }));
+
+        setReadings(loadedReadings);
+      } catch (error) {
+        console.error('Error loading readings:', error);
+        toast.error('Failed to load saved readings');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadReadings();
+  }, [user]);
 
   // Lock reading
   const handleLock = useCallback(() => {
@@ -142,17 +194,79 @@ const Compass: React.FC = () => {
     setCurrentReading(null);
   };
 
-  const handleSaveReading = () => {
+  const handleSaveReading = async () => {
     if (!currentReading) return;
-    const saved = { ...currentReading, id: Date.now().toString(), latitude, longitude };
-    setReadings(prev => [saved, ...prev]);
-    toast.success('Reading saved!');
-    handleReset();
+    
+    if (!user) {
+      toast.error('Please sign in to save readings');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { data, error } = await supabase
+        .from('compass_readings')
+        .insert({
+          user_id: user.id,
+          mode: currentReading.mode,
+          strike: currentReading.strike,
+          dip: currentReading.dip,
+          trend: currentReading.trend,
+          plunge: currentReading.plunge,
+          bearing: currentReading.bearing,
+          azimuth: currentReading.azimuth,
+          latitude: latitude,
+          longitude: longitude,
+          notes: currentReading.notes,
+          photos: currentReading.photos,
+          lithology: currentReading.lithology,
+          structure_type: currentReading.structureType,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const savedReading: CompassReadingData = {
+        ...currentReading,
+        id: data.id,
+        latitude,
+        longitude,
+        timestamp: new Date(data.created_at),
+      };
+
+      setReadings(prev => [savedReading, ...prev]);
+      toast.success('Reading saved to cloud!');
+      handleReset();
+    } catch (error) {
+      console.error('Error saving reading:', error);
+      toast.error('Failed to save reading');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDeleteReading = (id: string) => {
-    setReadings(prev => prev.filter(r => r.id !== id));
-    toast.success('Reading deleted');
+  const handleDeleteReading = async (id: string) => {
+    if (!user) {
+      setReadings(prev => prev.filter(r => r.id !== id));
+      toast.success('Reading deleted');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('compass_readings')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setReadings(prev => prev.filter(r => r.id !== id));
+      toast.success('Reading deleted');
+    } catch (error) {
+      console.error('Error deleting reading:', error);
+      toast.error('Failed to delete reading');
+    }
   };
 
   const handleExport = () => {
@@ -213,6 +327,21 @@ const Compass: React.FC = () => {
           currentTilt={orientation.tilt}
         />
 
+        {/* Login prompt if not signed in */}
+        {!user && (
+          <div className="bg-muted/50 rounded-lg p-4 text-center border border-border">
+            <p className="text-sm text-muted-foreground mb-2">
+              Sign in to save your readings to the cloud
+            </p>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/auth">
+                <LogIn className="h-4 w-4 mr-2" />
+                Sign In
+              </Link>
+            </Button>
+          </div>
+        )}
+
         {/* Save form when locked */}
         {isLocked && currentReading && (
           <CompassReadingForm
@@ -221,6 +350,7 @@ const Compass: React.FC = () => {
             onSave={handleSaveReading}
             onPhotoCapture={() => toast.info('Photo capture coming soon')}
             onVoiceNote={() => toast.info('Voice notes coming soon')}
+            isSaving={isSaving}
           />
         )}
 

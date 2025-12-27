@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CompassDial } from '@/components/compass/CompassDial';
+import { DualBubbleLevel } from '@/components/compass/BubbleLevel';
 import { MeasurementPanel, MeasurementMode } from '@/components/compass/MeasurementPanel';
 import { CalibrationOverlay } from '@/components/compass/CalibrationOverlay';
 import { DeclinationInput } from '@/components/compass/DeclinationInput';
@@ -298,7 +299,7 @@ const Compass: React.FC = () => {
         </div>
 
         {/* Compass dial */}
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-6">
           <CompassDial
             heading={heading}
             strike={strike}
@@ -306,6 +307,12 @@ const Compass: React.FC = () => {
             accuracy={isDemo ? 'high' : orientation.accuracy}
             isLocked={isLocked}
             size={280}
+          />
+          
+          {/* Bubble Level Indicators */}
+          <DualBubbleLevel
+            pitch={orientation.tilt.pitch ?? 0}
+            roll={orientation.tilt.roll ?? 0}
           />
         </div>
 

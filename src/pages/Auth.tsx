@@ -135,7 +135,10 @@ export default function Auth() {
           toast.error(error.message);
         }
       } else {
-        toast.success("Account created! Please check your email to verify.");
+        toast.success("Account created! Please check your email to verify.", {
+          description: "If you don't see the email, please check your spam/junk folder. The email may take a few minutes to arrive.",
+          duration: 10000,
+        });
       }
     } catch (error) {
       if (error instanceof z.ZodError) {

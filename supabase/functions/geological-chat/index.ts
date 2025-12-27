@@ -6,6 +6,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Environment-gated logging - only log in development
+const isDev = Deno.env.get('ENVIRONMENT') === 'development';
+const secureLog = {
+  info: (...args: unknown[]) => isDev && console.log(...args),
+  error: (msg: string) => console.error(isDev ? msg : 'Service error'),
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -14,7 +21,6 @@ serve(async (req) => {
   try {
     // Get user from JWT
     const authHeader = req.headers.get('Authorization');
-    console.log('Auth header present:', !!authHeader);
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -25,22 +31,21 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     
     if (authError) {
-      console.error('Auth error in geological-chat:', authError);
+      secureLog.error('Auth error in geological-chat');
       return new Response(
-        JSON.stringify({ error: "Unauthorized", details: authError.message }),
+        JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
     if (!user) {
-      console.error('No user found in geological-chat');
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log('User authenticated:', user.id);
+    secureLog.info('User authenticated for chat');
 
     const { messages } = await req.json();
     
@@ -82,7 +87,7 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Processing geological chat request with", messages.length, "messages for user:", user.id);
+    secureLog.info("Processing geological chat request");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -136,8 +141,7 @@ Be enthusiastic about geology while maintaining scientific rigor.`
           }
         );
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      secureLog.error("AI gateway error");
       return new Response(
         JSON.stringify({ error: "AI service temporarily unavailable" }),
         {
@@ -151,7 +155,7 @@ Be enthusiastic about geology while maintaining scientific rigor.`
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
-    console.error("Chat error:", error instanceof Error ? error.message : "Unknown error", error);
+    secureLog.error("Chat error");
     return new Response(
       JSON.stringify({ error: "Service temporarily unavailable. Please try again." }),
       {

@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { chatMessageSchema } from "@/lib/validation";
+import secureLog from "@/lib/secureLogger";
 
 interface Message {
   id: string;
@@ -52,19 +53,12 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      // Get the user's session token with detailed error logging
-      console.log('Getting session for chat...');
+      // Get the user's session token
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      console.log('Session status:', { 
-        hasSession: !!session, 
-        sessionError: sessionError?.message,
-        hasAccessToken: !!session?.access_token 
-      });
-      
       if (sessionError) {
-        console.error('Session error details:', sessionError);
-        toast.error(`Authentication error: ${sessionError.message}. Please sign out and sign in again.`);
+        secureLog.error('Session error', sessionError);
+        toast.error("Authentication error. Please sign out and sign in again.");
         setIsLoading(false);
         return;
       }
@@ -92,8 +86,6 @@ export default function Chat() {
         }
       );
 
-      console.log('Chat API response status:', response.status);
-
       if (response.status === 429) {
         toast.error("Rate limit exceeded. Please try again later.");
         setIsLoading(false);
@@ -113,9 +105,8 @@ export default function Chat() {
       }
 
       if (!response.ok || !response.body) {
-        const errorText = await response.text();
-        console.error('Chat API error:', errorText);
-        throw new Error(`Failed to get response: ${errorText}`);
+        secureLog.error('Chat API error');
+        throw new Error("Failed to get response");
       }
 
       // Handle streaming response
@@ -176,7 +167,7 @@ export default function Chat() {
 
       setIsLoading(false);
     } catch (error) {
-      console.error('Chat error details:', error);
+      secureLog.error('Chat error', error);
       toast.error("Failed to get response. Please try again.");
       setIsLoading(false);
     }

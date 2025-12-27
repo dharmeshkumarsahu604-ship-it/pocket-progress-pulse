@@ -12,6 +12,8 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
+import { profileSchema } from "@/lib/validation";
+import secureLog from "@/lib/secureLogger";
 
 interface UserProfile {
   full_name: string;
@@ -113,20 +115,16 @@ export default function Profile() {
 
   const handleSaveProfile = async () => {
     if (!user) return;
-    if (!editForm.full_name.trim()) {
-      toast.error("Name cannot be empty");
-      return;
-    }
-    if (editForm.full_name.length > 100) {
-      toast.error("Name must be less than 100 characters");
-      return;
-    }
-    if (editForm.bio && editForm.bio.length > 500) {
-      toast.error("Bio must be less than 500 characters");
-      return;
-    }
-    if (editForm.institute && editForm.institute.length > 200) {
-      toast.error("Institute must be less than 200 characters");
+    
+    // Validate with zod schema
+    const validation = profileSchema.safeParse({
+      fullName: editForm.full_name,
+      bio: editForm.bio,
+      institute: editForm.institute,
+    });
+
+    if (!validation.success) {
+      toast.error(validation.error.issues[0]?.message || 'Invalid profile data');
       return;
     }
 
@@ -136,9 +134,9 @@ export default function Profile() {
         .from("profiles")
         .upsert({
           id: user.id,
-          full_name: editForm.full_name.trim(),
-          bio: editForm.bio.trim() || null,
-          institute: editForm.institute.trim() || null,
+          full_name: validation.data.fullName,
+          bio: validation.data.bio || null,
+          institute: validation.data.institute || null,
           avatar_url: profile?.avatar_url || null,
         });
 
@@ -146,15 +144,16 @@ export default function Profile() {
 
       setProfile(prev => ({
         ...prev,
-        full_name: editForm.full_name.trim(),
-        bio: editForm.bio.trim() || null,
-        institute: editForm.institute.trim() || null,
+        full_name: validation.data.fullName,
+        bio: validation.data.bio || null,
+        institute: validation.data.institute || null,
         avatar_url: prev?.avatar_url || null,
       }));
       setIsEditing(false);
       toast.success("Profile updated successfully");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update profile");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update profile';
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -190,8 +189,8 @@ export default function Profile() {
         .upload(fileName, file, { upsert: true });
 
       if (uploadError) {
-        console.error("Upload error:", uploadError);
-        toast.error(`Upload failed: ${uploadError.message}`);
+        secureLog.error("Upload error", uploadError);
+        toast.error("Upload failed. Please try again.");
         return;
       }
 
@@ -211,8 +210,8 @@ export default function Profile() {
         .eq('id', user.id);
 
       if (updateError) {
-        console.error("Update error:", updateError);
-        toast.error(`Profile update failed: ${updateError.message}`);
+        secureLog.error("Update error", updateError);
+        toast.error("Profile update failed. Please try again.");
         return;
       }
 
@@ -224,9 +223,9 @@ export default function Profile() {
         avatar_url: publicUrl 
       });
       toast.success("Profile picture updated successfully!");
-    } catch (error: any) {
-      console.error("Error:", error);
-      toast.error(error?.message || "Failed to upload profile picture");
+    } catch (error: unknown) {
+      secureLog.error("Error uploading avatar", error);
+      toast.error("Failed to upload profile picture");
     } finally {
       setUploading(false);
     }

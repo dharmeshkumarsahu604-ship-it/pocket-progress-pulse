@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { z } from "zod";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
+import secureLog from "@/lib/secureLogger";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +32,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
+// Schema for validating AI scan results before database insert
+const scanResultSchema = z.object({
+  name: z.string().max(200, "Name too long").default("Unknown Specimen"),
+  description: z.string().max(2000, "Description too long").default("No description available"),
+  type: z.enum(["rock", "mineral"]).default("rock"),
+  confidence: z.number().min(0).max(100).default(50),
+});
 
 interface SavedScan {
   id: string;
@@ -130,7 +140,7 @@ export default function Scanner() {
       if (error) throw error;
       setSavedScans(data || []);
     } catch (error) {
-      console.error("Error fetching saved scans:", error);
+      secureLog.error("Error fetching saved scans", error);
       toast.error("Failed to load saved scans");
     } finally {
       setIsLoading(false);
@@ -147,7 +157,7 @@ export default function Scanner() {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
-        console.error("Session error:", sessionError);
+        secureLog.error("Session error", sessionError);
         toast.error("Session error. Please sign in again.");
         setIsScanning(false);
         return;
@@ -158,8 +168,6 @@ export default function Scanner() {
         setIsScanning(false);
         return;
       }
-
-      console.log("Calling identify-specimen with valid session");
 
       const response = await fetch(
         `https://gknkwiwfwzjfcijjrlac.supabase.co/functions/v1/identify-specimen`,
@@ -214,7 +222,7 @@ export default function Scanner() {
       setIsScanning(false);
       toast.success("Specimen identified!");
     } catch (error) {
-      console.error("Identification error:", error);
+      secureLog.error("Identification error", error);
       toast.error("Failed to identify specimen. Please try again.");
       setIsScanning(false);
     }
@@ -270,15 +278,28 @@ export default function Scanner() {
         .from("images")
         .getPublicUrl(fileName);
 
-      // Save to scan_history - normalize item_type to 'rock' or 'mineral'
-      const normalizedType = scanResult.type.toLowerCase().includes("mineral") ? "mineral" : "rock";
+      // Validate and sanitize AI response before database insert
+      const normalizedType = scanResult.type?.toLowerCase().includes("mineral") ? "mineral" : "rock";
+      const validated = scanResultSchema.safeParse({
+        name: scanResult.name,
+        description: scanResult.description,
+        type: normalizedType,
+        confidence: Math.round(scanResult.confidence * 100),
+      });
+
+      if (!validated.success) {
+        secureLog.error("Invalid scan result data", validated.error);
+        toast.error("Invalid scan data. Please try again.");
+        return;
+      }
+
       const { error: insertError } = await supabase.from("scan_history").insert({
         user_id: user.id,
         image_url: publicUrl,
-        identified_as: scanResult.name,
-        item_type: normalizedType,
-        confidence: Math.round(scanResult.confidence * 100),
-        notes: scanResult.description,
+        identified_as: validated.data.name,
+        item_type: validated.data.type,
+        confidence: validated.data.confidence,
+        notes: validated.data.description,
       });
 
       if (insertError) throw insertError;
@@ -287,7 +308,7 @@ export default function Scanner() {
       fetchSavedScans();
       handleReset();
     } catch (error) {
-      console.error("Error saving scan:", error);
+      secureLog.error("Error saving scan", error);
       toast.error("Failed to save scan");
     } finally {
       setIsSaving(false);
@@ -307,7 +328,7 @@ export default function Scanner() {
       setSavedScans((prev) => prev.filter((scan) => scan.id !== id));
       toast.success("Scan deleted");
     } catch (error) {
-      console.error("Error deleting scan:", error);
+      secureLog.error("Error deleting scan", error);
       toast.error("Failed to delete scan");
     } finally {
       setDeletingId(null);

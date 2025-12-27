@@ -2,7 +2,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Camera, Mic, FileText, Mountain, Gem, MapPin, ChevronRight, Sparkles, Lightbulb } from "lucide-react";
+import { Camera, Mic, FileText, Mountain, Gem, MapPin, ChevronRight, Sparkles, Lightbulb, Compass } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
@@ -293,6 +293,12 @@ export default function Dashboard() {
               <Button variant="secondary" className="w-full justify-start" size="lg">
                 <FileText className="mr-2 h-5 w-5" />
                 Field Note
+              </Button>
+            </Link>
+            <Link to="/compass">
+              <Button variant="secondary" className="w-full justify-start" size="lg">
+                <Compass className="mr-2 h-5 w-5" />
+                Brunton Compass
               </Button>
             </Link>
           </CardContent>

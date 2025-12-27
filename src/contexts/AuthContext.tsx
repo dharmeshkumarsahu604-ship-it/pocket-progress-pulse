@@ -113,6 +113,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       },
     });
 
+    // If signup successful, send confirmation email via Resend
+    if (!error && data.user) {
+      try {
+        // Send welcome/confirmation email via our edge function
+        const emailResponse = await supabase.functions.invoke('send-confirmation-email', {
+          body: {
+            email,
+            name: fullName,
+            type: 'signup',
+            confirmationUrl: `${window.location.origin}/auth?confirmed=true`,
+          },
+        });
+        
+        if (emailResponse.error) {
+          console.error('Failed to send confirmation email:', emailResponse.error);
+        } else {
+          console.log('Confirmation email sent successfully');
+        }
+      } catch (emailError) {
+        console.error('Error sending confirmation email:', emailError);
+      }
+    }
+
     // If signup successful and avatar file provided, upload it
     if (!error && avatarFile && data.user) {
       const fileExt = avatarFile.name.split('.').pop();

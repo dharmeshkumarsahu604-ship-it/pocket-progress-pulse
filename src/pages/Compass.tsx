@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CompassDial } from '@/components/compass/CompassDial';
+import { Clinometer } from '@/components/compass/Clinometer';
 import { DualBubbleLevel } from '@/components/compass/BubbleLevel';
 import { MeasurementPanel, MeasurementMode } from '@/components/compass/MeasurementPanel';
 import { CalibrationOverlay } from '@/components/compass/CalibrationOverlay';
@@ -140,19 +141,24 @@ const Compass: React.FC = () => {
       case 'bearing':
         setBearing(currentHeading);
         break;
+      case 'clinometer':
+        setDip(Math.min(90, Math.round(currentTilt)));
+        break;
     }
 
     setIsLocked(true);
     getCurrentLocation();
     
+    const clinometerDip = mode === 'clinometer' ? Math.min(90, Math.round(currentTilt)) : null;
+    
     setCurrentReading({
       mode,
       strike: mode === 'strike' || mode === 'strike_dip' ? currentHeading : null,
-      dip: mode === 'dip' || mode === 'strike_dip' ? Math.min(90, Math.round(currentTilt)) : null,
+      dip: mode === 'dip' || mode === 'strike_dip' || mode === 'clinometer' ? Math.min(90, Math.round(currentTilt)) : null,
       trend: mode === 'trend_plunge' ? currentHeading : null,
       plunge: mode === 'trend_plunge' ? Math.min(90, Math.round(currentTilt)) : null,
       bearing: mode === 'bearing' ? currentHeading : null,
-      azimuth: currentHeading,
+      azimuth: mode === 'clinometer' ? 0 : currentHeading,
       timestamp: new Date(),
       latitude,
       longitude,
@@ -298,22 +304,33 @@ const Compass: React.FC = () => {
           </Button>
         </div>
 
-        {/* Compass dial */}
+        {/* Compass dial or Clinometer */}
         <div className="flex flex-col items-center gap-6">
-          <CompassDial
-            heading={heading}
-            strike={strike}
-            dip={dip}
-            accuracy={isDemo ? 'high' : orientation.accuracy}
-            isLocked={isLocked}
-            size={280}
-          />
-          
-          {/* Bubble Level Indicators */}
-          <DualBubbleLevel
-            pitch={orientation.tilt.pitch ?? 0}
-            roll={orientation.tilt.roll ?? 0}
-          />
+          {mode === 'clinometer' ? (
+            <Clinometer
+              angle={orientation.tilt.pitch ?? 0}
+              lockedAngle={dip}
+              isLocked={isLocked}
+              size={280}
+            />
+          ) : (
+            <>
+              <CompassDial
+                heading={heading}
+                strike={strike}
+                dip={dip}
+                accuracy={isDemo ? 'high' : orientation.accuracy}
+                isLocked={isLocked}
+                size={280}
+              />
+              
+              {/* Bubble Level Indicators */}
+              <DualBubbleLevel
+                pitch={orientation.tilt.pitch ?? 0}
+                roll={orientation.tilt.roll ?? 0}
+              />
+            </>
+          )}
         </div>
 
         {/* Measurement panel */}

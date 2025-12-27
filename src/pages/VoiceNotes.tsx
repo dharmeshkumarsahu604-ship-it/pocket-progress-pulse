@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { voiceNoteSchema } from "@/lib/validation";
+import secureLog from "@/lib/secureLogger";
 
 interface VoiceNote {
   id: string;
@@ -59,7 +61,7 @@ export default function VoiceNotes() {
 
       setNotes(mappedNotes);
     } catch (error) {
-      console.error('Error fetching voice notes:', error);
+      secureLog.error('Error fetching voice notes', error);
       toast.error('Failed to load voice notes');
     } finally {
       setLoading(false);
@@ -99,18 +101,14 @@ export default function VoiceNotes() {
       const mimeType = audioBlob.type || 'audio/webm';
       const audioBase64 = `data:${mimeType};base64,${base64}`;
 
-      console.log('Retrying transcription for note:', noteId);
-
       const { data, error } = await supabase.functions.invoke('transcribe-audio', {
         body: { audioBase64, language: 'en' }
       });
 
       if (error) {
-        console.error('Transcription error:', error);
+        secureLog.error('Transcription error', error);
         throw error;
       }
-
-      console.log('Transcription result:', data);
 
       const transcription = data.transcription || data.summary || 'Transcription completed';
       
@@ -124,7 +122,7 @@ export default function VoiceNotes() {
       await fetchNotes();
       toast.success('Transcription completed!');
     } catch (error) {
-      console.error('Transcription failed:', error);
+      secureLog.error('Transcription failed', error);
       
       // Update with error message
       await supabase
@@ -153,18 +151,14 @@ export default function VoiceNotes() {
       const mimeType = audioBlob.type || 'audio/webm';
       const audioBase64 = `data:${mimeType};base64,${base64}`;
 
-      console.log('Sending audio for transcription, size:', audioBlob.size, 'language:', language);
-
       const { data, error } = await supabase.functions.invoke('transcribe-audio', {
         body: { audioBase64, language: language === 'auto' ? undefined : language }
       });
 
       if (error) {
-        console.error('Transcription error:', error);
+        secureLog.error('Transcription error', error);
         throw error;
       }
-
-      console.log('Transcription result:', data);
 
       // Update the note with transcription
       const transcription = data.transcription || data.summary || 'Transcription completed';
@@ -175,7 +169,7 @@ export default function VoiceNotes() {
         .eq('id', noteId);
 
       if (updateError) {
-        console.error('Failed to update transcription:', updateError);
+        secureLog.error('Failed to update transcription', updateError);
         throw updateError;
       }
 
@@ -183,7 +177,7 @@ export default function VoiceNotes() {
       await fetchNotes();
       toast.success('Transcription completed!');
     } catch (error) {
-      console.error('Transcription failed:', error);
+      secureLog.error('Transcription failed', error);
       
       // Update with error message
       await supabase
@@ -224,7 +218,7 @@ export default function VoiceNotes() {
 
       if (uploadError) {
         // If bucket doesn't exist, save with blob URL temporarily
-        console.error('Storage upload error:', uploadError);
+        secureLog.error('Storage upload error', uploadError);
         
         // Fall back to saving without storage (audio_url will be temporary)
         audioUrl = URL.createObjectURL(audioBlob);
@@ -236,12 +230,20 @@ export default function VoiceNotes() {
         audioUrl = urlData.publicUrl;
       }
 
+      // Validate title before insert
+      const title = `Recording ${new Date().toLocaleString()}`;
+      const validatedTitle = voiceNoteSchema.shape.title.safeParse(title);
+      if (!validatedTitle.success) {
+        toast.error('Failed to create recording title');
+        return;
+      }
+
       // Insert the note with language
       const { data: insertedNote, error: insertError } = await supabase
         .from('voice_notes')
         .insert({
           user_id: user.id,
-          title: `Recording ${new Date().toLocaleString()}`,
+          title: validatedTitle.data,
           audio_url: audioUrl,
           duration: Math.round(duration),
           language: language,
@@ -260,7 +262,7 @@ export default function VoiceNotes() {
       // Start transcription in background with selected language
       transcribeAudio(audioBlob, noteId, language);
     } catch (error) {
-      console.error('Error saving voice note:', error);
+      secureLog.error('Error saving voice note', error);
       toast.error('Failed to save recording');
     }
   };
@@ -280,7 +282,7 @@ export default function VoiceNotes() {
       setNotes((prev) => prev.filter((note) => note.id !== id));
       toast.success("Recording deleted");
     } catch (error) {
-      console.error('Error deleting voice note:', error);
+      secureLog.error('Error deleting voice note', error);
       toast.error('Failed to delete recording');
     }
   };
@@ -288,21 +290,28 @@ export default function VoiceNotes() {
   const handleUpdateTitle = async (id: string, newTitle: string) => {
     if (!user) return;
 
+    // Validate title before update
+    const validation = voiceNoteSchema.shape.title.safeParse(newTitle);
+    if (!validation.success) {
+      toast.error(validation.error.issues[0]?.message || 'Invalid title');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('voice_notes')
-        .update({ title: newTitle })
+        .update({ title: validation.data })
         .eq('id', id)
         .eq('user_id', user.id);
 
       if (error) throw error;
       
       setNotes((prev) => prev.map((note) => 
-        note.id === id ? { ...note, name: newTitle } : note
+        note.id === id ? { ...note, name: validation.data } : note
       ));
       toast.success("Title updated");
     } catch (error) {
-      console.error('Error updating voice note title:', error);
+      secureLog.error('Error updating voice note title', error);
       toast.error('Failed to update title');
     }
   };

@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { fieldNoteSchema, coordinateSchema } from "@/lib/validation";
+import secureLog from "@/lib/secureLogger";
 
 interface FieldNote {
   id: string;
@@ -62,7 +64,7 @@ export default function FieldNotes() {
 
       setNotes(mappedNotes);
     } catch (error) {
-      console.error('Error fetching field notes:', error);
+      secureLog.error('Error fetching field notes', error);
       toast.error('Failed to load field notes');
     } finally {
       setLoading(false);
@@ -75,16 +77,42 @@ export default function FieldNotes() {
       return;
     }
 
+    // Validate input using zod schema
+    const validation = fieldNoteSchema.safeParse({
+      title: note.title,
+      content: note.content,
+      latitude: note.location?.lat,
+      longitude: note.location?.lng,
+      locationName: note.location?.name,
+    });
+
+    if (!validation.success) {
+      toast.error(validation.error.issues[0]?.message || 'Invalid note data');
+      return;
+    }
+
+    // Validate coordinates if provided
+    if (note.location?.lat !== undefined && note.location?.lng !== undefined) {
+      const coordValidation = coordinateSchema.safeParse({
+        latitude: note.location.lat,
+        longitude: note.location.lng,
+      });
+      if (!coordValidation.success) {
+        toast.error('Invalid location coordinates');
+        return;
+      }
+    }
+
     try {
       if (editingNote) {
         const { error } = await supabase
           .from('field_notes')
           .update({
-            title: note.title,
-            content: note.content,
-            latitude: note.location?.lat || null,
-            longitude: note.location?.lng || null,
-            location_name: note.location?.name || null,
+            title: validation.data.title,
+            content: validation.data.content,
+            latitude: validation.data.latitude || null,
+            longitude: validation.data.longitude || null,
+            location_name: validation.data.locationName || null,
             photos: note.photos,
             updated_at: new Date().toISOString()
           })
@@ -98,11 +126,11 @@ export default function FieldNotes() {
           .from('field_notes')
           .insert({
             user_id: user.id,
-            title: note.title,
-            content: note.content,
-            latitude: note.location?.lat || null,
-            longitude: note.location?.lng || null,
-            location_name: note.location?.name || null,
+            title: validation.data.title,
+            content: validation.data.content,
+            latitude: validation.data.latitude || null,
+            longitude: validation.data.longitude || null,
+            location_name: validation.data.locationName || null,
             photos: note.photos
           });
 
@@ -114,7 +142,7 @@ export default function FieldNotes() {
       setShowEditor(false);
       setEditingNote(null);
     } catch (error) {
-      console.error('Error saving field note:', error);
+      secureLog.error('Error saving field note', error);
       toast.error('Failed to save note');
     }
   };
@@ -134,7 +162,7 @@ export default function FieldNotes() {
       setNotes((prev) => prev.filter((note) => note.id !== id));
       toast.success("Note deleted");
     } catch (error) {
-      console.error('Error deleting field note:', error);
+      secureLog.error('Error deleting field note', error);
       toast.error('Failed to delete note');
     }
   };

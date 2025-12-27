@@ -6,6 +6,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Environment-gated logging - only log in development
+const isDev = Deno.env.get('ENVIRONMENT') === 'development';
+const secureLog = {
+  info: (...args: unknown[]) => isDev && console.log(...args),
+  error: (msg: string) => console.error(isDev ? msg : 'Service error'),
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -14,10 +21,8 @@ serve(async (req) => {
   try {
     // Get authorization header
     const authHeader = req.headers.get('Authorization');
-    console.log('Auth header present:', !!authHeader);
     
     if (!authHeader) {
-      console.error('No authorization header provided');
       return new Response(
         JSON.stringify({ error: "Authorization header required" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -34,7 +39,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     
     if (authError) {
-      console.error('Auth error in identify-specimen:', authError.message);
+      secureLog.error('Auth error in identify-specimen');
       return new Response(
         JSON.stringify({ error: "Authentication failed. Please sign in again." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -42,14 +47,13 @@ serve(async (req) => {
     }
     
     if (!user) {
-      console.error('No user found in identify-specimen');
       return new Response(
         JSON.stringify({ error: "User not found. Please sign in again." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log('User authenticated successfully:', user.id);
+    secureLog.info('User authenticated for specimen identification');
 
     const { imageUrl, imageBase64 } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -68,7 +72,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("Processing specimen identification request for user:", user.id);
+    secureLog.info("Processing specimen identification request");
 
     // Construct image content
     const imageContent = imageUrl 
@@ -144,8 +148,7 @@ Be specific and scientifically accurate. If you're uncertain, mention alternativ
           }
         );
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      secureLog.error("AI gateway error");
       return new Response(
         JSON.stringify({ error: "AI service temporarily unavailable" }),
         {
@@ -158,7 +161,7 @@ Be specific and scientifically accurate. If you're uncertain, mention alternativ
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
 
-    console.log("AI Response:", content);
+    secureLog.info("AI response received");
 
     // Try to parse JSON from the response
     let identification;
@@ -168,7 +171,7 @@ Be specific and scientifically accurate. If you're uncertain, mention alternativ
       identification = JSON.parse(cleanContent);
     } catch (parseError) {
       // If JSON parsing fails, create a structured response from text
-      console.log("Failed to parse JSON, using text response");
+      secureLog.info("Failed to parse JSON, using text response");
       identification = {
         name: "Unknown Specimen",
         type: "Unknown",
@@ -191,7 +194,7 @@ Be specific and scientifically accurate. If you're uncertain, mention alternativ
       }
     );
   } catch (error) {
-    console.error("Identification error:", error instanceof Error ? error.message : "Unknown error", error);
+    secureLog.error("Identification error");
     return new Response(
       JSON.stringify({ error: "Identification service temporarily unavailable. Please try again." }),
       {

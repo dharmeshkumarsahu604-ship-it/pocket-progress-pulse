@@ -6,6 +6,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Environment-gated logging - only log in development
+const isDev = Deno.env.get('ENVIRONMENT') === 'development';
+const secureLog = {
+  info: (...args: unknown[]) => isDev && console.log(...args),
+  error: (msg: string) => console.error(isDev ? msg : 'Service error'),
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -46,7 +53,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("Processing audio transcription request for user:", user.id, "language:", language || "auto");
+    secureLog.info("Processing audio transcription request");
 
     // Use AI to transcribe the audio by analyzing it
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -110,8 +117,7 @@ Return as JSON:
           }
         );
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      secureLog.error("AI gateway error");
       return new Response(
         JSON.stringify({ error: "Transcription service temporarily unavailable" }),
         {
@@ -124,7 +130,7 @@ Return as JSON:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
 
-    console.log("Transcription response:", content);
+    secureLog.info("Transcription response received");
 
     // Try to parse JSON from the response
     let transcriptionResult;
@@ -133,7 +139,7 @@ Return as JSON:
       transcriptionResult = JSON.parse(cleanContent);
     } catch (parseError) {
       // If JSON parsing fails, use the raw text
-      console.log("Failed to parse JSON, using text response");
+      secureLog.info("Failed to parse JSON, using text response");
       transcriptionResult = {
         transcription: content,
         summary: "Transcription completed",
@@ -150,7 +156,7 @@ Return as JSON:
       }
     );
   } catch (error) {
-    console.error("Transcription error:", error instanceof Error ? error.message : "Unknown error", error);
+    secureLog.error("Transcription error");
     return new Response(
       JSON.stringify({ error: "Transcription service temporarily unavailable. Please try again." }),
       {

@@ -10,7 +10,7 @@ const sendEmail = async (to: string, subject: string, html: string) => {
       Authorization: `Bearer ${RESEND_API_KEY}`,
     },
     body: JSON.stringify({
-      from: "Geo-Smart <onboarding@resend.dev>",
+      from: "Geo-Smart <noreply@geosmart.site>",
       to: [to],
       subject,
       html,

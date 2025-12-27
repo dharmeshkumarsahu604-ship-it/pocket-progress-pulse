@@ -11,11 +11,12 @@ import {
   Compass, 
   Mountain, 
   TrendingUp,
-  Navigation
+  Navigation,
+  Ruler
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type MeasurementMode = 'strike' | 'dip' | 'strike_dip' | 'trend_plunge' | 'bearing';
+export type MeasurementMode = 'strike' | 'dip' | 'strike_dip' | 'trend_plunge' | 'bearing' | 'clinometer';
 
 interface MeasurementPanelProps {
   mode: MeasurementMode;
@@ -40,6 +41,7 @@ const MODES: { id: MeasurementMode; label: string; icon: React.ReactNode; descri
   { id: 'strike_dip', label: 'Strike & Dip', icon: <Compass className="h-4 w-4" />, description: 'Full plane orientation (RHR)' },
   { id: 'trend_plunge', label: 'Trend & Plunge', icon: <TrendingUp className="h-4 w-4" />, description: 'Linear feature orientation' },
   { id: 'bearing', label: 'Bearing', icon: <Navigation className="h-4 w-4" />, description: 'Direction to a point' },
+  { id: 'clinometer', label: 'Clinometer', icon: <Ruler className="h-4 w-4" />, description: 'Measure dip angle by tilting device' },
 ];
 
 export const MeasurementPanel: React.FC<MeasurementPanelProps> = ({
@@ -122,6 +124,16 @@ export const MeasurementPanel: React.FC<MeasurementPanelProps> = ({
       
       case 'bearing':
         return renderAdjustmentControl('Bearing', bearing, 'bearing');
+      
+      case 'clinometer':
+        return (
+          <div className="space-y-2">
+            {renderAdjustmentControl('Dip Angle', dip, 'dip', '°', 90)}
+            <div className="text-center text-xs text-muted-foreground mt-2">
+              Hold device against surface to measure inclination
+            </div>
+          </div>
+        );
       
       default:
         return null;

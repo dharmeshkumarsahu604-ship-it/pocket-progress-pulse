@@ -154,17 +154,39 @@ export default function Auth() {
     
     try {
       setIsResetting(true);
+      
+      // First, trigger Supabase password reset to get the reset token
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {
         toast.error(error.message);
-      } else {
-        toast.success("Password reset link sent! Check your email.");
-        setShowForgotPassword(false);
-        setResetEmail("");
+        return;
       }
+
+      // Send custom password reset email via our edge function
+      try {
+        const resetUrl = `${window.location.origin}/reset-password`;
+        await supabase.functions.invoke('send-confirmation-email', {
+          body: {
+            email: resetEmail,
+            name: '',
+            type: 'password_reset',
+            resetUrl: resetUrl,
+          },
+        });
+      } catch (emailError) {
+        console.error('Failed to send custom reset email:', emailError);
+        // Still show success since Supabase's email was sent
+      }
+
+      toast.success("Password reset link sent! Check your email.", {
+        description: "If you don't see the email, please check your spam/junk folder.",
+        duration: 8000,
+      });
+      setShowForgotPassword(false);
+      setResetEmail("");
     } catch (error) {
       toast.error("Failed to send reset email");
     } finally {

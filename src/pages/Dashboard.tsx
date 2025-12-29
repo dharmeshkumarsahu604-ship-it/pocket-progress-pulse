@@ -1,11 +1,24 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Camera, Mic, FileText, Mountain, Gem, MapPin, ChevronRight, Sparkles, Lightbulb, Compass } from "lucide-react";
-import { Link } from "react-router-dom";
+import { 
+  Camera, 
+  Mountain, 
+  Gem, 
+  ChevronRight, 
+  Sparkles, 
+  Lightbulb, 
+  FileText,
+  Plus,
+  ArrowRight,
+  BookOpen,
+  Target,
+  Beaker
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 
@@ -29,41 +42,41 @@ interface SpecimenOfDay {
   description: string;
   image_url: string | null;
   type: "rock" | "mineral";
-  subtype?: string; // rock type (igneous, etc.) or mineral hardness
+  subtype?: string;
 }
 
-// Geological facts for "Did You Know?" section
-const geologicalFacts = [
-  "The oldest known rocks on Earth are about 4 billion years old, found in northern Canada.",
-  "Diamonds are formed about 150-200 kilometers below Earth's surface under extreme pressure and temperature.",
-  "The Himalayan mountains grow about 5 millimeters taller every year due to tectonic plate movement.",
-  "Obsidian, a volcanic glass, was used by ancient civilizations to make surgical scalpels sharper than steel.",
-  "The Grand Canyon exposes rocks that are nearly 2 billion years old at its deepest points.",
-  "Pumice is the only rock that can float on water due to its porous, air-filled structure.",
-  "The Earth's core is as hot as the surface of the Sun, reaching temperatures of about 5,500°C.",
-  "Peridot is one of the few gemstones that forms deep in the Earth's mantle, not in the crust.",
-  "The Mariana Trench is so deep that if Mount Everest were placed at its bottom, the peak would still be underwater.",
-  "Fossils can only form in sedimentary rocks because igneous and metamorphic rocks destroy organic remains.",
-  "The largest crystal ever found was a selenite crystal in Mexico measuring 12 meters long and weighing 55 tons.",
-  "Tectonic plates move at about the same rate as your fingernails grow - a few centimeters per year.",
-  "The Sahara Desert was once a lush tropical region with rivers and lakes about 6,000 years ago.",
-  "Iceland sits on the Mid-Atlantic Ridge where two tectonic plates are pulling apart, creating new crust.",
-  "Coal is formed from ancient plant matter that has been compressed for millions of years.",
-  "The mineral feldspar makes up about 60% of the Earth's crust, making it the most abundant mineral.",
-  "Mount Everest contains marine limestone with fossils of sea creatures from an ancient ocean floor.",
-  "Volcanic lightning occurs when ash particles collide and create static electricity during eruptions.",
-  "The oldest water on Earth, found in a Canadian mine, is about 2 billion years old.",
-  "Amber is fossilized tree resin that can preserve insects and plants for millions of years.",
-  "The Deccan Traps in India are the result of volcanic eruptions that may have contributed to dinosaur extinction.",
-  "Quartz is piezoelectric, meaning it generates electricity when pressure is applied to it.",
-  "The Earth's magnetic poles have reversed hundreds of times throughout geological history.",
-  "Gneiss rocks can be over 4 billion years old, making them some of the oldest materials on Earth.",
-  "A single volcanic eruption can release more CO2 than all human activity in a year.",
-  "The mineral halite (rock salt) forms when ancient seas evaporate, leaving behind salt deposits.",
-  "Stalactites grow from the ceiling while stalagmites grow from the floor of caves.",
-  "The Mohs hardness scale was created in 1812 by German geologist Friedrich Mohs.",
-  "Plate tectonics recycles the ocean floor every 200 million years through subduction.",
-  "The largest earthquake ever recorded was a 9.5 magnitude in Chile in 1960."
+// Micro-learning content
+const learningCards = [
+  {
+    icon: Lightbulb,
+    title: "Did You Know?",
+    content: "The oldest rocks on Earth are 4 billion years old, found in Canada's Acasta Gneiss.",
+    type: "fact"
+  },
+  {
+    icon: Target,
+    title: "Field Tip",
+    content: "Always observe rock orientation in the field before collecting samples.",
+    type: "tip"
+  },
+  {
+    icon: BookOpen,
+    title: "Exam Prep",
+    content: "Remember: Igneous → Sedimentary → Metamorphic forms the rock cycle.",
+    type: "exam"
+  },
+  {
+    icon: Beaker,
+    title: "Quick Test",
+    content: "Use dilute HCl to test for carbonates - fizzing indicates calcite or dolomite.",
+    type: "tip"
+  },
+  {
+    icon: Lightbulb,
+    title: "Fun Fact",
+    content: "Pumice is the only rock that can float on water due to its air-filled pores.",
+    type: "fact"
+  },
 ];
 
 // Generate a deterministic "random" index based on date
@@ -73,15 +86,21 @@ function getDailyIndex(max: number, offset: number = 0): number {
   return seed % max;
 }
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [scanCount, setScanCount] = useState(0);
   const [fieldNotes] = useLocalStorage<FieldNote[]>("field-notes", []);
   const [specimenOfDay, setSpecimenOfDay] = useState<SpecimenOfDay | null>(null);
   const [loadingSpecimen, setLoadingSpecimen] = useState(true);
-  
-  // Get daily fact using offset to ensure different from specimen
-  const dailyFact = geologicalFacts[getDailyIndex(geologicalFacts.length, 7)];
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchSpecimenOfDay();
@@ -101,7 +120,6 @@ export default function Dashboard() {
 
   const fetchSpecimenOfDay = async () => {
     try {
-      // Fetch all rocks and minerals
       const [rocksResult, mineralsResult] = await Promise.all([
         supabase.from("rocks").select("id, name, description, image_url, type"),
         supabase.from("minerals").select("id, name, description, image_url, hardness")
@@ -110,7 +128,6 @@ export default function Dashboard() {
       const rocks = rocksResult.data || [];
       const minerals = mineralsResult.data || [];
 
-      // Combine into one array
       const allSpecimens: SpecimenOfDay[] = [
         ...rocks.map(r => ({
           id: r.id,
@@ -141,43 +158,97 @@ export default function Dashboard() {
     }
   };
 
+  // Non-authenticated view
   if (!user) {
     return (
       <AppLayout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 text-center">
-          <Mountain className="h-20 w-20 text-primary" />
+        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 text-center px-4">
+          <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-secondary to-primary flex items-center justify-center shadow-lg">
+            <Mountain className="h-10 w-10 text-white" />
+          </div>
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold">Welcome to Geo-Smart</h1>
-            <p className="text-xl text-muted-foreground max-w-md">
+            <h1 className="text-3xl font-bold text-foreground">Welcome to Geo-Smart</h1>
+            <p className="text-lg text-foreground-secondary max-w-md">
               Your AI-powered geological field companion
             </p>
           </div>
           <Link to="/auth">
-            <Button size="lg">Get Started</Button>
+            <Button size="lg" className="bg-gradient-to-r from-secondary to-primary hover:opacity-90 transition-opacity">
+              Get Started
+            </Button>
           </Link>
         </div>
       </AppLayout>
     );
   }
 
+  const userName = user.user_metadata?.full_name?.split(' ')[0] || "Explorer";
+
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Welcome Section */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">Welcome to Geo-Smart</h1>
-          <p className="text-muted-foreground">Your AI-powered geological field companion</p>
+      <div className="space-y-5 pb-2">
+        {/* Personalized Greeting */}
+        <div className="pt-1">
+          <h1 className="text-xl font-semibold text-foreground">
+            {getGreeting()} 👋
+          </h1>
+          <p className="text-foreground-secondary text-sm mt-0.5">
+            Ready for field exploration today, {userName}?
+          </p>
         </div>
 
-        {/* Specimen of the Day */}
-        {!loadingSpecimen && specimenOfDay && (
-          <Link to={specimenOfDay.type === "rock" ? `/rocks/${specimenOfDay.id}` : `/minerals/${specimenOfDay.id}`}>
-            <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer border-primary/20 bg-gradient-to-br from-background to-muted/30">
-              <div className="flex gap-4 p-4">
-                {/* Image Section */}
-                <div className="relative flex-shrink-0">
+        {/* Primary CTA - Identify Rock */}
+        <Card 
+          className="overflow-hidden border-0 shadow-lg cursor-pointer active:scale-[0.98] transition-transform"
+          onClick={() => navigate("/scanner")}
+        >
+          <div className="bg-gradient-to-br from-secondary to-primary p-5 text-white">
+            <div className="flex items-start justify-between">
+              <div className="space-y-3">
+                <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <Camera className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Identify a Rock</h2>
+                  <p className="text-white/80 text-sm mt-1">
+                    Scan or upload a specimen image
+                  </p>
+                </div>
+                <Button 
+                  className="bg-white text-foreground hover:bg-white/90 font-semibold shadow-md"
+                  size="sm"
+                >
+                  Scan Now
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+              <div className="opacity-20">
+                <Mountain className="h-24 w-24" />
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Today's Specimen */}
+        {loadingSpecimen ? (
+          <Card className="p-4">
+            <div className="flex gap-4 animate-pulse">
+              <div className="w-24 h-24 rounded-xl bg-muted" />
+              <div className="flex-1 space-y-3">
+                <div className="h-4 w-20 bg-muted rounded" />
+                <div className="h-6 w-32 bg-muted rounded" />
+                <div className="h-4 w-full bg-muted rounded" />
+              </div>
+            </div>
+          </Card>
+        ) : specimenOfDay && (
+          <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex gap-4">
+                {/* Larger Image */}
+                <div className="flex-shrink-0">
                   {specimenOfDay.image_url ? (
-                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden shadow-md ring-2 ring-primary/10">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden shadow-sm">
                       <img
                         src={specimenOfDay.image_url}
                         alt={specimenOfDay.name}
@@ -185,145 +256,191 @@ export default function Dashboard() {
                       />
                     </div>
                   ) : (
-                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl bg-muted flex items-center justify-center shadow-md">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-muted flex items-center justify-center">
                       {specimenOfDay.type === "rock" ? (
-                        <Mountain className="h-12 w-12 text-muted-foreground" />
+                        <Mountain className="h-10 w-10 text-muted-foreground" />
                       ) : (
-                        <Gem className="h-12 w-12 text-muted-foreground" />
+                        <Gem className="h-10 w-10 text-muted-foreground" />
                       )}
                     </div>
                   )}
                 </div>
 
-                {/* Details Section */}
-                <div className="flex-1 flex flex-col justify-between min-w-0 py-1">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className="bg-primary/10 text-primary border-0 text-xs font-medium">
-                        <Sparkles className="h-3 w-3 mr-1" />
-                        Today's Specimen
-                      </Badge>
-                    </div>
-                    <h3 className="font-bold text-xl text-foreground leading-tight">{specimenOfDay.name}</h3>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <Badge variant="outline" className="capitalize text-xs">
-                        {specimenOfDay.type}
-                      </Badge>
-                      {specimenOfDay.subtype && (
-                        <span className="text-xs text-muted-foreground capitalize">
-                          • {specimenOfDay.subtype}
-                        </span>
-                      )}
-                    </div>
+                {/* Content */}
+                <div className="flex-1 min-w-0 flex flex-col">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Badge variant="secondary" className="bg-accent/10 text-accent border-0 text-xs font-medium px-2 py-0.5">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      Today's Specimen
+                    </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                  
+                  <h3 className="font-bold text-lg text-foreground leading-tight">
+                    {specimenOfDay.name}
+                  </h3>
+                  
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="outline" className="bg-muted text-muted-foreground border-0 capitalize text-xs px-2 py-0.5">
+                      {specimenOfDay.type}
+                    </Badge>
+                    {specimenOfDay.subtype && (
+                      <Badge variant="outline" className="bg-muted text-muted-foreground border-0 capitalize text-xs px-2 py-0.5">
+                        {specimenOfDay.subtype}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <p className="text-sm text-foreground-secondary line-clamp-1 mt-2">
                     {specimenOfDay.description}
                   </p>
-                </div>
-
-                {/* Arrow Indicator */}
-                <div className="flex items-center flex-shrink-0">
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2 mt-3">
+                    <Link to={specimenOfDay.type === "rock" ? `/rocks/${specimenOfDay.id}` : `/minerals/${specimenOfDay.id}`}>
+                      <Button size="sm" variant="default" className="h-8 text-xs">
+                        View Details
+                      </Button>
+                    </Link>
+                    <Link to={specimenOfDay.type === "rock" ? "/rocks" : "/minerals"}>
+                      <Button size="sm" variant="outline" className="h-8 text-xs">
+                        Similar {specimenOfDay.type === "rock" ? "Rocks" : "Minerals"}
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </Card>
-          </Link>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Did You Know? */}
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="p-4">
-            <div className="flex gap-3">
-              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Lightbulb className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-primary mb-1">Did You Know?</p>
-                <p className="text-sm text-muted-foreground">{dailyFact}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Stats - Clickable */}
-        <div className="grid grid-cols-2 gap-4">
-          <Link to="/scanner">
-            <Card className="cursor-pointer hover:bg-accent/50 transition-colors">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardDescription>Specimens</CardDescription>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <CardTitle className="text-2xl">{scanCount}</CardTitle>
-              </CardHeader>
-            </Card>
-          </Link>
-          <Link to="/field-notes">
-            <Card className="cursor-pointer hover:bg-accent/50 transition-colors">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardDescription>Field Notes</CardDescription>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <CardTitle className="text-2xl">{fieldNotes.length}</CardTitle>
-              </CardHeader>
-            </Card>
-          </Link>
+        {/* Micro-Learning Carousel */}
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-foreground px-1">Quick Learning</h2>
+          <div 
+            ref={carouselRef}
+            className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {learningCards.map((card, index) => {
+              const Icon = card.icon;
+              return (
+                <Card 
+                  key={index} 
+                  className="flex-shrink-0 w-64 bg-learning border-0 shadow-sm"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="h-9 w-9 rounded-lg bg-learning-foreground/10 flex items-center justify-center flex-shrink-0">
+                        <Icon className="h-5 w-5 text-learning-foreground" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-learning-foreground mb-1">
+                          {card.title}
+                        </p>
+                        <p className="text-sm text-foreground leading-snug">
+                          {card.content}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            <Link to="/scanner">
-              <Button className="w-full justify-start" size="lg">
-                <Camera className="mr-2 h-5 w-5" />
-                Scan Specimen
-              </Button>
-            </Link>
-            <Link to="/voice-notes">
-              <Button variant="secondary" className="w-full justify-start" size="lg">
-                <Mic className="mr-2 h-5 w-5" />
-                Voice Note
-              </Button>
-            </Link>
-            <Link to="/field-notes">
-              <Button variant="secondary" className="w-full justify-start" size="lg">
-                <FileText className="mr-2 h-5 w-5" />
-                Field Note
-              </Button>
-            </Link>
-            <Link to="/compass">
-              <Button variant="secondary" className="w-full justify-start" size="lg">
-                <Compass className="mr-2 h-5 w-5" />
-                Brunton Compass
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+        {/* Progress & Action Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Specimens Card */}
+          <Card 
+            className="shadow-sm hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98]"
+            onClick={() => navigate("/scanner")}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Camera className="h-5 w-5 text-primary" />
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <p className="text-2xl font-bold text-foreground">{scanCount}</p>
+              <p className="text-sm text-foreground-secondary">collected</p>
+              <div className="flex items-center gap-1 mt-2 text-primary">
+                <Plus className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Add specimen</span>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Featured Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Explore</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-3 gap-3">
-            <Link to="/rocks" className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-accent transition-colors">
-              <Mountain className="h-8 w-8 text-primary" />
-              <span className="text-sm font-medium text-center">Rocks</span>
+          {/* Field Notes Card */}
+          <Card 
+            className="shadow-sm hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98]"
+            onClick={() => navigate("/field-notes")}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-secondary" />
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+              {fieldNotes.length > 0 ? (
+                <>
+                  <p className="text-2xl font-bold text-foreground">{fieldNotes.length}</p>
+                  <p className="text-sm text-foreground-secondary">field notes</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-foreground">No notes yet</p>
+                  <p className="text-xs text-foreground-secondary mt-0.5">Start documenting</p>
+                </>
+              )}
+              <div className="flex items-center gap-1 mt-2 text-secondary">
+                <ArrowRight className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">
+                  {fieldNotes.length > 0 ? "View notes" : "Start first note"}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Explore Section */}
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-foreground px-1">Explore</h2>
+          <div className="grid grid-cols-3 gap-3">
+            <Link 
+              to="/rocks" 
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card shadow-sm hover:shadow-md transition-all active:scale-95"
+            >
+              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Mountain className="h-6 w-6 text-primary" />
+              </div>
+              <span className="text-sm font-medium text-foreground">Rocks</span>
             </Link>
-            <Link to="/minerals" className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-accent transition-colors">
-              <Gem className="h-8 w-8 text-accent" />
-              <span className="text-sm font-medium text-center">Minerals</span>
+            <Link 
+              to="/minerals" 
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card shadow-sm hover:shadow-md transition-all active:scale-95"
+            >
+              <div className="h-12 w-12 rounded-xl bg-accent/10 flex items-center justify-center">
+                <Gem className="h-6 w-6 text-accent" />
+              </div>
+              <span className="text-sm font-medium text-foreground">Minerals</span>
             </Link>
-            <Link to="/sites" className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-accent transition-colors">
-              <MapPin className="h-8 w-8 text-secondary" />
-              <span className="text-sm font-medium text-center">Sites</span>
+            <Link 
+              to="/sites" 
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card shadow-sm hover:shadow-md transition-all active:scale-95"
+            >
+              <div className="h-12 w-12 rounded-xl bg-secondary/10 flex items-center justify-center">
+                <svg className="h-6 w-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-foreground">Sites</span>
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AppLayout>
   );

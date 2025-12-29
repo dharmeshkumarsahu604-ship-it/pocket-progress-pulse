@@ -8,96 +8,104 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Geological Color Palette */
-    --background: 0 0% 96%;
-    --foreground: 25 75% 15%;
+    /* Geo-Smart Field Companion Palette */
+    --background: 40 20% 98%; /* #FAFAF8 */
+    --foreground: 25 40% 16%; /* #3A2A1A */
+    --foreground-secondary: 0 0% 37%; /* #5F5F5F */
 
-    --card: 0 0% 100%;
-    --card-foreground: 25 75% 15%;
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 25 40% 16%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 25 75% 15%;
+    --popover-foreground: 25 40% 16%;
 
-    --primary: 25 75% 31%; /* Earth Brown */
+    --primary: 25 75% 31%; /* Earth Brown #8B4513 */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 13% 50%; /* Stone Gray */
+    --secondary: 122 39% 33%; /* Geology Green #2E7D32 */
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 210 13% 85%;
-    --muted-foreground: 210 13% 35%;
+    --muted: 30 15% 94%; /* #F1EEE9 */
+    --muted-foreground: 25 25% 33%; /* #6B4F3A */
 
-    --accent: 207 44% 49%; /* Mineral Blue */
+    --accent: 32 90% 44%; /* Mineral Amber #D97706 */
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --success: 120 61% 34%; /* Forest Green */
+    --success: 122 39% 33%; /* #2E7D32 */
     --success-foreground: 0 0% 98%;
 
-    --warning: 45 100% 50%; /* Amber */
-    --warning-foreground: 25 75% 15%;
+    --warning: 32 90% 44%; /* Amber #D97706 */
+    --warning-foreground: 25 40% 16%;
 
-    --border: 210 13% 85%;
-    --input: 210 13% 85%;
+    --learning: 33 100% 96%; /* #FFF7ED */
+    --learning-foreground: 32 90% 44%;
+
+    --border: 30 15% 88%;
+    --input: 30 15% 88%;
     --ring: 25 75% 31%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 25 75% 15%;
+    --sidebar-foreground: 25 40% 16%;
     --sidebar-primary: 25 75% 31%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 210 13% 90%;
-    --sidebar-accent-foreground: 25 75% 15%;
-    --sidebar-border: 210 13% 85%;
-    --sidebar-ring: 207 44% 49%;
+    --sidebar-accent: 30 15% 94%;
+    --sidebar-accent-foreground: 25 40% 16%;
+    --sidebar-border: 30 15% 88%;
+    --sidebar-ring: 32 90% 44%;
   }
 
   .dark {
-    --background: 25 75% 8%;
+    --background: 25 30% 8%;
     --foreground: 0 0% 95%;
+    --foreground-secondary: 0 0% 70%;
 
-    --card: 25 60% 12%;
+    --card: 25 25% 12%;
     --card-foreground: 0 0% 95%;
 
-    --popover: 25 60% 12%;
+    --popover: 25 25% 12%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 25 70% 45%; /* Lighter Earth Brown */
+    --primary: 25 70% 45%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 15% 30%; /* Darker Stone Gray */
+    --secondary: 122 39% 40%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 210 13% 20%;
-    --muted-foreground: 210 13% 65%;
+    --muted: 25 20% 18%;
+    --muted-foreground: 25 15% 60%;
 
-    --accent: 207 44% 55%; /* Lighter Mineral Blue */
+    --accent: 32 85% 50%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --success: 120 61% 40%;
+    --success: 122 39% 40%;
     --success-foreground: 0 0% 98%;
 
-    --warning: 45 100% 55%;
-    --warning-foreground: 25 75% 15%;
+    --warning: 32 85% 50%;
+    --warning-foreground: 25 30% 8%;
 
-    --border: 210 13% 25%;
-    --input: 210 13% 25%;
+    --learning: 25 30% 14%;
+    --learning-foreground: 32 85% 50%;
+
+    --border: 25 20% 22%;
+    --input: 25 20% 22%;
     --ring: 25 70% 45%;
 
-    --sidebar-background: 25 60% 10%;
+    --sidebar-background: 25 25% 10%;
     --sidebar-foreground: 0 0% 95%;
     --sidebar-primary: 25 70% 45%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 210 13% 20%;
+    --sidebar-accent: 25 20% 18%;
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 210 13% 25%;
-    --sidebar-ring: 207 44% 55%;
+    --sidebar-border: 25 20% 22%;
+    --sidebar-ring: 32 85% 50%;
   }
 }
 

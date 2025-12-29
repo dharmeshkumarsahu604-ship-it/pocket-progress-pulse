@@ -23,7 +23,10 @@ export default {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        foreground: {
+          DEFAULT: "hsl(var(--foreground))",
+          secondary: "hsl(var(--foreground-secondary))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -59,6 +62,10 @@ export default {
         warning: {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
+        },
+        learning: {
+          DEFAULT: "hsl(var(--learning))",
+          foreground: "hsl(var(--learning-foreground))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

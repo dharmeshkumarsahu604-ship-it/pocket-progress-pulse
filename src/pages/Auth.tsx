@@ -171,7 +171,7 @@ export default function Auth() {
     try {
       setIsResetting(true);
       
-      // First, trigger Supabase password reset to get the reset token
+      // Use Supabase's built-in password reset which includes the proper reset token
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
@@ -179,22 +179,6 @@ export default function Auth() {
       if (error) {
         toast.error(error.message);
         return;
-      }
-
-      // Send custom password reset email via our edge function
-      try {
-        const resetUrl = `${window.location.origin}/reset-password`;
-        await supabase.functions.invoke('send-confirmation-email', {
-          body: {
-            email: resetEmail,
-            name: '',
-            type: 'password_reset',
-            resetUrl: resetUrl,
-          },
-        });
-      } catch (emailError) {
-        console.error('Failed to send custom reset email:', emailError);
-        // Still show success since Supabase's email was sent
       }
 
       toast.success("Password reset link sent! Check your email.", {

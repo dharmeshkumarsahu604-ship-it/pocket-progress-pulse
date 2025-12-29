@@ -8,6 +8,7 @@ import { ArrowLeft, Camera, Mic, HardDrive, MapPin, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { NotificationSettings as PushNotificationSettings } from "@/components/settings/NotificationSettings";
 
 type PermissionStatus = "granted" | "denied" | "prompt" | "unsupported";
 
@@ -294,6 +295,9 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Push Notification Settings */}
+        <PushNotificationSettings />
 
         <Card>
           <CardHeader>

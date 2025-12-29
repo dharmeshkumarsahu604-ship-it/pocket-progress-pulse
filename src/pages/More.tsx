@@ -1,7 +1,7 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mic, FileText, MapPin, MessageCircle, User, ChevronRight, GraduationCap, Compass, Brain, Trophy, Target, Zap } from "lucide-react";
 
 const menuItems = [
@@ -15,9 +15,9 @@ const menuItems = [
 ];
 
 const quizCategories = [
-  { icon: Brain, label: "All Topics", description: "Test your overall geology knowledge", color: "bg-primary/10 text-primary" },
-  { icon: Target, label: "Rocks & Minerals", description: "Identify specimens and properties", color: "bg-amber-500/10 text-amber-600" },
-  { icon: Zap, label: "Quick Challenge", description: "5 random questions", color: "bg-emerald-500/10 text-emerald-600" },
+  { icon: Brain, label: "All Topics", description: "Test your overall geology knowledge", color: "bg-primary/10 text-primary", path: "/quiz" },
+  { icon: Target, label: "Rocks & Minerals", description: "Identify specimens and properties", color: "bg-amber-500/10 text-amber-600", path: "/quiz?topic=rocks" },
+  { icon: Zap, label: "Quick Challenge", description: "5 random questions", color: "bg-emerald-500/10 text-emerald-600", path: "/quiz?mode=quick" },
 ];
 
 export default function More() {
@@ -45,7 +45,7 @@ export default function More() {
             {quizCategories.map((category) => {
               const Icon = category.icon;
               return (
-                <Link key={category.label} to="/quiz">
+                <Link key={category.label} to={category.path}>
                   <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
                     <CardContent className="p-4 flex items-center gap-4">
                       <div className={cn("p-3 rounded-xl", category.color)}>

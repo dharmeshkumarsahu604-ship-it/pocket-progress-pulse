@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getRandomQuestions, getQuestionsByCourse, getAllCourses, QuizQuestion, geologyQuizQuestions } from "@/data/geologyQuizQuestions";
+import { getRandomQuestions, getQuestionsByCourse, getAllCourses, QuizQuestion, Difficulty, getDifficultyCounts } from "@/data/geologyQuizQuestions";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -21,12 +21,15 @@ import {
   Target,
   Filter,
   Shuffle,
-  ChevronRight
+  ChevronRight,
+  Zap,
+  Flame,
+  Star
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-type QuizState = "start" | "selectCourse" | "playing" | "result";
+type QuizState = "start" | "selectCourse" | "selectDifficulty" | "playing" | "result";
 type QuizMode = "random" | "course";
 
 interface QuizResult {
@@ -37,12 +40,18 @@ interface QuizResult {
 }
 
 // Course info with question counts
-const getCourseInfo = () => {
+const getCourseInfo = (difficulty?: Difficulty) => {
   const courses = getAllCourses();
   return courses.map(course => ({
     name: course,
-    questionCount: getQuestionsByCourse(course).length
+    questionCount: getQuestionsByCourse(course, difficulty).length
   })).sort((a, b) => a.name.localeCompare(b.name));
+};
+
+const difficultyConfig = {
+  easy: { label: "Easy", icon: Star, color: "bg-green-500", description: "Basic concepts & definitions" },
+  medium: { label: "Medium", icon: Zap, color: "bg-yellow-500", description: "Application & understanding" },
+  hard: { label: "Hard", icon: Flame, color: "bg-red-500", description: "Advanced & analytical" }
 };
 
 export default function Quiz() {
@@ -50,6 +59,7 @@ export default function Quiz() {
   const [quizState, setQuizState] = useState<QuizState>("start");
   const [quizMode, setQuizMode] = useState<QuizMode>("random");
   const [selectedCourse, setSelectedCourse] = useState<string>("");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | undefined>(undefined);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -59,7 +69,8 @@ export default function Quiz() {
   const [startTime, setStartTime] = useState<number>(0);
   const [userName, setUserName] = useState<string>("Geologist");
 
-  const courseInfo = getCourseInfo();
+  const courseInfo = getCourseInfo(selectedDifficulty);
+  const difficultyCounts = getDifficultyCounts();
 
   // Fetch user profile name
   useEffect(() => {
@@ -72,30 +83,34 @@ export default function Quiz() {
           .single();
         
         if (profile?.full_name) {
-          setUserName(profile.full_name.split(" ")[0]); // Use first name
+          setUserName(profile.full_name.split(" ")[0]);
         }
       }
     };
     fetchUserName();
   }, [user]);
 
-  const startRandomQuiz = () => {
+  const startRandomQuiz = (difficulty?: Difficulty) => {
     setQuizMode("random");
-    const newQuestions = getRandomQuestions(10);
+    setSelectedDifficulty(difficulty);
+    const newQuestions = getRandomQuestions(10, difficulty);
     launchQuiz(newQuestions);
   };
 
   const startCourseQuiz = (course: string) => {
     setQuizMode("course");
     setSelectedCourse(course);
-    const courseQuestions = getQuestionsByCourse(course);
-    // Shuffle and take up to 10 questions
+    const courseQuestions = getQuestionsByCourse(course, selectedDifficulty);
     const shuffled = [...courseQuestions].sort(() => Math.random() - 0.5);
     const quizQuestions = shuffled.slice(0, Math.min(10, shuffled.length));
     launchQuiz(quizQuestions);
   };
 
   const launchQuiz = (quizQuestions: QuizQuestion[]) => {
+    if (quizQuestions.length === 0) {
+      toast.error("No questions available for this selection");
+      return;
+    }
     setQuestions(quizQuestions);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
@@ -107,12 +122,18 @@ export default function Quiz() {
     toast.info("Quiz started! Good luck! 🎯");
   };
 
-  const goToCoursesSelection = () => {
+  const goToCoursesSelection = (difficulty?: Difficulty) => {
+    setSelectedDifficulty(difficulty);
     setQuizState("selectCourse");
+  };
+
+  const goToDifficultySelection = () => {
+    setQuizState("selectDifficulty");
   };
 
   const goBackToStart = () => {
     setQuizState("start");
+    setSelectedDifficulty(undefined);
   };
 
   const handleSelectAnswer = (answerIndex: number) => {

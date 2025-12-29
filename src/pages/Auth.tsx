@@ -171,9 +171,14 @@ export default function Auth() {
     try {
       setIsResetting(true);
       
-      // Use Supabase's built-in password reset which includes the proper reset token
+      // Use the deployed app URL for password reset redirect
+      const deployedUrl = 'https://f7e89c8a-0b36-4051-b4a9-f98c220070e0.lovableproject.com';
+      const redirectUrl = window.location.hostname === 'localhost' 
+        ? `${deployedUrl}/reset-password`
+        : `${window.location.origin}/reset-password`;
+      
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: redirectUrl,
       });
 
       if (error) {

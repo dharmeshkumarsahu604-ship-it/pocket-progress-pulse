@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mountain } from "lucide-react";
+import { Mountain, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,16 +12,50 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [isValidSession, setIsValidSession] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if we have a valid session with password reset token
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        toast.error("Invalid or expired reset link");
-        navigate("/auth");
+    // Listen for auth state changes - Supabase will process the recovery token from URL
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth event:', event, 'Session:', !!session);
+      
+      if (event === 'PASSWORD_RECOVERY') {
+        // User clicked the recovery link and token was valid
+        setIsValidSession(true);
+        setIsVerifying(false);
+      } else if (event === 'SIGNED_IN' && session) {
+        // Session established after recovery
+        setIsValidSession(true);
+        setIsVerifying(false);
       }
     });
+
+    // Also check if there's already a valid session (user might have refreshed)
+    const checkSession = async () => {
+      // Give Supabase time to process the URL hash token
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        setIsValidSession(true);
+      } else {
+        // Check if URL has recovery token fragments
+        const hash = window.location.hash;
+        if (!hash.includes('type=recovery') && !hash.includes('access_token')) {
+          toast.error("Invalid or expired reset link");
+          navigate("/auth");
+          return;
+        }
+      }
+      setIsVerifying(false);
+    };
+
+    checkSession();
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -48,7 +82,9 @@ export default function ResetPassword() {
         toast.error(error.message);
       } else {
         toast.success("Password updated successfully!");
-        navigate("/");
+        // Sign out and redirect to login
+        await supabase.auth.signOut();
+        navigate("/auth");
       }
     } catch (error) {
       toast.error("Failed to reset password");
@@ -56,6 +92,38 @@ export default function ResetPassword() {
       setIsLoading(false);
     }
   };
+
+  if (isVerifying) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Verifying reset link...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isValidSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <Mountain className="h-12 w-12 text-primary mx-auto mb-2" />
+            <CardTitle>Link Expired</CardTitle>
+            <CardDescription>
+              This password reset link is invalid or has expired. Please request a new one.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" onClick={() => navigate("/auth")}>
+              Back to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">

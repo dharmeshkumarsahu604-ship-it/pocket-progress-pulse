@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -56,6 +57,7 @@ const difficultyConfig = {
 
 export default function Quiz() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [quizState, setQuizState] = useState<QuizState>("start");
   const [quizMode, setQuizMode] = useState<QuizMode>("random");
   const [selectedCourse, setSelectedCourse] = useState<string>("");
@@ -68,6 +70,7 @@ export default function Quiz() {
   const [answers, setAnswers] = useState<QuizResult["answers"]>([]);
   const [startTime, setStartTime] = useState<number>(0);
   const [userName, setUserName] = useState<string>("Geologist");
+  const [hasAutoStarted, setHasAutoStarted] = useState(false);
 
   const courseInfo = getCourseInfo(selectedDifficulty);
   const difficultyCounts = getDifficultyCounts();
@@ -89,6 +92,23 @@ export default function Quiz() {
     };
     fetchUserName();
   }, [user]);
+
+  // Handle URL query parameters for quick challenge mode
+  useEffect(() => {
+    if (hasAutoStarted) return;
+    
+    const mode = searchParams.get("mode");
+    if (mode === "quick") {
+      setHasAutoStarted(true);
+      startQuickChallenge();
+    }
+  }, [searchParams, hasAutoStarted]);
+
+  const startQuickChallenge = () => {
+    setQuizMode("random");
+    const newQuestions = getRandomQuestions(5); // 5 questions for quick challenge
+    launchQuiz(newQuestions);
+  };
 
   const startRandomQuiz = (difficulty?: Difficulty) => {
     setQuizMode("random");

@@ -221,7 +221,7 @@ export default function Quiz() {
             <div className="grid gap-4">
               <Card 
                 className="cursor-pointer hover:border-primary/50 transition-all hover:shadow-md"
-                onClick={startRandomQuiz}
+                onClick={() => startRandomQuiz()}
               >
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-4">
@@ -241,7 +241,7 @@ export default function Quiz() {
 
               <Card 
                 className="cursor-pointer hover:border-primary/50 transition-all hover:shadow-md"
-                onClick={goToCoursesSelection}
+                onClick={() => goToCoursesSelection()}
               >
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-4">

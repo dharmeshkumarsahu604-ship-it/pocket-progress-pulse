@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { getRandomQuestions, QuizQuestion } from "@/data/geologyQuizQuestions";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { getRandomQuestions, getQuestionsByCourse, getAllCourses, QuizQuestion, geologyQuizQuestions } from "@/data/geologyQuizQuestions";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -17,12 +18,16 @@ import {
   Clock,
   BookOpen,
   Sparkles,
-  Target
+  Target,
+  Filter,
+  Shuffle,
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-type QuizState = "start" | "playing" | "result";
+type QuizState = "start" | "selectCourse" | "playing" | "result";
+type QuizMode = "random" | "course";
 
 interface QuizResult {
   score: number;
@@ -31,9 +36,20 @@ interface QuizResult {
   timeTaken: number;
 }
 
+// Course info with question counts
+const getCourseInfo = () => {
+  const courses = getAllCourses();
+  return courses.map(course => ({
+    name: course,
+    questionCount: getQuestionsByCourse(course).length
+  })).sort((a, b) => a.name.localeCompare(b.name));
+};
+
 export default function Quiz() {
   const { user } = useAuth();
   const [quizState, setQuizState] = useState<QuizState>("start");
+  const [quizMode, setQuizMode] = useState<QuizMode>("random");
+  const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -42,6 +58,8 @@ export default function Quiz() {
   const [answers, setAnswers] = useState<QuizResult["answers"]>([]);
   const [startTime, setStartTime] = useState<number>(0);
   const [userName, setUserName] = useState<string>("Geologist");
+
+  const courseInfo = getCourseInfo();
 
   // Fetch user profile name
   useEffect(() => {
@@ -61,9 +79,24 @@ export default function Quiz() {
     fetchUserName();
   }, [user]);
 
-  const startQuiz = () => {
+  const startRandomQuiz = () => {
+    setQuizMode("random");
     const newQuestions = getRandomQuestions(10);
-    setQuestions(newQuestions);
+    launchQuiz(newQuestions);
+  };
+
+  const startCourseQuiz = (course: string) => {
+    setQuizMode("course");
+    setSelectedCourse(course);
+    const courseQuestions = getQuestionsByCourse(course);
+    // Shuffle and take up to 10 questions
+    const shuffled = [...courseQuestions].sort(() => Math.random() - 0.5);
+    const quizQuestions = shuffled.slice(0, Math.min(10, shuffled.length));
+    launchQuiz(quizQuestions);
+  };
+
+  const launchQuiz = (quizQuestions: QuizQuestion[]) => {
+    setQuestions(quizQuestions);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setShowAnswer(false);
@@ -72,6 +105,14 @@ export default function Quiz() {
     setStartTime(Date.now());
     setQuizState("playing");
     toast.info("Quiz started! Good luck! 🎯");
+  };
+
+  const goToCoursesSelection = () => {
+    setQuizState("selectCourse");
+  };
+
+  const goBackToStart = () => {
+    setQuizState("start");
   };
 
   const handleSelectAnswer = (answerIndex: number) => {
@@ -151,43 +192,52 @@ export default function Quiz() {
               </div>
               <h1 className="text-3xl font-bold">Geology Quiz</h1>
               <p className="text-muted-foreground">
-                Test your knowledge of geology with 10 random questions covering the entire BSc Geology syllabus!
+                Test your knowledge of geology! Choose your quiz mode below.
               </p>
             </div>
 
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                    <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            {/* Quiz Mode Selection */}
+            <div className="grid gap-4">
+              <Card 
+                className="cursor-pointer hover:border-primary/50 transition-all hover:shadow-md"
+                onClick={startRandomQuiz}
+              >
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                      <Shuffle className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">Random Quiz</h3>
+                      <p className="text-sm text-muted-foreground">
+                        10 questions from all courses - unique every time!
+                      </p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </div>
-                  <div>
-                    <p className="font-medium">Comprehensive Coverage</p>
-                    <p className="text-sm text-muted-foreground">Questions from all 23 core courses</p>
-                  </div>
-                </div>
+                </CardContent>
+              </Card>
 
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <Card 
+                className="cursor-pointer hover:border-primary/50 transition-all hover:shadow-md"
+                onClick={goToCoursesSelection}
+              >
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center">
+                      <Filter className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">Topic-Wise Quiz</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Choose a specific course to practice
+                      </p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </div>
-                  <div>
-                    <p className="font-medium">Unique Every Time</p>
-                    <p className="text-sm text-muted-foreground">Random questions each attempt</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                    <Target className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Instant Results</p>
-                    <p className="text-sm text-muted-foreground">Know your score immediately</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
 
             <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
               <CardContent className="pt-6">
@@ -208,11 +258,57 @@ export default function Quiz() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        )}
 
-            <Button onClick={startQuiz} size="lg" className="w-full">
-              <Brain className="w-5 h-5 mr-2" />
-              Start Quiz
-            </Button>
+        {/* Course Selection Screen */}
+        {quizState === "selectCourse" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={goBackToStart}>
+                <ArrowRight className="w-5 h-5 rotate-180" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">Select a Course</h1>
+                <p className="text-muted-foreground text-sm">
+                  Choose a topic to practice ({courseInfo.length} courses available)
+                </p>
+              </div>
+            </div>
+
+            <ScrollArea className="h-[calc(100vh-280px)]">
+              <div className="space-y-2 pr-4">
+                {courseInfo.map((course) => (
+                  <Card 
+                    key={course.name}
+                    className="cursor-pointer hover:border-primary/50 transition-all hover:shadow-sm"
+                    onClick={() => startCourseQuiz(course.name)}
+                  >
+                    <CardContent className="py-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <BookOpen className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{course.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {course.questionCount} questions available
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">
+                            {Math.min(10, course.questionCount)} Q
+                          </Badge>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         )}
 
@@ -409,7 +505,11 @@ export default function Quiz() {
 
             {/* Actions */}
             <div className="flex gap-3">
-              <Button onClick={startQuiz} className="flex-1">
+              <Button onClick={goBackToStart} variant="outline" className="flex-1">
+                <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
+                Back to Menu
+              </Button>
+              <Button onClick={() => quizMode === "course" && selectedCourse ? startCourseQuiz(selectedCourse) : startRandomQuiz()} className="flex-1">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Try Again
               </Button>

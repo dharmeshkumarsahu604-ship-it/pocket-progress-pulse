@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,22 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Show success toast when user arrives after email verification
+  useEffect(() => {
+    const hash = window.location.hash;
+    const isEmailVerified = hash.includes('access_token') || searchParams.get('confirmed') === 'true';
+    
+    if (isEmailVerified) {
+      toast.success("Email verified successfully!", {
+        description: "You can now sign in with your credentials.",
+        duration: 5000,
+      });
+      // Clean up URL
+      window.history.replaceState({}, '', '/auth');
+    }
+  }, [searchParams]);
 
   // Login form
   const [loginEmail, setLoginEmail] = useState("");

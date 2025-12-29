@@ -1,6 +1,8 @@
 // Comprehensive Geology Quiz Questions covering all 23 Core courses
 // Based on Odisha State Higher Education Council BSc Geology Curriculum (NEP-2020)
 
+export type Difficulty = "easy" | "medium" | "hard";
+
 export interface QuizQuestion {
   id: string;
   question: string;
@@ -8,6 +10,7 @@ export interface QuizQuestion {
   correctAnswer: number; // Index of correct option (0-3)
   topic: string;
   course: string;
+  difficulty: Difficulty;
   explanation?: string;
 }
 
@@ -20,6 +23,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Earth as a Planet",
     course: "General Geology",
+    difficulty: "easy",
     explanation: "The Earth is approximately 4.5 billion years old, determined through radioactive dating of meteorites and Earth's oldest rocks."
   },
   {
@@ -29,6 +33,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Solar System",
     course: "General Geology",
+    difficulty: "easy",
     explanation: "Jovian planets (Jupiter, Saturn, Uranus, Neptune) are called gas giants due to their large size and gaseous composition."
   },
   {
@@ -37,7 +42,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Volcanic eruptions", "Ocean currents", "Earthquakes", "Wind patterns"],
     correctAnswer: 2,
     topic: "Internal Structure of Earth",
-    course: "General Geology"
+    course: "General Geology",
+    difficulty: "easy"
   },
   {
     id: "gg-004",
@@ -45,7 +51,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Crust", "Mantle", "Outer core", "Inner core"],
     correctAnswer: 3,
     topic: "Internal Structure of Earth",
-    course: "General Geology"
+    course: "General Geology",
+    difficulty: "medium"
   },
   {
     id: "gg-005",
@@ -53,7 +60,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Stratovolcano", "Shield volcano", "Cinder cone", "Composite volcano"],
     correctAnswer: 1,
     topic: "Volcanoes",
-    course: "General Geology"
+    course: "General Geology",
+    difficulty: "medium"
   },
   {
     id: "gg-006",
@@ -61,7 +69,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["River erosion", "Wind erosion", "Glacial erosion", "Wave erosion"],
     correctAnswer: 2,
     topic: "Geological Action of Glaciers",
-    course: "General Geology"
+    course: "General Geology",
+    difficulty: "easy"
   },
   {
     id: "gg-007",
@@ -69,7 +78,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Trellis", "Dendritic", "Radial", "Rectangular"],
     correctAnswer: 1,
     topic: "Drainage Patterns",
-    course: "General Geology"
+    course: "General Geology",
+    difficulty: "medium"
   },
   {
     id: "gg-008",
@@ -77,7 +87,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Erosion", "Weathering", "Deposition", "Lithification"],
     correctAnswer: 1,
     topic: "Denudation",
-    course: "General Geology"
+    course: "General Geology",
+    difficulty: "easy"
   },
 
   // Core II: Historical Geology
@@ -88,6 +99,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Plate Tectonics",
     course: "Historical Geology",
+    difficulty: "easy",
     explanation: "Alfred Wegener proposed the continental drift theory in 1912, suggesting that continents were once joined together."
   },
   {
@@ -96,7 +108,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Gondwana", "Laurasia", "Pangaea", "Rodinia"],
     correctAnswer: 2,
     topic: "Continental Drift",
-    course: "Historical Geology"
+    course: "Historical Geology",
+    difficulty: "easy"
   },
   {
     id: "hg-003",
@@ -104,7 +117,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Convergent", "Divergent", "Transform", "Conservative"],
     correctAnswer: 1,
     topic: "Plate Tectonics",
-    course: "Historical Geology"
+    course: "Historical Geology",
+    difficulty: "medium"
   },
   {
     id: "hg-004",
@@ -112,7 +126,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Superposition", "Uniformitarianism", "Original horizontality", "Cross-cutting relations"],
     correctAnswer: 1,
     topic: "Principles of Stratigraphy",
-    course: "Historical Geology"
+    course: "Historical Geology",
+    difficulty: "medium"
   },
   {
     id: "hg-005",
@@ -120,7 +135,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Trace fossils", "Index fossils", "Body fossils", "Living fossils"],
     correctAnswer: 1,
     topic: "Fossils",
-    course: "Historical Geology"
+    course: "Historical Geology",
+    difficulty: "easy"
   },
   {
     id: "hg-006",
@@ -128,7 +144,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Orogeny", "Epeirogeny", "Isostasy", "Subduction"],
     correctAnswer: 1,
     topic: "Crustal Processes",
-    course: "Historical Geology"
+    course: "Historical Geology",
+    difficulty: "hard"
   },
 
   // Core III: Crystallography
@@ -139,6 +156,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 3,
     topic: "Crystal Systems",
     course: "Crystallography",
+    difficulty: "easy",
     explanation: "There are 7 crystal systems: Isometric, Tetragonal, Hexagonal, Trigonal, Orthorhombic, Monoclinic, and Triclinic."
   },
   {
@@ -147,7 +165,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Tetragonal", "Isometric", "Orthorhombic", "Hexagonal"],
     correctAnswer: 1,
     topic: "Crystal Systems",
-    course: "Crystallography"
+    course: "Crystallography",
+    difficulty: "medium"
   },
   {
     id: "cr-003",
@@ -155,7 +174,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Polymorphism", "Isomorphism", "Twinning", "Pseudomorphism"],
     correctAnswer: 2,
     topic: "Crystal Forms",
-    course: "Crystallography"
+    course: "Crystallography",
+    difficulty: "medium"
   },
   {
     id: "cr-004",
@@ -163,7 +183,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Intercepts all three axes equally", "Is parallel to two axes", "Passes through the origin", "Never exists in crystals"],
     correctAnswer: 1,
     topic: "Miller Indices",
-    course: "Crystallography"
+    course: "Crystallography",
+    difficulty: "hard"
   },
   {
     id: "cr-005",
@@ -171,7 +192,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["7", "14", "32", "230"],
     correctAnswer: 1,
     topic: "Bravais Lattice",
-    course: "Crystallography"
+    course: "Crystallography",
+    difficulty: "hard"
   },
 
   // Core IV: Mineralogy and Mineral Optics
@@ -182,6 +204,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 2,
     topic: "Physical Properties",
     course: "Mineralogy",
+    difficulty: "easy",
     explanation: "Quartz has a hardness of 7 on the Mohs hardness scale."
   },
   {
@@ -190,7 +213,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Carbonates", "Silicates", "Sulfides", "Oxides"],
     correctAnswer: 1,
     topic: "Silicate Structure",
-    course: "Mineralogy"
+    course: "Mineralogy",
+    difficulty: "easy"
   },
   {
     id: "mm-003",
@@ -198,7 +222,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Fracture", "Cleavage", "Parting", "Tenacity"],
     correctAnswer: 1,
     topic: "Physical Properties",
-    course: "Mineralogy"
+    course: "Mineralogy",
+    difficulty: "easy"
   },
   {
     id: "mm-004",
@@ -206,7 +231,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Pleochroism", "Birefringence", "Relief", "Extinction"],
     correctAnswer: 2,
     topic: "Mineral Optics",
-    course: "Mineralogy"
+    course: "Mineralogy",
+    difficulty: "hard"
   },
   {
     id: "mm-005",
@@ -214,7 +240,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Iridescence", "Pleochroism", "Fluorescence", "Opalescence"],
     correctAnswer: 1,
     topic: "Optical Properties",
-    course: "Mineralogy"
+    course: "Mineralogy",
+    difficulty: "medium"
   },
   {
     id: "mm-006",
@@ -222,7 +249,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Framework silicate", "Chain silicate", "Sheet silicate", "Nesosilicate (Isolated)"],
     correctAnswer: 3,
     topic: "Silicate Classification",
-    course: "Mineralogy"
+    course: "Mineralogy",
+    difficulty: "hard"
   },
 
   // Core V: Geochemistry and Elementary Petrology
@@ -233,6 +261,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Cosmic Abundance",
     course: "Geochemistry",
+    difficulty: "easy",
     explanation: "Oxygen is the most abundant element in Earth's crust, making up about 46% by weight."
   },
   {
@@ -241,7 +270,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Oxygen", "Sulfur", "Iron", "Silicate"],
     correctAnswer: 2,
     topic: "Geochemical Classification",
-    course: "Geochemistry"
+    course: "Geochemistry",
+    difficulty: "hard"
   },
   {
     id: "gc-003",
@@ -249,7 +279,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Volcanic", "Plutonic", "Metamorphic", "Clastic"],
     correctAnswer: 2,
     topic: "Elementary Petrology",
-    course: "Geochemistry"
+    course: "Geochemistry",
+    difficulty: "easy"
   },
   {
     id: "gc-004",
@@ -257,7 +288,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Isomorphism", "Polymorphism", "Ionic substitution", "Diadochy"],
     correctAnswer: 3,
     topic: "Atomic Substitution",
-    course: "Geochemistry"
+    course: "Geochemistry",
+    difficulty: "hard"
   },
 
   // Core VI: Elementary Economic Geology
@@ -268,6 +300,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 2,
     topic: "Ore Deposits",
     course: "Economic Geology",
+    difficulty: "medium",
     explanation: "Cut-off grade is the minimum grade or quality of ore that can be profitably mined."
   },
   {
@@ -276,7 +309,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Placer deposit", "Hydrothermal deposit", "Residual deposit", "Sedimentary deposit"],
     correctAnswer: 1,
     topic: "Ore Genesis",
-    course: "Economic Geology"
+    course: "Economic Geology",
+    difficulty: "medium"
   },
   {
     id: "eg-003",
@@ -284,7 +318,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Iron", "Copper", "Aluminum", "Zinc"],
     correctAnswer: 2,
     topic: "Metallic Ores",
-    course: "Economic Geology"
+    course: "Economic Geology",
+    difficulty: "easy"
   },
   {
     id: "eg-004",
@@ -292,7 +327,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Leaching", "Placer concentration", "Supergene enrichment", "Contact metasomatism"],
     correctAnswer: 1,
     topic: "Ore Formation",
-    course: "Economic Geology"
+    course: "Economic Geology",
+    difficulty: "medium"
   },
 
   // Core VII: Paleontology
@@ -303,6 +339,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Geological Eras",
     course: "Paleontology",
+    difficulty: "easy",
     explanation: "The Mesozoic Era (252-66 million years ago) is called the Age of Reptiles due to dinosaur dominance."
   },
   {
@@ -311,7 +348,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Palynology", "Paleobotany", "Micropaleontology", "Paleoecology"],
     correctAnswer: 1,
     topic: "Paleontology Branches",
-    course: "Paleontology"
+    course: "Paleontology",
+    difficulty: "medium"
   },
   {
     id: "pl-003",
@@ -319,7 +357,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Cast", "Mold", "Body fossil", "Trace fossil"],
     correctAnswer: 2,
     topic: "Fossil Types",
-    course: "Paleontology"
+    course: "Paleontology",
+    difficulty: "easy"
   },
   {
     id: "pl-004",
@@ -327,7 +366,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Precambrian", "Paleozoic", "Mesozoic", "Cenozoic"],
     correctAnswer: 1,
     topic: "Index Fossils",
-    course: "Paleontology"
+    course: "Paleontology",
+    difficulty: "medium"
   },
   {
     id: "pl-005",
@@ -335,7 +375,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Metamorphism", "Fossilization", "Diagenesis", "Weathering"],
     correctAnswer: 1,
     topic: "Fossil Formation",
-    course: "Paleontology"
+    course: "Paleontology",
+    difficulty: "easy"
   },
 
   // Core VIII: Stratigraphy
@@ -346,6 +387,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Indian Stratigraphy",
     course: "Stratigraphy",
+    difficulty: "easy",
     explanation: "Gondwana rocks (Permian to Jurassic) contain major coal deposits of India."
   },
   {
@@ -354,7 +396,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Older rocks are on top", "Younger rocks are at the bottom", "Older rocks are at the bottom", "All rocks are of same age"],
     correctAnswer: 2,
     topic: "Principles of Stratigraphy",
-    course: "Stratigraphy"
+    course: "Stratigraphy",
+    difficulty: "easy"
   },
   {
     id: "st-003",
@@ -362,7 +405,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Phanerozoic", "Proterozoic", "Archean", "Hadean"],
     correctAnswer: 1,
     topic: "Geological Time Scale",
-    course: "Stratigraphy"
+    course: "Stratigraphy",
+    difficulty: "hard"
   },
   {
     id: "st-004",
@@ -370,7 +414,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Jurassic", "Cretaceous-Paleogene", "Triassic", "Permian"],
     correctAnswer: 1,
     topic: "Indian Stratigraphy",
-    course: "Stratigraphy"
+    course: "Stratigraphy",
+    difficulty: "medium"
   },
   {
     id: "st-005",
@@ -378,7 +423,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Dinosaurs", "Trilobites", "Mammals", "Ammonites"],
     correctAnswer: 2,
     topic: "Cenozoic Stratigraphy",
-    course: "Stratigraphy"
+    course: "Stratigraphy",
+    difficulty: "medium"
   },
 
   // Core IX: Igneous Petrology
@@ -389,6 +435,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 2,
     topic: "Igneous Rock Classification",
     course: "Igneous Petrology",
+    difficulty: "easy",
     explanation: "Granite is a coarse-grained plutonic (intrusive) igneous rock formed deep within the Earth."
   },
   {
@@ -397,7 +444,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Granular", "Porphyritic", "Glassy", "Vesicular"],
     correctAnswer: 1,
     topic: "Igneous Textures",
-    course: "Igneous Petrology"
+    course: "Igneous Petrology",
+    difficulty: "medium"
   },
   {
     id: "ip-003",
@@ -405,7 +453,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Quartz", "Orthoclase", "Olivine", "Muscovite"],
     correctAnswer: 2,
     topic: "Bowen's Reaction Series",
-    course: "Igneous Petrology"
+    course: "Igneous Petrology",
+    difficulty: "medium"
   },
   {
     id: "ip-004",
@@ -413,7 +462,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Granite", "Diorite", "Gabbro", "Syenite"],
     correctAnswer: 2,
     topic: "Igneous Rock Pairs",
-    course: "Igneous Petrology"
+    course: "Igneous Petrology",
+    difficulty: "medium"
   },
   {
     id: "ip-005",
@@ -421,7 +471,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Assimilation", "Magmatic differentiation", "Hybridization", "Anatexis"],
     correctAnswer: 1,
     topic: "Magmatic Processes",
-    course: "Igneous Petrology"
+    course: "Igneous Petrology",
+    difficulty: "hard"
   },
 
   // Core X: Sedimentary Petrology
@@ -432,6 +483,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Sedimentary Rocks",
     course: "Sedimentary Petrology",
+    difficulty: "medium",
     explanation: "Shale makes up about 70% of all sedimentary rocks."
   },
   {
@@ -440,7 +492,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Quiet water deposition", "Current direction", "Deep marine environment", "Glacial origin"],
     correctAnswer: 1,
     topic: "Sedimentary Structures",
-    course: "Sedimentary Petrology"
+    course: "Sedimentary Petrology",
+    difficulty: "medium"
   },
   {
     id: "sp-003",
@@ -448,7 +501,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Clastic", "Chemical", "Organic", "Evaporite"],
     correctAnswer: 3,
     topic: "Sedimentary Rock Types",
-    course: "Sedimentary Petrology"
+    course: "Sedimentary Petrology",
+    difficulty: "easy"
   },
   {
     id: "sp-004",
@@ -456,7 +510,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Weathering", "Lithification", "Metamorphism", "Crystallization"],
     correctAnswer: 1,
     topic: "Sedimentary Processes",
-    course: "Sedimentary Petrology"
+    course: "Sedimentary Petrology",
+    difficulty: "easy"
   },
   {
     id: "sp-005",
@@ -464,7 +519,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Mud cracks", "Water or wind action", "Organic activity", "Chemical precipitation"],
     correctAnswer: 1,
     topic: "Sedimentary Structures",
-    course: "Sedimentary Petrology"
+    course: "Sedimentary Petrology",
+    difficulty: "easy"
   },
 
   // Core XI: Metamorphic Petrology
@@ -475,6 +531,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Metamorphism Factors",
     course: "Metamorphic Petrology",
+    difficulty: "easy",
     explanation: "Heat, pressure, and chemically active fluids are the three main agents that cause metamorphism."
   },
   {
@@ -483,7 +540,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Slate", "Quartzite", "Marble", "Schist"],
     correctAnswer: 2,
     topic: "Metamorphic Rocks",
-    course: "Metamorphic Petrology"
+    course: "Metamorphic Petrology",
+    difficulty: "easy"
   },
   {
     id: "mp-003",
@@ -491,7 +549,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Rapid cooling", "High temperature only", "Directed pressure", "Chemical weathering"],
     correctAnswer: 2,
     topic: "Metamorphic Textures",
-    course: "Metamorphic Petrology"
+    course: "Metamorphic Petrology",
+    difficulty: "medium"
   },
   {
     id: "mp-004",
@@ -499,7 +558,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Chlorite", "Biotite", "Garnet", "Sillimanite"],
     correctAnswer: 2,
     topic: "Metamorphic Zones",
-    course: "Metamorphic Petrology"
+    course: "Metamorphic Petrology",
+    difficulty: "medium"
   },
   {
     id: "mp-005",
@@ -507,7 +567,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Greenschist", "Amphibolite", "Granulite", "Blueschist"],
     correctAnswer: 2,
     topic: "Metamorphic Facies",
-    course: "Metamorphic Petrology"
+    course: "Metamorphic Petrology",
+    difficulty: "hard"
   },
 
   // Core XII: Remote Sensing and GIS
@@ -517,7 +578,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Normal Digital Value Index", "Normalized Difference Vegetation Index", "Near Distance Visual Imaging", "National Data Vector Index"],
     correctAnswer: 1,
     topic: "Remote Sensing Indices",
-    course: "Remote Sensing and GIS"
+    course: "Remote Sensing and GIS",
+    difficulty: "medium"
   },
   {
     id: "rs-002",
@@ -525,7 +587,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["LANDSAT", "SPOT", "IRS", "ASTER"],
     correctAnswer: 2,
     topic: "Satellites",
-    course: "Remote Sensing and GIS"
+    course: "Remote Sensing and GIS",
+    difficulty: "easy"
   },
   {
     id: "rs-003",
@@ -533,7 +596,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Geological Information System", "Geographic Information System", "Global Image System", "Ground Investigation Survey"],
     correctAnswer: 1,
     topic: "GIS Fundamentals",
-    course: "Remote Sensing and GIS"
+    course: "Remote Sensing and GIS",
+    difficulty: "easy"
   },
   {
     id: "rs-004",
@@ -541,7 +605,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Temporal", "Spectral", "Spatial", "Radiometric"],
     correctAnswer: 2,
     topic: "Remote Sensing Resolution",
-    course: "Remote Sensing and GIS"
+    course: "Remote Sensing and GIS",
+    difficulty: "medium"
   },
 
   // Core XIII: Structural Geology & Tectonics
@@ -552,6 +617,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Folds",
     course: "Structural Geology",
+    difficulty: "medium",
     explanation: "An anticline is an upward-arching fold with the oldest rocks in the core."
   },
   {
@@ -560,7 +626,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Compressional", "Tensional", "Shear", "Hydrostatic"],
     correctAnswer: 1,
     topic: "Faults",
-    course: "Structural Geology"
+    course: "Structural Geology",
+    difficulty: "medium"
   },
   {
     id: "sg-003",
@@ -568,7 +635,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Vertical", "Down the slope", "Horizontal along the bed", "Perpendicular to bedding"],
     correctAnswer: 2,
     topic: "Attitude of Beds",
-    course: "Structural Geology"
+    course: "Structural Geology",
+    difficulty: "easy"
   },
   {
     id: "sg-004",
@@ -576,7 +644,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Younger rock surrounded by older rocks", "Older rock surrounded by younger rocks", "A fault feature", "A fold axis"],
     correctAnswer: 0,
     topic: "Structural Features",
-    course: "Structural Geology"
+    course: "Structural Geology",
+    difficulty: "hard"
   },
   {
     id: "sg-005",
@@ -584,7 +653,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Angular unconformity", "Disconformity", "Nonconformity", "Paraconformity"],
     correctAnswer: 1,
     topic: "Unconformities",
-    course: "Structural Geology"
+    course: "Structural Geology",
+    difficulty: "hard"
   },
 
   // Core XIV: Engineering Geology & Rock Mechanics
@@ -595,6 +665,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 0,
     topic: "Rock Mass Classification",
     course: "Engineering Geology",
+    difficulty: "easy",
     explanation: "RQD is a measure of rock quality based on the percentage of intact core pieces longer than 10 cm."
   },
   {
@@ -603,7 +674,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Earth dam", "Arch dam", "Gravity dam", "Buttress dam"],
     correctAnswer: 1,
     topic: "Dam Engineering",
-    course: "Engineering Geology"
+    course: "Engineering Geology",
+    difficulty: "medium"
   },
   {
     id: "en-003",
@@ -611,7 +683,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Flat terrain", "Steep slopes with water saturation", "Desert regions", "Coastal plains"],
     correctAnswer: 1,
     topic: "Slope Stability",
-    course: "Engineering Geology"
+    course: "Engineering Geology",
+    difficulty: "easy"
   },
   {
     id: "en-004",
@@ -619,7 +692,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Rock age", "Stress conditions at failure", "Mineral composition", "Porosity"],
     correctAnswer: 1,
     topic: "Rock Mechanics",
-    course: "Engineering Geology"
+    course: "Engineering Geology",
+    difficulty: "hard"
   },
 
   // Core XV: Hydrogeology
@@ -630,6 +704,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Groundwater Basics",
     course: "Hydrogeology",
+    difficulty: "easy",
     explanation: "An aquifer is a geological formation that can store and transmit groundwater in usable quantities."
   },
   {
@@ -638,7 +713,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Surface runoff", "Groundwater flow", "Evaporation", "Precipitation"],
     correctAnswer: 1,
     topic: "Groundwater Flow",
-    course: "Hydrogeology"
+    course: "Hydrogeology",
+    difficulty: "medium"
   },
   {
     id: "hy-003",
@@ -646,7 +722,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Always horizontal", "The upper surface of the saturated zone", "Only in deserts", "A man-made structure"],
     correctAnswer: 1,
     topic: "Groundwater Zones",
-    course: "Hydrogeology"
+    course: "Hydrogeology",
+    difficulty: "easy"
   },
   {
     id: "hy-004",
@@ -654,7 +731,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Porosity", "Permeability", "Specific yield", "Storage coefficient"],
     correctAnswer: 1,
     topic: "Aquifer Properties",
-    course: "Hydrogeology"
+    course: "Hydrogeology",
+    difficulty: "medium"
   },
 
   // Core XVI: Exploration and Mining Geology
@@ -664,7 +742,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Gravity survey", "Magnetic survey", "Seismic survey", "Electrical resistivity"],
     correctAnswer: 1,
     topic: "Mineral Exploration",
-    course: "Exploration Geology"
+    course: "Exploration Geology",
+    difficulty: "easy"
   },
   {
     id: "em-002",
@@ -672,7 +751,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Deep deposits", "Near-surface deposits", "Underwater deposits", "Volcanic ores"],
     correctAnswer: 1,
     topic: "Mining Methods",
-    course: "Exploration Geology"
+    course: "Exploration Geology",
+    difficulty: "easy"
   },
   {
     id: "em-003",
@@ -680,7 +760,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Drilling", "Mineral beneficiation", "Geological mapping", "Geochemical sampling"],
     correctAnswer: 1,
     topic: "Mineral Processing",
-    course: "Exploration Geology"
+    course: "Exploration Geology",
+    difficulty: "medium"
   },
 
   // Core XVII: Economic Minerals of India
@@ -691,6 +772,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 2,
     topic: "Indian Minerals",
     course: "Economic Minerals of India",
+    difficulty: "easy",
     explanation: "Odisha is India's largest iron ore producing state, with major deposits in Keonjhar and Sundargarh districts."
   },
   {
@@ -699,7 +781,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Iron ore", "Chromite", "Bauxite", "Manganese"],
     correctAnswer: 1,
     topic: "Odisha Minerals",
-    course: "Economic Minerals of India"
+    course: "Economic Minerals of India",
+    difficulty: "medium"
   },
   {
     id: "ei-003",
@@ -707,7 +790,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Maharashtra", "Rajasthan", "Karnataka", "Andhra Pradesh"],
     correctAnswer: 2,
     topic: "Indian Mineral Deposits",
-    course: "Economic Minerals of India"
+    course: "Economic Minerals of India",
+    difficulty: "medium"
   },
   {
     id: "ei-004",
@@ -715,7 +799,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Iron", "Manganese", "Coal", "Graphite"],
     correctAnswer: 2,
     topic: "Fuel Minerals",
-    course: "Economic Minerals of India"
+    course: "Economic Minerals of India",
+    difficulty: "easy"
   },
 
   // Core XVIII: Laboratory Instrumentation
@@ -726,6 +811,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "X-Ray Diffraction",
     course: "Laboratory Instrumentation",
+    difficulty: "medium",
     explanation: "X-Ray Diffraction (XRD) is used to identify mineral crystal structures and compositions."
   },
   {
@@ -734,7 +820,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Age dating", "Elemental analysis", "Texture study", "Fossil identification"],
     correctAnswer: 1,
     topic: "Analytical Methods",
-    course: "Laboratory Instrumentation"
+    course: "Laboratory Instrumentation",
+    difficulty: "medium"
   },
   {
     id: "li-003",
@@ -742,7 +829,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Mass-to-charge ratio of ions", "Light absorption", "X-ray emission", "Magnetic properties"],
     correctAnswer: 0,
     topic: "Mass Spectrometry",
-    course: "Laboratory Instrumentation"
+    course: "Laboratory Instrumentation",
+    difficulty: "hard"
   },
 
   // Core XIX: Geology of Odisha
@@ -752,7 +840,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Sedimentary rocks", "Volcanic rocks", "High-grade metamorphic rocks", "Fossil-bearing strata"],
     correctAnswer: 2,
     topic: "Odisha Stratigraphy",
-    course: "Geology of Odisha"
+    course: "Geology of Odisha",
+    difficulty: "medium"
   },
   {
     id: "go-002",
@@ -760,7 +849,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Freshwater lake", "Brackish water lagoon", "Salt lake", "Crater lake"],
     correctAnswer: 1,
     topic: "Odisha Geomorphology",
-    course: "Geology of Odisha"
+    course: "Geology of Odisha",
+    difficulty: "easy"
   },
   {
     id: "go-003",
@@ -768,7 +858,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Coastal areas", "Singhbhum-Keonjhar-Bonai region", "Chilika area", "Western Odisha"],
     correctAnswer: 1,
     topic: "Odisha Geology",
-    course: "Geology of Odisha"
+    course: "Geology of Odisha",
+    difficulty: "hard"
   },
 
   // Core XX: Fuel Geology
@@ -779,6 +870,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Coal Formation",
     course: "Fuel Geology",
+    difficulty: "easy",
     explanation: "Coal forms from the accumulation and preservation of plant material in swampy environments over millions of years."
   },
   {
@@ -787,7 +879,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Peat", "Lignite", "Bituminous", "Anthracite"],
     correctAnswer: 3,
     topic: "Coal Classification",
-    course: "Fuel Geology"
+    course: "Fuel Geology",
+    difficulty: "medium"
   },
   {
     id: "fg-003",
@@ -795,7 +888,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Silicates", "Carbonates", "Hydrocarbons", "Sulfides"],
     correctAnswer: 2,
     topic: "Petroleum Composition",
-    course: "Fuel Geology"
+    course: "Fuel Geology",
+    difficulty: "easy"
   },
   {
     id: "fg-004",
@@ -803,7 +897,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Volcano and earthquake", "Source rock, reservoir, seal, and trap", "River and lake", "Mountain and valley"],
     correctAnswer: 1,
     topic: "Petroleum System",
-    course: "Fuel Geology"
+    course: "Fuel Geology",
+    difficulty: "hard"
   },
   {
     id: "fg-005",
@@ -811,7 +906,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["West Bengal", "Jharkhand", "Odisha", "Madhya Pradesh"],
     correctAnswer: 2,
     topic: "Indian Coal Fields",
-    course: "Fuel Geology"
+    course: "Fuel Geology",
+    difficulty: "easy"
   },
 
   // Core XXI: Environmental Geology
@@ -821,7 +917,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Helium"],
     correctAnswer: 2,
     topic: "Climate Change",
-    course: "Environmental Geology"
+    course: "Environmental Geology",
+    difficulty: "easy"
   },
   {
     id: "ev-002",
@@ -829,7 +926,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Strong winds", "Undersea earthquakes", "Heavy rainfall", "Volcanic ash"],
     correctAnswer: 1,
     topic: "Natural Disasters",
-    course: "Environmental Geology"
+    course: "Environmental Geology",
+    difficulty: "easy"
   },
   {
     id: "ev-003",
@@ -837,7 +935,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Troposphere", "Stratosphere", "Mesosphere", "Thermosphere"],
     correctAnswer: 1,
     topic: "Atmosphere",
-    course: "Environmental Geology"
+    course: "Environmental Geology",
+    difficulty: "medium"
   },
 
   // Core XXII: Ore Microscopy
@@ -848,6 +947,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Ore Microscopy Basics",
     course: "Ore Microscopy",
+    difficulty: "medium",
     explanation: "Ore minerals are opaque and studied using reflected light in ore microscopy."
   },
   {
@@ -856,7 +956,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Red", "Blue", "Pale yellow", "Green"],
     correctAnswer: 2,
     topic: "Ore Mineral Identification",
-    course: "Ore Microscopy"
+    course: "Ore Microscopy",
+    difficulty: "medium"
   },
   {
     id: "om-003",
@@ -864,7 +965,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Transparent minerals", "Opaque minerals", "Fossils", "Sedimentary structures"],
     correctAnswer: 1,
     topic: "Sample Preparation",
-    course: "Ore Microscopy"
+    course: "Ore Microscopy",
+    difficulty: "easy"
   },
 
   // Core XXIII: Introduction to Geostatistics
@@ -875,6 +977,7 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     correctAnswer: 1,
     topic: "Geostatistics Methods",
     course: "Geostatistics",
+    difficulty: "hard",
     explanation: "Kriging is a geostatistical interpolation method used to estimate values at unsampled locations."
   },
   {
@@ -883,7 +986,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Rock hardness", "Spatial continuity", "Chemical composition", "Age of rocks"],
     correctAnswer: 1,
     topic: "Variogram Analysis",
-    course: "Geostatistics"
+    course: "Geostatistics",
+    difficulty: "hard"
   },
   {
     id: "gs-003",
@@ -891,7 +995,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Maximum variance", "Distance of spatial correlation", "Minimum value", "Sample size"],
     correctAnswer: 1,
     topic: "Variogram Parameters",
-    course: "Geostatistics"
+    course: "Geostatistics",
+    difficulty: "hard"
   },
 
   // Additional questions for variety
@@ -901,7 +1006,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Temperature difference", "Location - underground vs surface", "Chemical composition", "Age of formation"],
     correctAnswer: 1,
     topic: "Igneous Processes",
-    course: "Igneous Petrology"
+    course: "Igneous Petrology",
+    difficulty: "easy"
   },
   {
     id: "add-002",
@@ -909,7 +1015,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Corundum", "Topaz", "Diamond", "Quartz"],
     correctAnswer: 2,
     topic: "Mineral Properties",
-    course: "Mineralogy"
+    course: "Mineralogy",
+    difficulty: "easy"
   },
   {
     id: "add-003",
@@ -917,7 +1024,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Normal fault", "Reverse fault", "Transform fault", "Thrust fault"],
     correctAnswer: 2,
     topic: "Plate Boundaries",
-    course: "Structural Geology"
+    course: "Structural Geology",
+    difficulty: "medium"
   },
   {
     id: "add-004",
@@ -925,7 +1033,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["About 50%", "About 60%", "About 71%", "About 80%"],
     correctAnswer: 2,
     topic: "Earth's Surface",
-    course: "General Geology"
+    course: "General Geology",
+    difficulty: "easy"
   },
   {
     id: "add-005",
@@ -933,7 +1042,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Earthquake intensity", "Earthquake magnitude", "Volcanic explosivity", "Tsunami height"],
     correctAnswer: 1,
     topic: "Earthquakes",
-    course: "General Geology"
+    course: "General Geology",
+    difficulty: "easy"
   },
   {
     id: "add-006",
@@ -941,7 +1051,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Quartz", "Feldspar", "Mica", "Calcite"],
     correctAnswer: 1,
     topic: "Crustal Composition",
-    course: "Mineralogy"
+    course: "Mineralogy",
+    difficulty: "medium"
   },
   {
     id: "add-007",
@@ -949,7 +1060,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Rivers", "Glaciers", "Wind", "Ocean waves"],
     correctAnswer: 2,
     topic: "Aeolian Deposits",
-    course: "General Geology"
+    course: "General Geology",
+    difficulty: "medium"
   },
   {
     id: "add-008",
@@ -957,7 +1069,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Granite", "Gneiss", "Basalt", "Sandstone"],
     correctAnswer: 1,
     topic: "Metamorphic Rocks",
-    course: "Metamorphic Petrology"
+    course: "Metamorphic Petrology",
+    difficulty: "medium"
   },
   {
     id: "add-009",
@@ -965,7 +1078,8 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Trilobites", "Ammonites", "Dinosaurs", "Mammoths"],
     correctAnswer: 2,
     topic: "Mass Extinctions",
-    course: "Historical Geology"
+    course: "Historical Geology",
+    difficulty: "medium"
   },
   {
     id: "add-010",
@@ -973,14 +1087,19 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     options: ["Quartz", "Dolomite", "Calcite", "Gypsum"],
     correctAnswer: 2,
     topic: "Sedimentary Rocks",
-    course: "Sedimentary Petrology"
+    course: "Sedimentary Petrology",
+    difficulty: "easy"
   }
 ];
 
 // Function to get random unique questions
-export function getRandomQuestions(count: number = 10): QuizQuestion[] {
-  const shuffled = [...geologyQuizQuestions].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+export function getRandomQuestions(count: number = 10, difficulty?: Difficulty): QuizQuestion[] {
+  let filtered = [...geologyQuizQuestions];
+  if (difficulty) {
+    filtered = filtered.filter(q => q.difficulty === difficulty);
+  }
+  const shuffled = filtered.sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.min(count, shuffled.length));
 }
 
 // Function to get questions by topic
@@ -989,8 +1108,17 @@ export function getQuestionsByTopic(topic: string): QuizQuestion[] {
 }
 
 // Function to get questions by course
-export function getQuestionsByCourse(course: string): QuizQuestion[] {
-  return geologyQuizQuestions.filter(q => q.course === course);
+export function getQuestionsByCourse(course: string, difficulty?: Difficulty): QuizQuestion[] {
+  let filtered = geologyQuizQuestions.filter(q => q.course === course);
+  if (difficulty) {
+    filtered = filtered.filter(q => q.difficulty === difficulty);
+  }
+  return filtered;
+}
+
+// Function to get questions by difficulty
+export function getQuestionsByDifficulty(difficulty: Difficulty): QuizQuestion[] {
+  return geologyQuizQuestions.filter(q => q.difficulty === difficulty);
 }
 
 // Get all unique topics
@@ -1001,4 +1129,13 @@ export function getAllTopics(): string[] {
 // Get all unique courses
 export function getAllCourses(): string[] {
   return [...new Set(geologyQuizQuestions.map(q => q.course))];
+}
+
+// Get difficulty counts
+export function getDifficultyCounts(): { easy: number; medium: number; hard: number } {
+  return {
+    easy: geologyQuizQuestions.filter(q => q.difficulty === "easy").length,
+    medium: geologyQuizQuestions.filter(q => q.difficulty === "medium").length,
+    hard: geologyQuizQuestions.filter(q => q.difficulty === "hard").length
+  };
 }

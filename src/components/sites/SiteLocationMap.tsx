@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Mountain, Satellite } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { sanitizeHtml } from '@/lib/validation';
 
 interface SiteLocationMapProps {
   latitude: number;
@@ -57,12 +58,15 @@ export const SiteLocationMap: React.FC<SiteLocationMapProps> = ({
       markerRef.current.remove();
     }
 
+    // Sanitize site name to prevent XSS attacks
+    const safeSiteName = sanitizeHtml(siteName);
+    
     markerRef.current = new mapboxgl.Marker({ element: createMarkerElement() })
       .setLngLat([longitude, latitude])
       .setPopup(
         new mapboxgl.Popup({ offset: 25 }).setHTML(`
           <div style="padding: 8px; background: white; border-radius: 4px;">
-            <h3 style="font-weight: 600; font-size: 14px; margin: 0; color: #333;">${siteName}</h3>
+            <h3 style="font-weight: 600; font-size: 14px; margin: 0; color: #333;">${safeSiteName}</h3>
             <p style="font-size: 12px; color: #666; margin: 4px 0 0 0;">${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E</p>
           </div>
         `)

@@ -27,23 +27,47 @@ const signupSchema = loginSchema.extend({
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user, loading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Show success toast when user arrives after email verification
+  // Redirect authenticated users to home
   useEffect(() => {
-    const hash = window.location.hash;
-    const isEmailVerified = hash.includes('access_token') || searchParams.get('confirmed') === 'true';
-    
-    if (isEmailVerified) {
-      toast.success("Email verified successfully!", {
-        description: "You can now sign in with your credentials.",
-        duration: 5000,
-      });
-      // Clean up URL
-      window.history.replaceState({}, '', '/auth');
+    if (!loading && user) {
+      navigate('/');
     }
+  }, [user, loading, navigate]);
+
+  // Handle email verification callback
+  useEffect(() => {
+    const handleEmailVerification = async () => {
+      const hash = window.location.hash;
+      
+      // Check if this is an email confirmation callback
+      if (hash.includes('access_token') || hash.includes('type=signup') || hash.includes('type=email')) {
+        // Supabase will automatically handle the token exchange via onAuthStateChange
+        // Just show a success message
+        toast.success("Email verified successfully!", {
+          description: "You are now signed in.",
+          duration: 5000,
+        });
+        // Clean up URL
+        window.history.replaceState({}, '', '/auth');
+        return;
+      }
+      
+      // Check for confirmed query param (from custom email)
+      if (searchParams.get('confirmed') === 'true') {
+        toast.success("Email verified!", {
+          description: "You can now sign in with your credentials.",
+          duration: 5000,
+        });
+        // Clean up URL
+        window.history.replaceState({}, '', '/auth');
+      }
+    };
+
+    handleEmailVerification();
   }, [searchParams]);
 
   // Login form
@@ -81,6 +105,11 @@ export default function Auth() {
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
           toast.error("Invalid email or password");
+        } else if (error.message.includes("Email not confirmed")) {
+          toast.error("Please verify your email first", {
+            description: "Check your inbox for the verification email. If you didn't receive it, try signing up again.",
+            duration: 8000,
+          });
         } else {
           toast.error(error.message);
         }

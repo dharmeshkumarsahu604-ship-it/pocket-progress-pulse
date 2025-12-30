@@ -1,8 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { RockCard } from "@/components/rocks/RockCard";
-import { SearchBar } from "@/components/shared/SearchBar";
-import { FilterChips } from "@/components/shared/FilterChips";
-import { LoadingSkeleton, SearchBarSkeleton, FilterSkeleton } from "@/components/shared/LoadingSkeleton";
 import { PullToRefreshIndicator } from "@/components/shared/PullToRefreshIndicator";
 import { useSearch } from "@/hooks/useSearch";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -10,8 +7,11 @@ import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useState, useMemo, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Database, SlidersHorizontal, Search, Mountain } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type RockType = "igneous" | "sedimentary" | "metamorphic";
 
@@ -31,16 +31,22 @@ interface Rock {
   locations: string[] | null;
 }
 
+const rockTypeFilters: { value: RockType; label: string }[] = [
+  { value: "igneous", label: "Igneous" },
+  { value: "sedimentary", label: "Sedimentary" },
+  { value: "metamorphic", label: "Metamorphic" },
+];
+
 export default function Rocks() {
   const [rocks, setRocks] = useState<Rock[]>([]);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useLocalStorage<string[]>("favorite-rocks", []);
   const [selectedType, setSelectedType] = useState<RockType | null>(null);
-  const [sortBy, setSortBy] = useState<"name" | "hardness" | "type">("name");
+  const [sortBy, setSortBy] = useState<"name" | "hardness" | "texture">("name");
   
   const { searchTerm, setSearchTerm, filteredItems } = useSearch(
     rocks,
-    ["name", "composition", "type", "color"]
+    ["name", "composition", "type", "color", "texture"]
   );
 
   useEffect(() => {
@@ -89,8 +95,8 @@ export default function Rocks() {
           return a.name.localeCompare(b.name);
         case "hardness":
           return (b.hardness || 0) - (a.hardness || 0);
-        case "type":
-          return a.type.localeCompare(b.type);
+        case "texture":
+          return (a.texture || "").localeCompare(b.texture || "");
         default:
           return 0;
       }
@@ -107,25 +113,49 @@ export default function Rocks() {
     return (
       <AppLayout>
         <div className="space-y-6">
+          {/* Header Skeleton */}
           <div className="animate-fade-in">
-            <Skeleton className="h-10 w-64 mb-2 shimmer" />
-            <Skeleton className="h-5 w-48 shimmer" />
+            <div className="flex items-center gap-3 mb-2">
+              <Skeleton className="h-11 w-11 rounded-xl" />
+              <div>
+                <Skeleton className="h-8 w-48 mb-1" />
+                <Skeleton className="h-4 w-72" />
+              </div>
+            </div>
           </div>
           
-          <div className="space-y-4">
-            <SearchBarSkeleton />
-            
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="space-y-2 w-full sm:w-auto">
-                <Skeleton className="h-5 w-32 shimmer" />
-                <FilterSkeleton />
+          {/* Search & Filter Skeleton */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-border/50 space-y-4">
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex gap-2">
+                <Skeleton className="h-9 w-24 rounded-full" />
+                <Skeleton className="h-9 w-28 rounded-full" />
+                <Skeleton className="h-9 w-28 rounded-full" />
               </div>
-              
-              <Skeleton className="h-10 w-full sm:w-48 shimmer" />
+              <Skeleton className="h-10 w-40 ml-auto" />
             </div>
           </div>
 
-          <LoadingSkeleton count={9} />
+          {/* Cards Skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50">
+                <Skeleton className="aspect-[4/3] w-full" />
+                <div className="p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                  </div>
+                  <Skeleton className="h-4 w-full" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </AppLayout>
     );
@@ -139,51 +169,112 @@ export default function Rocks() {
         isOverThreshold={isOverThreshold}
       />
       <div className="space-y-6">
+        {/* Refined Database Header */}
         <div className="animate-fade-in">
-          <h1 className="text-3xl font-bold">Rock Database</h1>
-          <p className="text-muted-foreground">
-            {filteredAndSortedRocks.length} specimens available
-          </p>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[hsl(var(--geo-brown))] to-[hsl(var(--geo-amber))] flex items-center justify-center shadow-md">
+              <Database className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-[hsl(var(--geo-text))]">
+                Rock Database
+              </h1>
+              <p className="text-sm text-[hsl(var(--geo-text-light))]">
+                Explore and study igneous, sedimentary, and metamorphic rocks
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <Badge 
+              variant="secondary" 
+              className="bg-[hsl(var(--geo-cream))] text-[hsl(var(--geo-text))] border-0 font-medium"
+            >
+              <Mountain className="w-3 h-3 mr-1" />
+              {rocks.length} rocks
+            </Badge>
+            {searchTerm && (
+              <Badge 
+                variant="outline" 
+                className="text-[hsl(var(--geo-text-light))] border-[hsl(var(--geo-text-light))]/30"
+              >
+                {filteredAndSortedRocks.length} results
+              </Badge>
+            )}
+          </div>
         </div>
 
-        <div className="space-y-4 animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <SearchBar
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Search rocks by name, composition, or color..."
-          />
+        {/* Smart Search & Filter Control Panel */}
+        <div 
+          className="bg-white rounded-2xl p-5 shadow-sm border border-border/50 space-y-4 animate-fade-in" 
+          style={{ animationDelay: '100ms' }}
+        >
+          {/* Elevated Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--geo-text-light))]" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by name, texture, composition, or color…"
+              className="w-full h-12 pl-12 pr-4 rounded-xl bg-[hsl(var(--geo-background))] border border-border/50 
+                         text-[hsl(var(--geo-text))] placeholder:text-[hsl(var(--geo-text-light))]
+                         focus:outline-none focus:ring-2 focus:ring-[hsl(var(--geo-brown))]/20 focus:border-[hsl(var(--geo-brown))]
+                         transition-all duration-200"
+            />
+          </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="space-y-2 w-full sm:w-auto">
-              <p className="text-sm font-medium">Filter by Type:</p>
-              <FilterChips
-                options={["igneous", "sedimentary", "metamorphic"]}
-                selected={selectedType}
-                onSelect={(type) => setSelectedType(type as RockType | null)}
-              />
+          {/* Filter Row */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between pt-2 border-t border-border/30">
+            {/* Rock Type Filter Chips */}
+            <div className="flex flex-wrap gap-2">
+              {rockTypeFilters.map((type) => (
+                <button
+                  key={type.value}
+                  onClick={() => setSelectedType(selectedType === type.value ? null : type.value)}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+                    selectedType === type.value
+                      ? "bg-[hsl(var(--geo-brown))] text-white shadow-sm"
+                      : "bg-[hsl(var(--geo-background))] text-[hsl(var(--geo-text))] hover:bg-[hsl(var(--geo-cream))] border border-border/50"
+                  )}
+                >
+                  {type.label}
+                </button>
+              ))}
+              {selectedType && (
+                <button
+                  onClick={() => setSelectedType(null)}
+                  className="px-3 py-2 rounded-full text-sm text-[hsl(var(--geo-text-light))] hover:text-[hsl(var(--geo-text))] transition-colors"
+                >
+                  Clear
+                </button>
+              )}
             </div>
 
-            <div className="w-full sm:w-48">
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <SlidersHorizontal className="w-4 h-4 text-[hsl(var(--geo-text-light))] hidden sm:block" />
               <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full sm:w-44 bg-[hsl(var(--geo-background))] border-border/50">
                   <SelectValue placeholder="Sort by..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="hardness">Hardness</SelectItem>
-                  <SelectItem value="type">Type</SelectItem>
+                  <SelectItem value="name">Name (A–Z)</SelectItem>
+                  <SelectItem value="hardness">Hardness (High–Low)</SelectItem>
+                  <SelectItem value="texture">Texture</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Rock Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredAndSortedRocks.map((rock, index) => (
             <div 
               key={rock.id}
               className="animate-fade-in"
-              style={{ animationDelay: `${200 + index * 50}ms` }}
+              style={{ animationDelay: `${150 + index * 40}ms` }}
             >
               <RockCard
                 rock={rock}
@@ -194,9 +285,18 @@ export default function Rocks() {
           ))}
         </div>
 
+        {/* Empty State */}
         {filteredAndSortedRocks.length === 0 && (
-          <div className="text-center py-12 animate-fade-in">
-            <p className="text-muted-foreground">No rocks found matching your criteria</p>
+          <div className="text-center py-16 animate-fade-in">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[hsl(var(--geo-cream))] flex items-center justify-center">
+              <Mountain className="w-8 h-8 text-[hsl(var(--geo-amber))]" />
+            </div>
+            <h3 className="text-lg font-semibold text-[hsl(var(--geo-text))] mb-1">
+              No rocks match your filters
+            </h3>
+            <p className="text-[hsl(var(--geo-text-light))] max-w-sm mx-auto">
+              Try adjusting the rock type or search terms to find specimens
+            </p>
           </div>
         )}
       </div>

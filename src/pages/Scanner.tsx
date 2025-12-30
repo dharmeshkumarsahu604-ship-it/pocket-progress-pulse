@@ -2,13 +2,26 @@ import { useState, useEffect, useCallback } from "react";
 import { z } from "zod";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { CameraInterface } from "@/components/scanner/CameraInterface";
 import { ScanResults } from "@/components/scanner/ScanResults";
 import { PermissionGate } from "@/components/shared/PermissionGate";
 import { FullscreenImageViewer } from "@/components/shared/FullscreenImageViewer";
 import { ImageAnnotator } from "@/components/shared/ImageAnnotator";
-import { Camera, Image as ImageIcon, Trash2, Loader2, ChevronLeft, ChevronRight, Maximize2, PenTool } from "lucide-react";
+import { 
+  Camera, 
+  Image as ImageIcon, 
+  Trash2, 
+  Loader2, 
+  ChevronLeft, 
+  ChevronRight, 
+  Maximize2, 
+  PenTool,
+  Sun,
+  Focus,
+  Layers,
+  Sparkles
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +45,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 // Schema for validating AI scan results before database insert
 const scanResultSchema = z.object({
@@ -50,6 +64,12 @@ interface SavedScan {
   notes: string | null;
   created_at: string;
 }
+
+const scanningTips = [
+  { icon: Layers, text: "Plain background" },
+  { icon: Sun, text: "Good lighting" },
+  { icon: Focus, text: "Sharp focus" },
+];
 
 export default function Scanner() {
   const { user } = useAuth();
@@ -113,13 +133,11 @@ export default function Scanner() {
   }, []);
 
   const openScanDetail = (scan: SavedScan) => {
-    // Reset fullscreen/annotator state when opening a new specimen
     setIsFullscreenOpen(false);
     setIsAnnotatorOpen(false);
     const index = savedScans.findIndex((s) => s.id === scan.id);
     setSelectedScanIndex(index);
   };
-
 
   // Fetch saved scans on mount
   useEffect(() => {
@@ -153,7 +171,6 @@ export default function Scanner() {
     setIsScanning(true);
 
     try {
-      // Get fresh session to ensure valid token
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
@@ -256,7 +273,6 @@ export default function Scanner() {
 
     setIsSaving(true);
     try {
-      // Upload image to storage
       const base64Data = scannedImage.split(",")[1];
       const byteCharacters = atob(base64Data);
       const byteNumbers = new Array(byteCharacters.length);
@@ -273,12 +289,10 @@ export default function Scanner() {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from("images")
         .getPublicUrl(fileName);
 
-      // Validate and sanitize AI response before database insert
       const normalizedType = scanResult.type?.toLowerCase().includes("mineral") ? "mineral" : "rock";
       const validated = scanResultSchema.safeParse({
         name: scanResult.name,
@@ -357,44 +371,106 @@ export default function Scanner() {
         title="Scanner Permissions"
         description="The AI Scanner needs access to:"
       >
-        <div className="space-y-6">
-          <div className="animate-fade-in">
-            <h1 className="text-3xl font-bold">AI Scanner</h1>
-            <p className="text-muted-foreground">
-              Identify rocks and minerals with AI
-            </p>
+        <div className="space-y-6 pb-6">
+          {/* Hero Section */}
+          <div 
+            className="relative rounded-2xl overflow-hidden p-6 text-white animate-fade-in"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--geo-green)) 0%, hsl(var(--geo-brown)) 100%)"
+            }}
+          >
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="h-5 w-5" />
+                <span className="text-white/80 text-sm font-medium">AI-Powered</span>
+              </div>
+              <h1 className="text-2xl font-bold">Rock & Mineral Scanner</h1>
+              <p className="text-white/80 text-sm mt-1">
+                Identify specimens instantly using AI
+              </p>
+            </div>
+            {/* Decorative circles */}
+            <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10" />
+            <div className="absolute -right-4 -bottom-12 w-24 h-24 rounded-full bg-white/5" />
           </div>
 
+          {/* Main Scan Action */}
           {!scannedImage && !isScanning && (
-            <div className="space-y-4 animate-fade-in">
-              <Button
-                size="lg"
-                onClick={() => setShowCamera(true)}
-                className="w-full hover-scale transition-all duration-300"
-              >
-                <Camera className="mr-2 h-5 w-5" />
-                Open Camera
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
+            <div className="flex flex-col items-center space-y-6 py-4 animate-fade-in">
+              {/* Primary Camera Button */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowCamera(true)}
+                  className="relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 shadow-lg hover:shadow-xl"
+                  style={{
+                    background: "hsl(var(--geo-amber))",
+                    boxShadow: "0 0 0 0 hsla(var(--geo-amber), 0.4)"
+                  }}
+                >
+                  <Camera className="h-12 w-12 text-white" />
+                  {/* Pulse animation ring */}
+                  <span 
+                    className="absolute inset-0 rounded-full animate-ping opacity-30"
+                    style={{ background: "hsl(var(--geo-amber))" }}
+                  />
+                </button>
+              </div>
+              <span className="text-lg font-semibold text-[hsl(var(--geo-text-primary))]">
+                Scan Specimen
+              </span>
+
+              {/* Secondary Gallery Button */}
+              <button
                 onClick={handleGallerySelect}
-                className="w-full hover-scale transition-all duration-300"
+                className="flex items-center gap-2 text-[hsl(var(--geo-text-secondary))] hover:text-[hsl(var(--geo-text-primary))] transition-colors"
               >
-                <ImageIcon className="mr-2 h-5 w-5" />
-                Choose from Gallery
-              </Button>
+                <ImageIcon className="h-4 w-4" />
+                <span className="text-sm">Upload from Gallery</span>
+              </button>
+
+              {/* Scanning Tips */}
+              <Card className="w-full bg-[hsl(var(--geo-amber-light))] border-0 shadow-sm rounded-xl">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-around">
+                    {scanningTips.map((tip, index) => {
+                      const Icon = tip.icon;
+                      return (
+                        <div key={index} className="flex items-center gap-2">
+                          <Icon className="h-4 w-4 text-[hsl(var(--geo-amber))]" />
+                          <span className="text-xs text-[hsl(var(--geo-text-primary))]">
+                            {tip.text}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 
+          {/* Scanning State */}
           {isScanning && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4 animate-fade-in">
-              <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-lg font-medium animate-pulse">Analyzing specimen...</p>
-              <p className="text-sm text-muted-foreground">AI is identifying the geological specimen</p>
+            <div className="flex flex-col items-center justify-center py-16 space-y-6 animate-fade-in">
+              <div className="relative">
+                <div 
+                  className="h-20 w-20 rounded-full border-4 border-t-transparent animate-spin"
+                  style={{ borderColor: "hsl(var(--geo-amber))", borderTopColor: "transparent" }}
+                />
+                <Camera className="absolute inset-0 m-auto h-8 w-8 text-[hsl(var(--geo-amber))]" />
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-semibold text-[hsl(var(--geo-text-primary))]">
+                  Analyzing specimen...
+                </p>
+                <p className="text-sm text-[hsl(var(--geo-text-secondary))] mt-1">
+                  AI is identifying the geological specimen
+                </p>
+              </div>
             </div>
           )}
 
+          {/* Scan Results */}
           {scannedImage && scanResult && !isScanning && (
             <div className="animate-scale-in">
               <ScanResults
@@ -407,37 +483,60 @@ export default function Scanner() {
             </div>
           )}
 
-          {/* Recent Scans Thumbnail Gallery */}
+          {/* Recent Scans Section */}
           {!scannedImage && !isScanning && (
-            <div className="space-y-4 animate-fade-in">
+            <section className="space-y-4 animate-fade-in">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Recent Scans</h2>
+                <h2 className="text-lg font-semibold text-[hsl(var(--geo-text-primary))]">
+                  Recent Scans
+                </h2>
                 {savedScans.length > 0 && (
-                  <span className="text-sm text-muted-foreground">{savedScans.length} scans</span>
+                  <span className="text-sm text-[hsl(var(--geo-text-secondary))]">
+                    {savedScans.length} recent
+                  </span>
                 )}
               </div>
               
               {isLoading ? (
-                <div className="grid grid-cols-4 gap-2">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="aspect-square bg-muted rounded-lg animate-pulse" />
+                <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2">
+                  {[...Array(4)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="flex-shrink-0 w-28 h-28 bg-muted rounded-xl animate-pulse" 
+                    />
                   ))}
                 </div>
               ) : savedScans.length === 0 ? (
-                <Card className="border-dashed">
-                  <CardContent className="py-8 text-center">
-                    <Camera className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      No scans yet. Start scanning to build your collection!
+                <Card className="border-dashed border-2 bg-transparent">
+                  <CardContent className="py-10 text-center flex flex-col items-center">
+                    <div 
+                      className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                      style={{ background: "hsl(var(--geo-amber)/0.1)" }}
+                    >
+                      <Camera className="h-8 w-8 text-[hsl(var(--geo-amber))]" />
+                    </div>
+                    <p className="text-[hsl(var(--geo-text-primary))] font-medium mb-1">
+                      No scans yet
                     </p>
+                    <p className="text-sm text-[hsl(var(--geo-text-secondary))] mb-4">
+                      Start by scanning your first specimen
+                    </p>
+                    <Button
+                      onClick={() => setShowCamera(true)}
+                      style={{ background: "hsl(var(--geo-amber))" }}
+                      className="text-white hover:opacity-90"
+                    >
+                      <Camera className="h-4 w-4 mr-2" />
+                      Scan Now
+                    </Button>
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-4 gap-2">
-                  {savedScans.slice(0, 12).map((scan, index) => (
+                <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
+                  {savedScans.slice(0, 10).map((scan, index) => (
                     <div
                       key={scan.id}
-                      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group hover-scale transition-all duration-200"
+                      className="relative flex-shrink-0 w-28 h-28 rounded-xl overflow-hidden cursor-pointer group transition-all duration-200 active:scale-95 shadow-sm hover:shadow-md"
                       style={{ animationDelay: `${index * 50}ms` }}
                       onClick={() => openScanDetail(scan)}
                     >
@@ -446,36 +545,36 @@ export default function Scanner() {
                         alt={scan.identified_as}
                         className="w-full h-full object-cover"
                       />
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-1">
-                        <span className="text-white text-[10px] font-medium text-center line-clamp-2 leading-tight">
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                      {/* Scan info */}
+                      <div className="absolute bottom-0 left-0 right-0 p-2">
+                        <span className="text-white text-xs font-medium line-clamp-1">
                           {scan.identified_as}
                         </span>
-                        {scan.confidence && (
-                          <span className="text-white/80 text-[9px] mt-0.5">
-                            {scan.confidence}%
-                          </span>
-                        )}
                       </div>
-                      {/* Type badge */}
-                      <div className="absolute top-1 right-1">
-                        <div className={`w-2 h-2 rounded-full ${scan.item_type === 'mineral' ? 'bg-blue-400' : 'bg-amber-500'}`} />
+                      {/* Status badge */}
+                      <div className="absolute top-2 right-2">
+                        <Badge 
+                          variant="secondary" 
+                          className={cn(
+                            "text-[10px] px-1.5 py-0.5",
+                            scan.item_type === 'mineral' 
+                              ? 'bg-blue-500/80 text-white' 
+                              : 'bg-amber-500/80 text-white'
+                          )}
+                        >
+                          {scan.item_type === 'mineral' ? 'Mineral' : 'Rock'}
+                        </Badge>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-
-              {/* View All Button */}
-              {savedScans.length > 12 && (
-                <Button variant="ghost" className="w-full text-sm" onClick={() => {}}>
-                  View all {savedScans.length} scans
-                </Button>
-              )}
-            </div>
+            </section>
           )}
 
-          {/* Scan Detail Dialog with Swipe Navigation */}
+          {/* Scan Detail Dialog */}
           <Dialog open={selectedScanIndex !== null} onOpenChange={(open) => !open && closeScanDetail()}>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0">
               {selectedScan && (
@@ -485,7 +584,6 @@ export default function Scanner() {
                       {selectedScan.identified_as}
                       <Badge variant="secondary">{selectedScan.item_type}</Badge>
                     </DialogTitle>
-                    {/* Navigation indicator */}
                     <div className="flex items-center justify-center gap-2 pt-2">
                       <span className="text-xs text-muted-foreground">
                         {(selectedScanIndex ?? 0) + 1} of {savedScans.length}
@@ -494,7 +592,6 @@ export default function Scanner() {
                   </DialogHeader>
                   
                   <div className="relative">
-                    {/* Navigation arrows */}
                     {selectedScanIndex !== null && selectedScanIndex > 0 && (
                       <button
                         onClick={goToPrevScan}
@@ -521,7 +618,6 @@ export default function Scanner() {
                         className="w-full h-64 object-cover transition-transform duration-200 cursor-pointer"
                         onClick={() => setIsFullscreenOpen(true)}
                       />
-                      {/* Action buttons */}
                       <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => setIsAnnotatorOpen(true)}
@@ -600,7 +696,6 @@ export default function Scanner() {
                       </AlertDialog>
                     </div>
                     
-                    {/* Swipe hint */}
                     <p className="text-xs text-center text-muted-foreground">
                       Swipe left/right to navigate
                     </p>

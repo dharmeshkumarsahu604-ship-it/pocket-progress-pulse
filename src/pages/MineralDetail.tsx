@@ -27,6 +27,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { MineralComparisonModal } from "@/components/minerals/MineralComparisonModal";
+import { MineralSelector } from "@/components/minerals/MineralSelector";
 
 interface Mineral {
   id: string;
@@ -53,6 +55,9 @@ export default function MineralDetail() {
   const [mineral, setMineral] = useState<Mineral | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [comparisonMinerals, setComparisonMinerals] = useState<Mineral[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
+  const [showSelector, setShowSelector] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -208,6 +213,25 @@ export default function MineralDetail() {
     } else {
       navigator.clipboard.writeText(window.location.href);
       toast.success("Link copied to clipboard");
+    }
+  };
+
+  const handleCompare = () => {
+    // Add current mineral to comparison
+    setComparisonMinerals([mineral]);
+    // Open selector to pick second mineral
+    setShowSelector(true);
+  };
+
+  const handleSelectSecondMineral = (secondMineral: Mineral) => {
+    setComparisonMinerals([mineral, secondMineral]);
+    setShowComparison(true);
+  };
+
+  const handleRemoveFromComparison = (id: string) => {
+    setComparisonMinerals(prev => prev.filter(m => m.id !== id));
+    if (comparisonMinerals.length <= 2) {
+      setShowComparison(false);
     }
   };
 
@@ -475,8 +499,8 @@ export default function MineralDetail() {
             <Button
               variant="ghost"
               size="sm"
-              className="rounded-full px-4 gap-2 hover:bg-[hsl(var(--geo-cream))]"
-              onClick={() => toast.info("Compare feature coming soon!")}
+              className="rounded-full px-4 gap-2 hover:bg-[hsl(var(--geo-amber))]/10 text-[hsl(var(--geo-amber))]"
+              onClick={handleCompare}
             >
               <GitCompare className="w-4 h-4" />
               <span className="hidden sm:inline">Compare</span>
@@ -484,6 +508,22 @@ export default function MineralDetail() {
           </div>
         </div>
       </div>
+
+      {/* Mineral Selector Modal */}
+      <MineralSelector
+        open={showSelector}
+        onOpenChange={setShowSelector}
+        onSelectMineral={handleSelectSecondMineral}
+        excludeIds={[mineral.id]}
+      />
+
+      {/* Comparison Modal */}
+      <MineralComparisonModal
+        open={showComparison}
+        onOpenChange={setShowComparison}
+        minerals={comparisonMinerals}
+        onRemoveMineral={handleRemoveFromComparison}
+      />
     </AppLayout>
   );
 }

@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart } from "lucide-react";
+import { Heart, Layers } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ interface Rock {
   texture: string | null;
   color: string | null;
   hardness: number | null;
+  grain_size: string | null;
 }
 
 interface RockCardProps {
@@ -22,50 +23,130 @@ interface RockCardProps {
   onToggleFavorite: (id: string) => void;
 }
 
+const getTypeColor = (type: string) => {
+  switch (type.toLowerCase()) {
+    case "igneous":
+      return "bg-orange-500/90 text-white";
+    case "sedimentary":
+      return "bg-amber-500/90 text-white";
+    case "metamorphic":
+      return "bg-emerald-600/90 text-white";
+    default:
+      return "bg-[hsl(var(--geo-text-light))]/80 text-white";
+  }
+};
+
 export const RockCard = ({ rock, isFavorite, onToggleFavorite }: RockCardProps) => {
   return (
-    <Link to={`/rocks/${rock.id}`} className="block group">
-      <Card className="overflow-hidden transition-all duration-300 border-2 hover:border-primary/20 h-full hover-lift">
-        <div className="relative aspect-square bg-muted overflow-hidden">
+    <Link to={`/rocks/${rock.id}`} className="block group h-full">
+      <Card className="overflow-hidden h-full bg-white border border-border/50 shadow-sm 
+                       transition-all duration-300 hover:shadow-lg hover:border-[hsl(var(--geo-brown))]/30
+                       hover:-translate-y-1 rounded-2xl">
+        {/* Image Container with 4:3 aspect ratio */}
+        <div className="relative aspect-[4/3] bg-[hsl(var(--geo-cream))] overflow-hidden">
           <img
             src={rock.image_url || "/placeholder.svg"}
             alt={rock.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             loading="lazy"
           />
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              onToggleFavorite(rock.id);
-            }}
-            className="absolute top-2 right-2 p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card transition-all duration-200 hover:scale-110"
-          >
-            <Heart
+          
+          {/* Rock Type Badge - Top Left */}
+          <div className="absolute top-3 left-3">
+            <Badge 
               className={cn(
-                "h-5 w-5",
-                isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground"
+                "font-medium text-xs px-2.5 py-1 shadow-sm border-0 backdrop-blur-sm capitalize",
+                getTypeColor(rock.type)
               )}
-            />
-          </button>
-        </div>
-        <CardContent className="p-4 space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors duration-200">{rock.name}</h3>
-            <Badge variant="secondary" className="shrink-0 capitalize">
+            >
               {rock.type}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          
+          {/* Favorite Button - Top Right */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleFavorite(rock.id);
+            }}
+            className={cn(
+              "absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center",
+              "bg-white/95 backdrop-blur-sm shadow-sm transition-all duration-200",
+              "hover:scale-110 active:scale-95",
+              isFavorite && "bg-red-50"
+            )}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            <Heart
+              className={cn(
+                "w-5 h-5 transition-all duration-200",
+                isFavorite 
+                  ? "fill-red-500 text-red-500" 
+                  : "text-[hsl(var(--geo-text-light))] hover:text-red-400"
+              )}
+            />
+          </button>
+
+          {/* Hardness Badge - Bottom Left (if available) */}
+          {rock.hardness && (
+            <div className="absolute bottom-3 left-3">
+              <Badge 
+                className="bg-white/95 text-[hsl(var(--geo-text))] font-mono font-bold text-sm px-2.5 py-1 
+                           shadow-sm border-0 backdrop-blur-sm"
+              >
+                H: {rock.hardness}
+              </Badge>
+            </div>
+          )}
+
+          {/* Texture Badge - Bottom Right (if available) */}
+          {rock.texture && (
+            <div className="absolute bottom-3 right-3">
+              <Badge 
+                variant="secondary"
+                className="bg-black/60 text-white text-xs px-2 py-0.5 backdrop-blur-sm border-0"
+              >
+                <Layers className="w-3 h-3 mr-1" />
+                {rock.texture}
+              </Badge>
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <CardContent className="p-4 space-y-3">
+          {/* Rock Name */}
+          <h3 className="font-bold text-lg text-[hsl(var(--geo-text))] group-hover:text-[hsl(var(--geo-brown))] 
+                         transition-colors duration-200 line-clamp-1">
+            {rock.name}
+          </h3>
+          
+          {/* Short Description */}
+          <p className="text-sm text-[hsl(var(--geo-text-light))] line-clamp-2 leading-relaxed">
             {rock.description}
           </p>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {rock.hardness && (
-              <>
-                <span>Hardness: {rock.hardness}</span>
-                {rock.texture && <span>•</span>}
-              </>
+          
+          {/* Key Properties Row */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {rock.composition && (
+              <Badge 
+                variant="outline" 
+                className="text-xs bg-[hsl(var(--geo-background))] border-border/50 
+                           text-[hsl(var(--geo-text))] line-clamp-1"
+              >
+                {rock.composition.length > 25 ? rock.composition.slice(0, 25) + "…" : rock.composition}
+              </Badge>
             )}
-            {rock.texture && <span className="truncate">{rock.texture}</span>}
+            {rock.grain_size && (
+              <Badge 
+                variant="outline" 
+                className="text-xs bg-[hsl(var(--geo-background))] border-border/50 
+                           text-[hsl(var(--geo-text-light))]"
+              >
+                {rock.grain_size}
+              </Badge>
+            )}
           </div>
         </CardContent>
       </Card>

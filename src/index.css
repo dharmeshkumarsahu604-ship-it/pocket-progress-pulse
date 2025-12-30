@@ -49,6 +49,14 @@ All colors MUST be HSL.
 
     --radius: 1rem;
 
+    /* Geo-Smart Profile Page Tokens */
+    --geo-brown: 24 69% 31%; /* #8B4513 */
+    --geo-green: 124 48% 33%; /* #2E7D32 */
+    --geo-amber: 36 90% 44%; /* #D97706 */
+    --geo-cream: 45 33% 97%; /* #F1EEE9 */
+    --geo-amber-light: 36 90% 94%; /* Light amber for backgrounds */
+    --geo-achievement-bg: 30 100% 97%; /* #FFF7ED */
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 25 40% 16%;
     --sidebar-primary: 25 75% 31%;

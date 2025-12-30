@@ -10,8 +10,10 @@ import { useState, useMemo, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Database, SlidersHorizontal, Search, Gem } from "lucide-react";
 
 interface Mineral {
   id: string;
@@ -36,7 +38,7 @@ export default function Minerals() {
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useLocalStorage<string[]>("favorite-minerals", []);
   const [hardnessRange, setHardnessRange] = useState<[number, number]>([0, 10]);
-  const [sortBy, setSortBy] = useState<"name" | "hardness" | "formula">("name");
+  const [sortBy, setSortBy] = useState<"name" | "hardness" | "crystal_system">("name");
   
   const { searchTerm, setSearchTerm, filteredItems } = useSearch(
     minerals,
@@ -89,8 +91,8 @@ export default function Minerals() {
           return a.name.localeCompare(b.name);
         case "hardness":
           return b.hardness - a.hardness;
-        case "formula":
-          return (a.chemical_formula || "").localeCompare(b.chemical_formula || "");
+        case "crystal_system":
+          return (a.crystal_system || "").localeCompare(b.crystal_system || "");
         default:
           return 0;
       }
@@ -107,25 +109,49 @@ export default function Minerals() {
     return (
       <AppLayout>
         <div className="space-y-6">
+          {/* Header Skeleton */}
           <div className="animate-fade-in">
-            <Skeleton className="h-10 w-64 mb-2 animate-pulse" />
-            <Skeleton className="h-5 w-48 animate-pulse" />
+            <div className="flex items-center gap-3 mb-2">
+              <Skeleton className="h-10 w-10 rounded-xl" />
+              <div>
+                <Skeleton className="h-8 w-48 mb-1" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+            </div>
           </div>
           
-          <div className="space-y-4">
-            <SearchBarSkeleton />
-            
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between animate-fade-in" style={{ animationDelay: '100ms' }}>
-              <div className="space-y-3 w-full sm:w-64">
-                <Skeleton className="h-5 w-40 animate-pulse" />
-                <Skeleton className="h-2 w-full animate-pulse" />
+          {/* Search & Filter Skeleton */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-border/50 space-y-4">
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-2 w-full" />
               </div>
-              
-              <Skeleton className="h-10 w-full sm:w-48 animate-pulse" />
+              <Skeleton className="h-10 w-40" />
             </div>
           </div>
 
-          <LoadingSkeleton count={9} />
+          {/* Cards Skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50">
+                <Skeleton className="aspect-[4/3] w-full" />
+                <div className="p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-6 w-10 rounded-full" />
+                  </div>
+                  <Skeleton className="h-4 w-full" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-5 w-14" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </AppLayout>
     );
@@ -139,25 +165,72 @@ export default function Minerals() {
         isOverThreshold={isOverThreshold}
       />
       <div className="space-y-6">
+        {/* Refined Database Header */}
         <div className="animate-fade-in">
-          <h1 className="text-3xl font-bold">Mineral Database</h1>
-          <p className="text-muted-foreground">
-            {filteredAndSortedMinerals.length} specimens available
-          </p>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[hsl(var(--geo-green))] to-[hsl(var(--geo-brown))] flex items-center justify-center shadow-md">
+              <Database className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-[hsl(var(--geo-text))]">
+                Mineral Database
+              </h1>
+              <p className="text-sm text-[hsl(var(--geo-text-light))]">
+                Explore, compare, and study minerals
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <Badge 
+              variant="secondary" 
+              className="bg-[hsl(var(--geo-cream))] text-[hsl(var(--geo-text))] border-0 font-medium"
+            >
+              <Gem className="w-3 h-3 mr-1" />
+              {minerals.length} minerals
+            </Badge>
+            {searchTerm && (
+              <Badge 
+                variant="outline" 
+                className="text-[hsl(var(--geo-text-light))] border-[hsl(var(--geo-text-light))]/30"
+              >
+                {filteredAndSortedMinerals.length} results
+              </Badge>
+            )}
+          </div>
         </div>
 
-        <div className="space-y-4 animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <SearchBar
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Search minerals by name, formula, luster..."
-          />
+        {/* Smart Search & Filter Control Panel */}
+        <div 
+          className="bg-white rounded-2xl p-5 shadow-sm border border-border/50 space-y-4 animate-fade-in" 
+          style={{ animationDelay: '100ms' }}
+        >
+          {/* Elevated Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--geo-text-light))]" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by name, formula, hardness, luster…"
+              className="w-full h-12 pl-12 pr-4 rounded-xl bg-[hsl(var(--geo-background))] border border-border/50 
+                         text-[hsl(var(--geo-text))] placeholder:text-[hsl(var(--geo-text-light))]
+                         focus:outline-none focus:ring-2 focus:ring-[hsl(var(--geo-green))]/20 focus:border-[hsl(var(--geo-green))]
+                         transition-all duration-200"
+            />
+          </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="space-y-3 w-full sm:w-64">
-              <p className="text-sm font-medium">
-                Hardness: {hardnessRange[0]} - {hardnessRange[1]}
-              </p>
+          {/* Filter Row */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between pt-2 border-t border-border/30">
+            {/* Hardness Slider */}
+            <div className="space-y-2 w-full sm:w-64">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-[hsl(var(--geo-text))]">
+                  Hardness (Mohs)
+                </span>
+                <span className="text-sm font-mono text-[hsl(var(--geo-amber))] bg-[hsl(var(--geo-cream))] px-2 py-0.5 rounded-md">
+                  {hardnessRange[0]} – {hardnessRange[1]}
+                </span>
+              </div>
               <Slider
                 value={hardnessRange}
                 onValueChange={(value) => setHardnessRange(value as [number, number])}
@@ -168,27 +241,30 @@ export default function Minerals() {
               />
             </div>
 
-            <div className="w-full sm:w-48">
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <SlidersHorizontal className="w-4 h-4 text-[hsl(var(--geo-text-light))] hidden sm:block" />
               <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full sm:w-44 bg-[hsl(var(--geo-background))] border-border/50">
                   <SelectValue placeholder="Sort by..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="hardness">Hardness</SelectItem>
-                  <SelectItem value="formula">Formula</SelectItem>
+                  <SelectItem value="name">Name (A–Z)</SelectItem>
+                  <SelectItem value="hardness">Hardness (High–Low)</SelectItem>
+                  <SelectItem value="crystal_system">Crystal System</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Mineral Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredAndSortedMinerals.map((mineral, index) => (
             <div 
               key={mineral.id}
               className="animate-fade-in"
-              style={{ animationDelay: `${200 + index * 50}ms` }}
+              style={{ animationDelay: `${150 + index * 40}ms` }}
             >
               <MineralCard
                 mineral={mineral}
@@ -199,9 +275,18 @@ export default function Minerals() {
           ))}
         </div>
 
+        {/* Empty State */}
         {filteredAndSortedMinerals.length === 0 && (
-          <div className="text-center py-12 animate-fade-in">
-            <p className="text-muted-foreground">No minerals found matching your criteria</p>
+          <div className="text-center py-16 animate-fade-in">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[hsl(var(--geo-cream))] flex items-center justify-center">
+              <Gem className="w-8 h-8 text-[hsl(var(--geo-amber))]" />
+            </div>
+            <h3 className="text-lg font-semibold text-[hsl(var(--geo-text))] mb-1">
+              No minerals match your filters
+            </h3>
+            <p className="text-[hsl(var(--geo-text-light))] max-w-sm mx-auto">
+              Try adjusting the hardness range or search terms to find specimens
+            </p>
           </div>
         )}
       </div>

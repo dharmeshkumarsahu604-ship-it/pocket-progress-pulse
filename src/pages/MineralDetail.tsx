@@ -1,9 +1,27 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Heart, Share2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  ArrowLeft, 
+  Heart, 
+  Share2, 
+  Bookmark, 
+  FileText, 
+  GitCompare,
+  Hexagon,
+  Sparkles,
+  Palette,
+  CircleDot,
+  Layers,
+  Gem,
+  Wrench,
+  MapPin,
+  AlertTriangle,
+  ChevronRight
+} from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -23,7 +41,9 @@ interface Mineral {
   cleavage: string | null;
   fracture: string | null;
   crystal_system: string | null;
+  specific_gravity: number | null;
   uses: string | null;
+  locations: string[] | null;
 }
 
 export default function MineralDetail() {
@@ -46,12 +66,10 @@ export default function MineralDetail() {
       }
 
       try {
-        // Clear previous error on retry
         if (error) {
           setError(null);
         }
 
-        // Set a 5-second timeout
         timeoutId = setTimeout(() => {
           if (isMounted && loading) {
             setError("Request timeout. Please check your internet connection and try again.");
@@ -104,33 +122,60 @@ export default function MineralDetail() {
     };
   }, [id]);
 
+  // Loading State with Skeleton
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="text-muted-foreground">Loading mineral details...</p>
+        <div className="space-y-6 max-w-4xl mx-auto animate-fade-in">
+          {/* Hero Skeleton */}
+          <Skeleton className="w-full aspect-[16/9] rounded-2xl" />
+          
+          {/* Quick Facts Skeleton */}
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-32 rounded-xl flex-shrink-0" />
+            ))}
+          </div>
+          
+          {/* Overview Skeleton */}
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-20 w-full rounded-xl" />
+          </div>
+          
+          {/* Properties Skeleton */}
+          <div className="grid grid-cols-2 gap-3">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-xl" />
+            ))}
+          </div>
         </div>
       </AppLayout>
     );
   }
   
+  // Error State
   if (error || !mineral) {
     return (
       <AppLayout>
-        <div className="text-center py-12 space-y-4">
-          <h1 className="text-2xl font-bold mb-2">Mineral Not Found</h1>
-          <p className="text-muted-foreground mb-4">
-            {error || "The requested mineral could not be found."}
-          </p>
-          <div className="text-xs text-muted-foreground mb-4 p-4 bg-muted rounded">
-            <p>Debug Info:</p>
-            <p>URL: {window.location.pathname}</p>
-            <p>ID Parameter: {id || "undefined"}</p>
-            <p>Error: {error || "No error message"}</p>
+        <div className="text-center py-16 space-y-6 animate-fade-in">
+          <div className="w-20 h-20 mx-auto rounded-2xl bg-[hsl(var(--geo-cream))] flex items-center justify-center">
+            <AlertTriangle className="w-10 h-10 text-[hsl(var(--geo-amber))]" />
           </div>
-          <div className="flex gap-4 justify-center">
-            <Button onClick={() => navigate("/minerals")}>Back to Minerals</Button>
+          <div>
+            <h1 className="text-2xl font-bold text-[hsl(var(--geo-text))] mb-2">Mineral Not Found</h1>
+            <p className="text-[hsl(var(--geo-text-light))] max-w-md mx-auto">
+              {error || "The requested mineral could not be found in our database."}
+            </p>
+          </div>
+          <div className="flex gap-3 justify-center">
+            <Button 
+              onClick={() => navigate("/minerals")}
+              className="bg-[hsl(var(--geo-green))] hover:bg-[hsl(var(--geo-green))]/90"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Minerals
+            </Button>
             <Button variant="outline" onClick={() => window.location.reload()}>
               Retry
             </Button>
@@ -166,98 +211,278 @@ export default function MineralDetail() {
     }
   };
 
+  const quickFacts = [
+    { icon: Hexagon, label: "Crystal", value: mineral.crystal_system },
+    { icon: Sparkles, label: "Luster", value: mineral.luster },
+    { icon: Palette, label: "Color", value: mineral.color },
+    { icon: Gem, label: "Hardness", value: mineral.hardness?.toString() },
+  ].filter(fact => fact.value);
+
+  const physicalProperties = [
+    { icon: Sparkles, label: "Luster", value: mineral.luster },
+    { icon: CircleDot, label: "Streak", value: mineral.streak },
+    { icon: Layers, label: "Cleavage", value: mineral.cleavage },
+    { icon: Gem, label: "Fracture", value: mineral.fracture },
+    { icon: Hexagon, label: "Crystal System", value: mineral.crystal_system },
+    { icon: Palette, label: "Color", value: mineral.color },
+  ].filter(prop => prop.value);
+
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-4xl mx-auto">
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate("/minerals")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Minerals
-          </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" size="icon" onClick={toggleFavorite}>
+      <div className="space-y-6 max-w-4xl mx-auto pb-24">
+        {/* Back Button */}
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate("/minerals")}
+          className="text-[hsl(var(--geo-text-light))] hover:text-[hsl(var(--geo-text))] -ml-2"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Minerals
+        </Button>
+
+        {/* Immersive Hero Section */}
+        <div className="relative rounded-2xl overflow-hidden shadow-lg animate-fade-in">
+          <div className="aspect-[16/9] sm:aspect-[2/1]">
+            <img
+              src={mineral.image_url || "/placeholder.svg"}
+              alt={mineral.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          
+          {/* Hero Content */}
+          <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1">
+                  {mineral.name}
+                </h1>
+                {mineral.chemical_formula && (
+                  <p className="text-lg sm:text-xl font-mono text-white/80">
+                    {mineral.chemical_formula}
+                  </p>
+                )}
+              </div>
+              <Badge 
+                className="bg-[hsl(var(--geo-green))] text-white font-bold text-base px-4 py-2 
+                           rounded-full border-0 shadow-lg shrink-0"
+              >
+                H: {mineral.hardness}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Top Right Actions */}
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button
+              onClick={toggleFavorite}
+              className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center",
+                "bg-white/90 backdrop-blur-sm shadow-lg transition-all duration-200",
+                "hover:scale-110 active:scale-95",
+                isFavorite && "bg-red-50"
+              )}
+            >
               <Heart
                 className={cn(
-                  "h-5 w-5",
-                  isFavorite && "fill-destructive text-destructive"
+                  "w-5 h-5",
+                  isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"
                 )}
               />
-            </Button>
-            <Button variant="outline" size="icon" onClick={handleShare}>
-              <Share2 className="h-5 w-5" />
-            </Button>
+            </button>
+            <button
+              onClick={handleShare}
+              className="w-10 h-10 rounded-full flex items-center justify-center
+                         bg-white/90 backdrop-blur-sm shadow-lg transition-all duration-200
+                         hover:scale-110 active:scale-95"
+            >
+              <Share2 className="w-5 h-5 text-gray-600" />
+            </button>
           </div>
         </div>
 
-        <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-          <img
-            src={mineral.image_url || "/placeholder.svg"}
-            alt={mineral.name}
-            className="w-full h-full object-cover"
-          />
+        {/* Quick Facts Strip */}
+        <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+            {quickFacts.map((fact, index) => (
+              <div 
+                key={fact.label}
+                className="flex-shrink-0 bg-white rounded-xl p-3 shadow-sm border border-border/50
+                           flex items-center gap-3 min-w-[120px]"
+              >
+                <div className="w-10 h-10 rounded-lg bg-[hsl(var(--geo-cream))] flex items-center justify-center">
+                  <fact.icon className="w-5 h-5 text-[hsl(var(--geo-amber))]" />
+                </div>
+                <div>
+                  <p className="text-xs text-[hsl(var(--geo-text-light))]">{fact.label}</p>
+                  <p className="text-sm font-semibold text-[hsl(var(--geo-text))] line-clamp-1">
+                    {fact.value}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold">{mineral.name}</h1>
-            {mineral.chemical_formula && (
-              <p className="text-xl font-mono text-muted-foreground mt-1">
-                {mineral.chemical_formula}
-              </p>
-            )}
-          </div>
-            <Badge variant="secondary" className="text-base px-4 py-1">
-              Hardness: {mineral.hardness}
-            </Badge>
-          </div>
-          <p className="text-lg text-muted-foreground">{mineral.description}</p>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Physical Properties</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Luster</p>
-                <p className="text-base">{mineral.luster}</p>
+        {/* Overview Card */}
+        <Card className="bg-white rounded-2xl border border-border/50 shadow-sm animate-fade-in" 
+              style={{ animationDelay: '150ms' }}>
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-[hsl(var(--geo-green))]/10 flex items-center justify-center">
+                <FileText className="w-4 h-4 text-[hsl(var(--geo-green))]" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Streak</p>
-                <p className="text-base">{mineral.streak}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Cleavage</p>
-                <p className="text-base">{mineral.cleavage}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Fracture</p>
-                <p className="text-base">{mineral.fracture}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Crystal System</p>
-                <p className="text-base">{mineral.crystal_system}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Color</p>
-                <p className="text-base">{mineral.color || "Not specified"}</p>
-              </div>
+              <h2 className="text-lg font-bold text-[hsl(var(--geo-text))]">Overview</h2>
             </div>
+            <p className="text-[hsl(var(--geo-text-light))] leading-relaxed">
+              {mineral.description}
+            </p>
           </CardContent>
         </Card>
 
+        {/* Physical Properties Grid */}
+        <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-[hsl(var(--geo-brown))]/10 flex items-center justify-center">
+              <Layers className="w-4 h-4 text-[hsl(var(--geo-brown))]" />
+            </div>
+            <h2 className="text-lg font-bold text-[hsl(var(--geo-text))]">Physical Properties</h2>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            {physicalProperties.map((prop) => (
+              <Card 
+                key={prop.label}
+                className="bg-white rounded-xl border border-border/50 shadow-sm overflow-hidden"
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-[hsl(var(--geo-cream))] flex items-center justify-center shrink-0">
+                      <prop.icon className="w-4 h-4 text-[hsl(var(--geo-amber))]" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-[hsl(var(--geo-text-light))] mb-0.5">{prop.label}</p>
+                      <p className="text-sm font-semibold text-[hsl(var(--geo-text))] line-clamp-2">
+                        {prop.value}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Uses & Importance */}
         {mineral.uses && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Uses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-base">{mineral.uses}</p>
+          <Card className="bg-white rounded-2xl border border-border/50 shadow-sm animate-fade-in" 
+                style={{ animationDelay: '250ms' }}>
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[hsl(var(--geo-amber))]/10 flex items-center justify-center">
+                  <Wrench className="w-4 h-4 text-[hsl(var(--geo-amber))]" />
+                </div>
+                <h2 className="text-lg font-bold text-[hsl(var(--geo-text))]">Uses & Importance</h2>
+              </div>
+              <div className="space-y-2">
+                {mineral.uses.split(/[,;.]/).filter(use => use.trim()).map((use, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <ChevronRight className="w-4 h-4 text-[hsl(var(--geo-amber))] mt-0.5 shrink-0" />
+                    <p className="text-[hsl(var(--geo-text-light))] text-sm">{use.trim()}</p>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         )}
+
+        {/* Locations / Occurrence */}
+        {mineral.locations && mineral.locations.length > 0 && (
+          <Card className="bg-white rounded-2xl border border-border/50 shadow-sm animate-fade-in" 
+                style={{ animationDelay: '300ms' }}>
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[hsl(var(--geo-green))]/10 flex items-center justify-center">
+                  <MapPin className="w-4 h-4 text-[hsl(var(--geo-green))]" />
+                </div>
+                <h2 className="text-lg font-bold text-[hsl(var(--geo-text))]">Occurrence</h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {mineral.locations.map((location, index) => (
+                  <Badge 
+                    key={index}
+                    variant="outline"
+                    className="bg-[hsl(var(--geo-background))] border-border/50 text-[hsl(var(--geo-text))]"
+                  >
+                    {location}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Specific Gravity (if available) */}
+        {mineral.specific_gravity && (
+          <Card className="bg-white rounded-2xl border border-border/50 shadow-sm animate-fade-in" 
+                style={{ animationDelay: '350ms' }}>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-[hsl(var(--geo-brown))]/10 flex items-center justify-center">
+                    <Gem className="w-4 h-4 text-[hsl(var(--geo-brown))]" />
+                  </div>
+                  <span className="text-[hsl(var(--geo-text-light))]">Specific Gravity</span>
+                </div>
+                <span className="font-bold text-[hsl(var(--geo-text))] font-mono">
+                  {mineral.specific_gravity}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Floating Action Bar */}
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 animate-fade-in" 
+             style={{ animationDelay: '400ms' }}>
+          <div className="bg-white rounded-full shadow-lg border border-border/50 p-1.5 flex gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleFavorite}
+              className={cn(
+                "rounded-full px-4 gap-2",
+                isFavorite 
+                  ? "bg-red-50 text-red-500 hover:bg-red-100" 
+                  : "hover:bg-[hsl(var(--geo-cream))]"
+              )}
+            >
+              <Bookmark className={cn("w-4 h-4", isFavorite && "fill-current")} />
+              <span className="hidden sm:inline">Bookmark</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="rounded-full px-4 gap-2 hover:bg-[hsl(var(--geo-cream))]"
+              onClick={() => toast.info("Add to Notes feature coming soon!")}
+            >
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">Add to Notes</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="rounded-full px-4 gap-2 hover:bg-[hsl(var(--geo-cream))]"
+              onClick={() => toast.info("Compare feature coming soon!")}
+            >
+              <GitCompare className="w-4 h-4" />
+              <span className="hidden sm:inline">Compare</span>
+            </Button>
+          </div>
+        </div>
       </div>
     </AppLayout>
   );

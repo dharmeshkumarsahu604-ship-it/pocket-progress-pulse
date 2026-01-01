@@ -999,7 +999,1390 @@ export const geologyQuizQuestions: QuizQuestion[] = [
     difficulty: "hard"
   },
 
-  // Additional questions for variety
+  // Additional General Geology Questions
+  {
+    id: "gg-009",
+    question: "What type of plate boundary is the Himalayan mountain range associated with?",
+    options: ["Divergent", "Convergent", "Transform", "Passive"],
+    correctAnswer: 1,
+    topic: "Plate Tectonics",
+    course: "General Geology",
+    difficulty: "easy",
+    explanation: "The Himalayas formed from the collision of the Indian and Eurasian plates at a convergent boundary."
+  },
+  {
+    id: "gg-010",
+    question: "What is the average thickness of oceanic crust?",
+    options: ["1-3 km", "5-10 km", "25-35 km", "50-70 km"],
+    correctAnswer: 1,
+    topic: "Earth's Crust",
+    course: "General Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "gg-011",
+    question: "Which type of seismic waves cannot pass through liquids?",
+    options: ["P-waves", "S-waves", "Surface waves", "Love waves"],
+    correctAnswer: 1,
+    topic: "Seismology",
+    course: "General Geology",
+    difficulty: "medium",
+    explanation: "S-waves (shear waves) cannot propagate through liquids because liquids cannot sustain shear stress."
+  },
+  {
+    id: "gg-012",
+    question: "What is the Mohorovičić discontinuity?",
+    options: ["Boundary between crust and mantle", "Center of the Earth", "Outer core boundary", "Asthenosphere limit"],
+    correctAnswer: 0,
+    topic: "Internal Structure of Earth",
+    course: "General Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "gg-013",
+    question: "Cirques, arêtes, and horns are landforms created by:",
+    options: ["Rivers", "Wind", "Glaciers", "Waves"],
+    correctAnswer: 2,
+    topic: "Glacial Landforms",
+    course: "General Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "gg-014",
+    question: "What is the term for the wearing away of rock by friction and impact?",
+    options: ["Corrosion", "Abrasion", "Attrition", "Hydraulic action"],
+    correctAnswer: 1,
+    topic: "Erosion",
+    course: "General Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "gg-015",
+    question: "Which drainage pattern develops around a volcanic cone?",
+    options: ["Dendritic", "Trellis", "Radial", "Rectangular"],
+    correctAnswer: 2,
+    topic: "Drainage Patterns",
+    course: "General Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "gg-016",
+    question: "The asthenosphere is characterized by:",
+    options: ["Solid brittle rock", "Partially molten plastic rock", "Liquid iron", "Solid iron"],
+    correctAnswer: 1,
+    topic: "Earth's Layers",
+    course: "General Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "gg-017",
+    question: "What causes the Earth's magnetic field?",
+    options: ["Crustal rocks", "Convection currents in outer core", "Solar wind", "Mantle plumes"],
+    correctAnswer: 1,
+    topic: "Geomagnetism",
+    course: "General Geology",
+    difficulty: "hard"
+  },
+  {
+    id: "gg-018",
+    question: "An oxbow lake is formed by:",
+    options: ["Glacial activity", "River meandering and cutoff", "Volcanic eruption", "Tectonic movement"],
+    correctAnswer: 1,
+    topic: "Fluvial Landforms",
+    course: "General Geology",
+    difficulty: "easy"
+  },
+
+  // Additional Historical Geology Questions
+  {
+    id: "hg-007",
+    question: "What evidence supported Wegener's continental drift theory?",
+    options: ["Ocean currents", "Matching fossils and rock types across continents", "Volcanic activity", "Earthquake patterns"],
+    correctAnswer: 1,
+    topic: "Continental Drift",
+    course: "Historical Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "hg-008",
+    question: "The Great Oxygenation Event occurred during which eon?",
+    options: ["Hadean", "Archean", "Proterozoic", "Phanerozoic"],
+    correctAnswer: 2,
+    topic: "Earth History",
+    course: "Historical Geology",
+    difficulty: "hard"
+  },
+  {
+    id: "hg-009",
+    question: "What is the name of the ancient ocean that separated Gondwana from Laurasia?",
+    options: ["Panthalassa", "Tethys Sea", "Iapetus Ocean", "Rheic Ocean"],
+    correctAnswer: 1,
+    topic: "Paleogeography",
+    course: "Historical Geology",
+    difficulty: "hard"
+  },
+  {
+    id: "hg-010",
+    question: "Which principle states that rock layers extend laterally in all directions?",
+    options: ["Superposition", "Original horizontality", "Lateral continuity", "Cross-cutting relations"],
+    correctAnswer: 2,
+    topic: "Principles of Stratigraphy",
+    course: "Historical Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "hg-011",
+    question: "Benioff zones are associated with:",
+    options: ["Mid-ocean ridges", "Subduction zones", "Transform faults", "Hot spots"],
+    correctAnswer: 1,
+    topic: "Plate Tectonics",
+    course: "Historical Geology",
+    difficulty: "hard"
+  },
+  {
+    id: "hg-012",
+    question: "The Cambrian Explosion refers to:",
+    options: ["Volcanic activity", "Rapid diversification of life", "Asteroid impact", "Ice age"],
+    correctAnswer: 1,
+    topic: "Evolution of Life",
+    course: "Historical Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "hg-013",
+    question: "What type of rocks form at mid-ocean ridges?",
+    options: ["Granite", "Basalt", "Limestone", "Sandstone"],
+    correctAnswer: 1,
+    topic: "Sea Floor Spreading",
+    course: "Historical Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "hg-014",
+    question: "Paleomagnetism studies reveal:",
+    options: ["Fossil locations", "Ancient magnetic pole positions", "Rock age", "Chemical composition"],
+    correctAnswer: 1,
+    topic: "Paleomagnetism",
+    course: "Historical Geology",
+    difficulty: "medium"
+  },
+
+  // Additional Crystallography Questions
+  {
+    id: "cr-006",
+    question: "Which crystal system has three axes of different lengths, all at right angles?",
+    options: ["Isometric", "Tetragonal", "Orthorhombic", "Monoclinic"],
+    correctAnswer: 2,
+    topic: "Crystal Systems",
+    course: "Crystallography",
+    difficulty: "medium"
+  },
+  {
+    id: "cr-007",
+    question: "What is polymorphism in minerals?",
+    options: ["Same composition, different structures", "Different composition, same structure", "Color variation", "Size variation"],
+    correctAnswer: 0,
+    topic: "Crystal Properties",
+    course: "Crystallography",
+    difficulty: "medium"
+  },
+  {
+    id: "cr-008",
+    question: "Diamond and graphite are examples of:",
+    options: ["Isomorphs", "Polymorphs", "Pseudomorphs", "Allotropes"],
+    correctAnswer: 1,
+    topic: "Polymorphism",
+    course: "Crystallography",
+    difficulty: "easy",
+    explanation: "Diamond and graphite are both pure carbon but have different crystal structures."
+  },
+  {
+    id: "cr-009",
+    question: "How many point groups exist in crystallography?",
+    options: ["7", "14", "32", "230"],
+    correctAnswer: 2,
+    topic: "Symmetry",
+    course: "Crystallography",
+    difficulty: "hard"
+  },
+  {
+    id: "cr-010",
+    question: "The hexagonal crystal system has how many axes?",
+    options: ["3", "4", "5", "6"],
+    correctAnswer: 1,
+    topic: "Crystal Systems",
+    course: "Crystallography",
+    difficulty: "medium",
+    explanation: "Hexagonal system has 4 axes: three equal horizontal axes at 120° and one vertical axis."
+  },
+  {
+    id: "cr-011",
+    question: "A crystal with a center of symmetry is called:",
+    options: ["Hemihedral", "Holohedral", "Centrosymmetric", "Euhedral"],
+    correctAnswer: 2,
+    topic: "Crystal Symmetry",
+    course: "Crystallography",
+    difficulty: "hard"
+  },
+  {
+    id: "cr-012",
+    question: "Zone axis in crystallography represents:",
+    options: ["Crystal color direction", "Common direction to a set of faces", "Twin boundary", "Cleavage direction"],
+    correctAnswer: 1,
+    topic: "Crystal Geometry",
+    course: "Crystallography",
+    difficulty: "hard"
+  },
+
+  // Additional Mineralogy Questions
+  {
+    id: "mm-007",
+    question: "What is the streak color of hematite?",
+    options: ["White", "Black", "Red-brown", "Yellow"],
+    correctAnswer: 2,
+    topic: "Physical Properties",
+    course: "Mineralogy",
+    difficulty: "easy"
+  },
+  {
+    id: "mm-008",
+    question: "Which mineral fizzes with dilute HCl?",
+    options: ["Quartz", "Calcite", "Feldspar", "Pyrite"],
+    correctAnswer: 1,
+    topic: "Chemical Tests",
+    course: "Mineralogy",
+    difficulty: "easy",
+    explanation: "Calcite reacts with dilute HCl producing CO2 bubbles due to its carbonate composition."
+  },
+  {
+    id: "mm-009",
+    question: "Pyroxenes and amphiboles are examples of which silicate structure?",
+    options: ["Nesosilicates", "Sorosilicates", "Inosilicates (chain)", "Tectosilicates"],
+    correctAnswer: 2,
+    topic: "Silicate Classification",
+    course: "Mineralogy",
+    difficulty: "medium"
+  },
+  {
+    id: "mm-010",
+    question: "What type of luster does galena exhibit?",
+    options: ["Vitreous", "Metallic", "Pearly", "Silky"],
+    correctAnswer: 1,
+    topic: "Physical Properties",
+    course: "Mineralogy",
+    difficulty: "easy"
+  },
+  {
+    id: "mm-011",
+    question: "Birefringence in minerals refers to:",
+    options: ["Color change with direction", "Double refraction", "Light absorption", "Fluorescence"],
+    correctAnswer: 1,
+    topic: "Optical Properties",
+    course: "Mineralogy",
+    difficulty: "hard"
+  },
+  {
+    id: "mm-012",
+    question: "Which mineral is used to determine hardness 10 on Mohs scale?",
+    options: ["Corundum", "Topaz", "Diamond", "Quartz"],
+    correctAnswer: 2,
+    topic: "Hardness Scale",
+    course: "Mineralogy",
+    difficulty: "easy"
+  },
+  {
+    id: "mm-013",
+    question: "Micas are examples of which silicate structure?",
+    options: ["Chain silicates", "Framework silicates", "Sheet silicates", "Isolated silicates"],
+    correctAnswer: 2,
+    topic: "Silicate Classification",
+    course: "Mineralogy",
+    difficulty: "medium"
+  },
+  {
+    id: "mm-014",
+    question: "What optical property causes minerals to appear raised or sunken in thin section?",
+    options: ["Pleochroism", "Relief", "Extinction", "Interference color"],
+    correctAnswer: 1,
+    topic: "Mineral Optics",
+    course: "Mineralogy",
+    difficulty: "medium"
+  },
+  {
+    id: "mm-015",
+    question: "Feldspars are the most abundant minerals in:",
+    options: ["Ocean floor", "Earth's crust", "Mantle", "Core"],
+    correctAnswer: 1,
+    topic: "Rock-forming Minerals",
+    course: "Mineralogy",
+    difficulty: "easy"
+  },
+
+  // Additional Geochemistry Questions
+  {
+    id: "gc-005",
+    question: "REE stands for:",
+    options: ["Rock Element Enrichment", "Rare Earth Elements", "Rapid Erosion Events", "Regional Earth Evolution"],
+    correctAnswer: 1,
+    topic: "Trace Elements",
+    course: "Geochemistry",
+    difficulty: "easy"
+  },
+  {
+    id: "gc-006",
+    question: "Which classification divides elements into lithophile, siderophile, chalcophile, and atmophile?",
+    options: ["Bowen's classification", "Goldschmidt's classification", "Dana's classification", "Strunz classification"],
+    correctAnswer: 1,
+    topic: "Geochemical Classification",
+    course: "Geochemistry",
+    difficulty: "medium"
+  },
+  {
+    id: "gc-007",
+    question: "Chalcophile elements have affinity for:",
+    options: ["Oxygen", "Sulfur", "Iron", "Silica"],
+    correctAnswer: 1,
+    topic: "Geochemical Classification",
+    course: "Geochemistry",
+    difficulty: "medium"
+  },
+  {
+    id: "gc-008",
+    question: "The rock cycle describes:",
+    options: ["Moon rock formation", "Transformation between rock types", "Rock dating methods", "Rock magnetism"],
+    correctAnswer: 1,
+    topic: "Elementary Petrology",
+    course: "Geochemistry",
+    difficulty: "easy"
+  },
+  {
+    id: "gc-009",
+    question: "What is the second most abundant element in Earth's crust?",
+    options: ["Iron", "Aluminum", "Silicon", "Calcium"],
+    correctAnswer: 2,
+    topic: "Crustal Composition",
+    course: "Geochemistry",
+    difficulty: "medium"
+  },
+  {
+    id: "gc-010",
+    question: "Isotopes of an element differ in:",
+    options: ["Number of protons", "Number of neutrons", "Number of electrons", "Atomic number"],
+    correctAnswer: 1,
+    topic: "Isotope Geochemistry",
+    course: "Geochemistry",
+    difficulty: "easy"
+  },
+
+  // Additional Economic Geology Questions
+  {
+    id: "eg-005",
+    question: "SEDEX deposits are formed in:",
+    options: ["Volcanic settings", "Sedimentary basins", "Contact zones", "Placer environments"],
+    correctAnswer: 1,
+    topic: "Ore Deposit Types",
+    course: "Economic Geology",
+    difficulty: "hard"
+  },
+  {
+    id: "eg-006",
+    question: "Which mineral is the primary ore of copper?",
+    options: ["Galena", "Chalcopyrite", "Sphalerite", "Hematite"],
+    correctAnswer: 1,
+    topic: "Ore Minerals",
+    course: "Economic Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "eg-007",
+    question: "Supergene enrichment occurs due to:",
+    options: ["High temperature fluids", "Weathering and groundwater", "Magmatic processes", "Metamorphism"],
+    correctAnswer: 1,
+    topic: "Secondary Enrichment",
+    course: "Economic Geology",
+    difficulty: "hard"
+  },
+  {
+    id: "eg-008",
+    question: "Which type of deposit forms by settling of dense minerals in magma?",
+    options: ["Hydrothermal", "Magmatic segregation", "Sedimentary", "Metamorphic"],
+    correctAnswer: 1,
+    topic: "Ore Genesis",
+    course: "Economic Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "eg-009",
+    question: "Skarn deposits form at:",
+    options: ["Mid-ocean ridges", "Igneous-carbonate contacts", "River channels", "Desert dunes"],
+    correctAnswer: 1,
+    topic: "Contact Metamorphic Deposits",
+    course: "Economic Geology",
+    difficulty: "hard"
+  },
+  {
+    id: "eg-010",
+    question: "What is the primary ore of lead?",
+    options: ["Sphalerite", "Galena", "Pyrite", "Magnetite"],
+    correctAnswer: 1,
+    topic: "Ore Minerals",
+    course: "Economic Geology",
+    difficulty: "easy"
+  },
+
+  // Additional Paleontology Questions
+  {
+    id: "pl-006",
+    question: "Which era is known as the 'Age of Mammals'?",
+    options: ["Paleozoic", "Mesozoic", "Cenozoic", "Precambrian"],
+    correctAnswer: 2,
+    topic: "Geological Eras",
+    course: "Paleontology",
+    difficulty: "easy"
+  },
+  {
+    id: "pl-007",
+    question: "Ammonites were marine organisms similar to modern:",
+    options: ["Starfish", "Nautilus", "Jellyfish", "Coral"],
+    correctAnswer: 1,
+    topic: "Invertebrate Fossils",
+    course: "Paleontology",
+    difficulty: "medium"
+  },
+  {
+    id: "pl-008",
+    question: "Trace fossils include:",
+    options: ["Bones and shells", "Footprints and burrows", "Leaf impressions", "Petrified wood"],
+    correctAnswer: 1,
+    topic: "Fossil Types",
+    course: "Paleontology",
+    difficulty: "easy"
+  },
+  {
+    id: "pl-009",
+    question: "The Permian-Triassic extinction event is also called:",
+    options: ["The Great Dying", "K-T Extinction", "Ice Age", "Cambrian Explosion"],
+    correctAnswer: 0,
+    topic: "Mass Extinctions",
+    course: "Paleontology",
+    difficulty: "medium"
+  },
+  {
+    id: "pl-010",
+    question: "Micropaleontology primarily studies:",
+    options: ["Dinosaurs", "Foraminifera and other microfossils", "Plant fossils", "Trace fossils"],
+    correctAnswer: 1,
+    topic: "Paleontology Branches",
+    course: "Paleontology",
+    difficulty: "medium"
+  },
+  {
+    id: "pl-011",
+    question: "Brachiopods are commonly confused with:",
+    options: ["Corals", "Bivalves", "Gastropods", "Cephalopods"],
+    correctAnswer: 1,
+    topic: "Invertebrate Paleontology",
+    course: "Paleontology",
+    difficulty: "medium"
+  },
+  {
+    id: "pl-012",
+    question: "Which fossil group dominated the Paleozoic seas?",
+    options: ["Dinosaurs", "Mammals", "Trilobites and brachiopods", "Whales"],
+    correctAnswer: 2,
+    topic: "Paleozoic Life",
+    course: "Paleontology",
+    difficulty: "medium"
+  },
+
+  // Additional Stratigraphy Questions
+  {
+    id: "st-006",
+    question: "The Vindhyan Supergroup is famous for:",
+    options: ["Coal deposits", "Stromatolites", "Dinosaur fossils", "Oil fields"],
+    correctAnswer: 1,
+    topic: "Indian Stratigraphy",
+    course: "Stratigraphy",
+    difficulty: "medium"
+  },
+  {
+    id: "st-007",
+    question: "An unconformity represents:",
+    options: ["Continuous deposition", "A gap in the rock record", "Volcanic activity", "Metamorphism"],
+    correctAnswer: 1,
+    topic: "Stratigraphic Concepts",
+    course: "Stratigraphy",
+    difficulty: "easy"
+  },
+  {
+    id: "st-008",
+    question: "Lithostratigraphy is based on:",
+    options: ["Fossil content", "Rock characteristics", "Absolute age", "Magnetic polarity"],
+    correctAnswer: 1,
+    topic: "Stratigraphic Methods",
+    course: "Stratigraphy",
+    difficulty: "medium"
+  },
+  {
+    id: "st-009",
+    question: "The Dharwar Supergroup belongs to which eon?",
+    options: ["Hadean", "Archean", "Proterozoic", "Phanerozoic"],
+    correctAnswer: 1,
+    topic: "Indian Stratigraphy",
+    course: "Stratigraphy",
+    difficulty: "hard"
+  },
+  {
+    id: "st-010",
+    question: "Biostratigraphy uses which method for correlation?",
+    options: ["Radioactive decay", "Fossil assemblages", "Rock type", "Magnetic polarity"],
+    correctAnswer: 1,
+    topic: "Stratigraphic Methods",
+    course: "Stratigraphy",
+    difficulty: "medium"
+  },
+  {
+    id: "st-011",
+    question: "The Cuddapah Supergroup is found in which state?",
+    options: ["Odisha", "Karnataka", "Andhra Pradesh", "Tamil Nadu"],
+    correctAnswer: 2,
+    topic: "Indian Stratigraphy",
+    course: "Stratigraphy",
+    difficulty: "medium"
+  },
+
+  // Additional Igneous Petrology Questions
+  {
+    id: "ip-006",
+    question: "What is the SiO2 content of a basic igneous rock?",
+    options: ["<45%", "45-52%", "52-66%", ">66%"],
+    correctAnswer: 1,
+    topic: "Rock Classification",
+    course: "Igneous Petrology",
+    difficulty: "medium"
+  },
+  {
+    id: "ip-007",
+    question: "Pegmatites are characterized by:",
+    options: ["Very fine grains", "Very coarse grains", "Glassy texture", "Vesicular texture"],
+    correctAnswer: 1,
+    topic: "Igneous Textures",
+    course: "Igneous Petrology",
+    difficulty: "easy"
+  },
+  {
+    id: "ip-008",
+    question: "Rhyolite is the volcanic equivalent of:",
+    options: ["Gabbro", "Diorite", "Granite", "Peridotite"],
+    correctAnswer: 2,
+    topic: "Igneous Rock Pairs",
+    course: "Igneous Petrology",
+    difficulty: "medium"
+  },
+  {
+    id: "ip-009",
+    question: "Ophitic texture is characteristic of:",
+    options: ["Granite", "Dolerite", "Obsidian", "Pumice"],
+    correctAnswer: 1,
+    topic: "Igneous Textures",
+    course: "Igneous Petrology",
+    difficulty: "hard"
+  },
+  {
+    id: "ip-010",
+    question: "Which igneous rock has the highest silica content?",
+    options: ["Basalt", "Andesite", "Rhyolite", "Komatiite"],
+    correctAnswer: 2,
+    topic: "Rock Classification",
+    course: "Igneous Petrology",
+    difficulty: "medium"
+  },
+  {
+    id: "ip-011",
+    question: "Assimilation in magma refers to:",
+    options: ["Cooling process", "Incorporation of country rock", "Crystal settling", "Volatile loss"],
+    correctAnswer: 1,
+    topic: "Magmatic Processes",
+    course: "Igneous Petrology",
+    difficulty: "hard"
+  },
+  {
+    id: "ip-012",
+    question: "Komatiites are unique because they indicate:",
+    options: ["Cold magma", "Very high temperature magma", "Shallow depth", "High water content"],
+    correctAnswer: 1,
+    topic: "Ultramafic Rocks",
+    course: "Igneous Petrology",
+    difficulty: "hard"
+  },
+
+  // Additional Sedimentary Petrology Questions
+  {
+    id: "sp-006",
+    question: "Greywacke is a type of:",
+    options: ["Limestone", "Sandstone", "Shale", "Conglomerate"],
+    correctAnswer: 1,
+    topic: "Clastic Rocks",
+    course: "Sedimentary Petrology",
+    difficulty: "medium"
+  },
+  {
+    id: "sp-007",
+    question: "Oolitic limestone forms from:",
+    options: ["Shell fragments", "Precipitation around nuclei", "Coral reefs", "Evaporation"],
+    correctAnswer: 1,
+    topic: "Carbonate Rocks",
+    course: "Sedimentary Petrology",
+    difficulty: "medium"
+  },
+  {
+    id: "sp-008",
+    question: "Mud cracks indicate:",
+    options: ["Deep marine environment", "Periods of drying", "High energy environment", "Glacial conditions"],
+    correctAnswer: 1,
+    topic: "Sedimentary Structures",
+    course: "Sedimentary Petrology",
+    difficulty: "easy"
+  },
+  {
+    id: "sp-009",
+    question: "What is the main cementing material in most sandstones?",
+    options: ["Clay", "Silica or calcite", "Salt", "Organic matter"],
+    correctAnswer: 1,
+    topic: "Diagenesis",
+    course: "Sedimentary Petrology",
+    difficulty: "medium"
+  },
+  {
+    id: "sp-010",
+    question: "Turbidites form from:",
+    options: ["Wind deposition", "Submarine density currents", "Chemical precipitation", "Glacial activity"],
+    correctAnswer: 1,
+    topic: "Deep Marine Sediments",
+    course: "Sedimentary Petrology",
+    difficulty: "hard"
+  },
+  {
+    id: "sp-011",
+    question: "Chert is primarily composed of:",
+    options: ["Calcite", "Quartz", "Feldspar", "Clay minerals"],
+    correctAnswer: 1,
+    topic: "Chemical Sediments",
+    course: "Sedimentary Petrology",
+    difficulty: "medium"
+  },
+  {
+    id: "sp-012",
+    question: "Graded bedding indicates:",
+    options: ["Constant current", "Decreasing current velocity", "Wind action", "Chemical precipitation"],
+    correctAnswer: 1,
+    topic: "Sedimentary Structures",
+    course: "Sedimentary Petrology",
+    difficulty: "medium"
+  },
+
+  // Additional Metamorphic Petrology Questions
+  {
+    id: "mp-006",
+    question: "Slate forms from the metamorphism of:",
+    options: ["Sandstone", "Limestone", "Shale", "Granite"],
+    correctAnswer: 2,
+    topic: "Metamorphic Rocks",
+    course: "Metamorphic Petrology",
+    difficulty: "easy"
+  },
+  {
+    id: "mp-007",
+    question: "What is the sequence of metamorphism from shale to gneiss?",
+    options: ["Slate-phyllite-schist-gneiss", "Phyllite-slate-gneiss-schist", "Schist-slate-phyllite-gneiss", "Gneiss-schist-phyllite-slate"],
+    correctAnswer: 0,
+    topic: "Progressive Metamorphism",
+    course: "Metamorphic Petrology",
+    difficulty: "medium"
+  },
+  {
+    id: "mp-008",
+    question: "Contact metamorphism occurs due to:",
+    options: ["Regional stress", "Heat from magma intrusion", "Burial depth", "Tectonic pressure"],
+    correctAnswer: 1,
+    topic: "Types of Metamorphism",
+    course: "Metamorphic Petrology",
+    difficulty: "easy"
+  },
+  {
+    id: "mp-009",
+    question: "Which mineral is an index mineral for the sillimanite zone?",
+    options: ["Chlorite", "Biotite", "Garnet", "Sillimanite"],
+    correctAnswer: 3,
+    topic: "Metamorphic Zones",
+    course: "Metamorphic Petrology",
+    difficulty: "medium"
+  },
+  {
+    id: "mp-010",
+    question: "Hornfels is typically formed by:",
+    options: ["Regional metamorphism", "Contact metamorphism", "Dynamic metamorphism", "Hydrothermal alteration"],
+    correctAnswer: 1,
+    topic: "Contact Metamorphism",
+    course: "Metamorphic Petrology",
+    difficulty: "medium"
+  },
+  {
+    id: "mp-011",
+    question: "Blueschist facies indicates:",
+    options: ["High temperature, low pressure", "Low temperature, high pressure", "High temperature, high pressure", "Low temperature, low pressure"],
+    correctAnswer: 1,
+    topic: "Metamorphic Facies",
+    course: "Metamorphic Petrology",
+    difficulty: "hard"
+  },
+  {
+    id: "mp-012",
+    question: "Eclogite contains which diagnostic mineral pair?",
+    options: ["Quartz and feldspar", "Garnet and omphacite", "Biotite and muscovite", "Olivine and pyroxene"],
+    correctAnswer: 1,
+    topic: "High-Pressure Metamorphism",
+    course: "Metamorphic Petrology",
+    difficulty: "hard"
+  },
+
+  // Additional Remote Sensing Questions
+  {
+    id: "rs-005",
+    question: "LIDAR uses which type of energy?",
+    options: ["Radio waves", "Microwaves", "Laser light", "X-rays"],
+    correctAnswer: 2,
+    topic: "Active Remote Sensing",
+    course: "Remote Sensing and GIS",
+    difficulty: "medium"
+  },
+  {
+    id: "rs-006",
+    question: "False color composites are used to:",
+    options: ["Show true colors", "Enhance specific features", "Reduce file size", "Correct atmospheric errors"],
+    correctAnswer: 1,
+    topic: "Image Processing",
+    course: "Remote Sensing and GIS",
+    difficulty: "medium"
+  },
+  {
+    id: "rs-007",
+    question: "Electromagnetic spectrum used in thermal remote sensing is:",
+    options: ["Visible", "Near-infrared", "Thermal infrared", "Microwave"],
+    correctAnswer: 2,
+    topic: "Spectral Bands",
+    course: "Remote Sensing and GIS",
+    difficulty: "medium"
+  },
+  {
+    id: "rs-008",
+    question: "Vector data in GIS represents features as:",
+    options: ["Pixels", "Points, lines, and polygons", "Raster cells", "Grid squares"],
+    correctAnswer: 1,
+    topic: "GIS Data Types",
+    course: "Remote Sensing and GIS",
+    difficulty: "easy"
+  },
+  {
+    id: "rs-009",
+    question: "GPS stands for:",
+    options: ["Global Positioning System", "Geographical Plotting System", "Ground Position Satellite", "General Purpose Sensor"],
+    correctAnswer: 0,
+    topic: "Positioning Systems",
+    course: "Remote Sensing and GIS",
+    difficulty: "easy"
+  },
+  {
+    id: "rs-010",
+    question: "Image classification in remote sensing includes:",
+    options: ["Supervised and unsupervised methods", "Only visual interpretation", "Only manual digitization", "Only field verification"],
+    correctAnswer: 0,
+    topic: "Image Analysis",
+    course: "Remote Sensing and GIS",
+    difficulty: "medium"
+  },
+
+  // Additional Structural Geology Questions
+  {
+    id: "sg-006",
+    question: "A graben is formed by:",
+    options: ["Compressional forces", "Tensional forces", "Shear forces", "Vertical forces only"],
+    correctAnswer: 1,
+    topic: "Structural Features",
+    course: "Structural Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "sg-007",
+    question: "Dip is the angle measured from:",
+    options: ["Vertical", "Horizontal", "Strike direction", "North"],
+    correctAnswer: 1,
+    topic: "Attitude of Beds",
+    course: "Structural Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "sg-008",
+    question: "Recumbent folds have an axial plane that is:",
+    options: ["Vertical", "Horizontal", "Inclined at 45°", "Undefined"],
+    correctAnswer: 1,
+    topic: "Fold Types",
+    course: "Structural Geology",
+    difficulty: "hard"
+  },
+  {
+    id: "sg-009",
+    question: "A thrust fault is a type of:",
+    options: ["Normal fault", "Reverse fault", "Strike-slip fault", "Transform fault"],
+    correctAnswer: 1,
+    topic: "Fault Types",
+    course: "Structural Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "sg-010",
+    question: "Slickensides on fault surfaces indicate:",
+    options: ["Fault age", "Direction of movement", "Rock type", "Fault depth"],
+    correctAnswer: 1,
+    topic: "Fault Features",
+    course: "Structural Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "sg-011",
+    question: "An inlier is:",
+    options: ["Younger rocks surrounded by older rocks", "Older rocks surrounded by younger rocks", "A type of fault", "A fold structure"],
+    correctAnswer: 1,
+    topic: "Structural Features",
+    course: "Structural Geology",
+    difficulty: "hard"
+  },
+  {
+    id: "sg-012",
+    question: "Joints differ from faults in that:",
+    options: ["Joints show displacement", "Joints show no displacement", "Joints are larger", "Joints are older"],
+    correctAnswer: 1,
+    topic: "Structural Features",
+    course: "Structural Geology",
+    difficulty: "easy"
+  },
+
+  // Additional Engineering Geology Questions
+  {
+    id: "en-005",
+    question: "Which rock type is most suitable for tunnel construction?",
+    options: ["Shale", "Sandstone", "Massive granite", "Loose gravel"],
+    correctAnswer: 2,
+    topic: "Tunnel Engineering",
+    course: "Engineering Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "en-006",
+    question: "Liquefaction occurs in:",
+    options: ["Dry clay", "Saturated loose sand", "Compact granite", "Dry sand"],
+    correctAnswer: 1,
+    topic: "Seismic Hazards",
+    course: "Engineering Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "en-007",
+    question: "The angle of repose is important for:",
+    options: ["Dam design", "Slope stability", "Tunnel lining", "Bridge foundation"],
+    correctAnswer: 1,
+    topic: "Slope Stability",
+    course: "Engineering Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "en-008",
+    question: "Point load test is used to determine:",
+    options: ["Rock age", "Rock strength", "Rock composition", "Rock porosity"],
+    correctAnswer: 1,
+    topic: "Rock Mechanics",
+    course: "Engineering Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "en-009",
+    question: "Karst topography poses challenges for construction due to:",
+    options: ["Hard rock", "Underground cavities", "High temperature", "Magnetic anomalies"],
+    correctAnswer: 1,
+    topic: "Engineering Problems",
+    course: "Engineering Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "en-010",
+    question: "Which geological investigation is essential before dam construction?",
+    options: ["Paleontological survey", "Foundation geology study", "Fossil excavation", "Meteorological study"],
+    correctAnswer: 1,
+    topic: "Site Investigation",
+    course: "Engineering Geology",
+    difficulty: "easy"
+  },
+
+  // Additional Hydrogeology Questions
+  {
+    id: "hy-005",
+    question: "A confined aquifer is bounded by:",
+    options: ["Air above", "Aquitards above and below", "Only permeable layers", "Ocean water"],
+    correctAnswer: 1,
+    topic: "Aquifer Types",
+    course: "Hydrogeology",
+    difficulty: "medium"
+  },
+  {
+    id: "hy-006",
+    question: "Specific yield represents:",
+    options: ["Total water content", "Water released by gravity drainage", "Rate of water flow", "Aquifer thickness"],
+    correctAnswer: 1,
+    topic: "Aquifer Properties",
+    course: "Hydrogeology",
+    difficulty: "hard"
+  },
+  {
+    id: "hy-007",
+    question: "An artesian well flows because:",
+    options: ["Pumping", "Pressure from confined aquifer", "Gravity alone", "Surface water input"],
+    correctAnswer: 1,
+    topic: "Artesian Systems",
+    course: "Hydrogeology",
+    difficulty: "medium"
+  },
+  {
+    id: "hy-008",
+    question: "Saltwater intrusion is a problem in:",
+    options: ["Mountain areas", "Coastal aquifers", "Deep wells", "Volcanic regions"],
+    correctAnswer: 1,
+    topic: "Groundwater Contamination",
+    course: "Hydrogeology",
+    difficulty: "easy"
+  },
+  {
+    id: "hy-009",
+    question: "Hydraulic conductivity is affected by:",
+    options: ["Only grain size", "Grain size and sorting", "Only porosity", "Only rock type"],
+    correctAnswer: 1,
+    topic: "Aquifer Properties",
+    course: "Hydrogeology",
+    difficulty: "medium"
+  },
+  {
+    id: "hy-010",
+    question: "Springs form where:",
+    options: ["Water table intersects surface", "Rivers flow", "Rain falls", "Snow melts"],
+    correctAnswer: 0,
+    topic: "Groundwater Discharge",
+    course: "Hydrogeology",
+    difficulty: "easy"
+  },
+
+  // Additional Exploration Geology Questions
+  {
+    id: "em-004",
+    question: "Induced Polarization (IP) survey is useful for detecting:",
+    options: ["Magnetic minerals", "Sulfide minerals", "Carbonate rocks", "Water"],
+    correctAnswer: 1,
+    topic: "Geophysical Methods",
+    course: "Exploration Geology",
+    difficulty: "hard"
+  },
+  {
+    id: "em-005",
+    question: "Core drilling provides:",
+    options: ["Surface samples only", "Continuous rock samples", "Only water samples", "Soil samples"],
+    correctAnswer: 1,
+    topic: "Drilling Methods",
+    course: "Exploration Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "em-006",
+    question: "Geochemical anomalies indicate:",
+    options: ["Normal background", "Potential ore deposits", "Fossil locations", "Earthquake zones"],
+    correctAnswer: 1,
+    topic: "Geochemical Exploration",
+    course: "Exploration Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "em-007",
+    question: "Underground mining is preferred when:",
+    options: ["Deposit is near surface", "Deposit is deep", "Rock is soft", "Land is flat"],
+    correctAnswer: 1,
+    topic: "Mining Methods",
+    course: "Exploration Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "em-008",
+    question: "Stripping ratio in open-pit mining refers to:",
+    options: ["Ore grade", "Waste to ore ratio", "Pit depth", "Recovery rate"],
+    correctAnswer: 1,
+    topic: "Mining Economics",
+    course: "Exploration Geology",
+    difficulty: "medium"
+  },
+
+  // Additional Economic Minerals of India Questions
+  {
+    id: "ei-005",
+    question: "The Jharia coalfield is located in:",
+    options: ["Odisha", "West Bengal", "Jharkhand", "Madhya Pradesh"],
+    correctAnswer: 2,
+    topic: "Indian Coal Fields",
+    course: "Economic Minerals of India",
+    difficulty: "easy"
+  },
+  {
+    id: "ei-006",
+    question: "Rajasthan is a major producer of:",
+    options: ["Coal", "Marble and zinc", "Iron ore", "Chromite"],
+    correctAnswer: 1,
+    topic: "State-wise Minerals",
+    course: "Economic Minerals of India",
+    difficulty: "medium"
+  },
+  {
+    id: "ei-007",
+    question: "The Singhbhum district is famous for:",
+    options: ["Coal", "Copper and uranium", "Limestone", "Bauxite"],
+    correctAnswer: 1,
+    topic: "Mineral Belts",
+    course: "Economic Minerals of India",
+    difficulty: "medium"
+  },
+  {
+    id: "ei-008",
+    question: "India's largest mica producing state is:",
+    options: ["Bihar", "Jharkhand", "Rajasthan", "Andhra Pradesh"],
+    correctAnswer: 3,
+    topic: "Industrial Minerals",
+    course: "Economic Minerals of India",
+    difficulty: "medium"
+  },
+  {
+    id: "ei-009",
+    question: "Bailadila iron ore deposit is in which state?",
+    options: ["Odisha", "Chhattisgarh", "Karnataka", "Goa"],
+    correctAnswer: 1,
+    topic: "Iron Ore Deposits",
+    course: "Economic Minerals of India",
+    difficulty: "medium"
+  },
+  {
+    id: "ei-010",
+    question: "Which mineral is Odisha NOT a major producer of?",
+    options: ["Iron ore", "Chromite", "Coal", "Petroleum"],
+    correctAnswer: 3,
+    topic: "Odisha Minerals",
+    course: "Economic Minerals of India",
+    difficulty: "easy"
+  },
+
+  // Additional Laboratory Instrumentation Questions
+  {
+    id: "li-004",
+    question: "SEM stands for:",
+    options: ["Simple Electron Microscopy", "Scanning Electron Microscopy", "Standard Element Measurement", "Spectral Energy Meter"],
+    correctAnswer: 1,
+    topic: "Microscopy",
+    course: "Laboratory Instrumentation",
+    difficulty: "easy"
+  },
+  {
+    id: "li-005",
+    question: "EPMA is used for:",
+    options: ["Age dating", "Quantitative elemental analysis", "Crystal structure", "Porosity measurement"],
+    correctAnswer: 1,
+    topic: "Microprobe Analysis",
+    course: "Laboratory Instrumentation",
+    difficulty: "hard"
+  },
+  {
+    id: "li-006",
+    question: "ICP-MS is commonly used for:",
+    options: ["Imaging", "Trace element analysis", "Mineral identification", "Texture study"],
+    correctAnswer: 1,
+    topic: "Spectroscopic Methods",
+    course: "Laboratory Instrumentation",
+    difficulty: "medium"
+  },
+  {
+    id: "li-007",
+    question: "Thin sections are typically how thick?",
+    options: ["0.01 mm", "0.03 mm", "0.1 mm", "1 mm"],
+    correctAnswer: 1,
+    topic: "Sample Preparation",
+    course: "Laboratory Instrumentation",
+    difficulty: "medium"
+  },
+  {
+    id: "li-008",
+    question: "Carbon-14 dating is used for:",
+    options: ["Very old rocks", "Young organic material", "Igneous rocks only", "Metallic ores"],
+    correctAnswer: 1,
+    topic: "Geochronology",
+    course: "Laboratory Instrumentation",
+    difficulty: "medium"
+  },
+
+  // Additional Geology of Odisha Questions
+  {
+    id: "go-004",
+    question: "The Mahanadi River basin contains which type of deposits?",
+    options: ["Marine sediments", "Alluvial and deltaic sediments", "Volcanic rocks", "Glacial deposits"],
+    correctAnswer: 1,
+    topic: "Odisha Geomorphology",
+    course: "Geology of Odisha",
+    difficulty: "medium"
+  },
+  {
+    id: "go-005",
+    question: "Khondalites are characteristic rocks of:",
+    options: ["Western Ghats", "Eastern Ghats", "Himalayas", "Deccan Plateau"],
+    correctAnswer: 1,
+    topic: "Odisha Rocks",
+    course: "Geology of Odisha",
+    difficulty: "medium"
+  },
+  {
+    id: "go-006",
+    question: "The Similipal massif is composed mainly of:",
+    options: ["Sedimentary rocks", "Granite and gneiss", "Volcanic rocks", "Limestone"],
+    correctAnswer: 1,
+    topic: "Odisha Geology",
+    course: "Geology of Odisha",
+    difficulty: "hard"
+  },
+  {
+    id: "go-007",
+    question: "Odisha's coastline is characterized by:",
+    options: ["Rocky cliffs", "Sandy beaches and spits", "Fjords", "Coral reefs"],
+    correctAnswer: 1,
+    topic: "Coastal Geomorphology",
+    course: "Geology of Odisha",
+    difficulty: "easy"
+  },
+  {
+    id: "go-008",
+    question: "The Talcher coalfield belongs to which geological formation?",
+    options: ["Vindhyan", "Gondwana", "Deccan Traps", "Dharwar"],
+    correctAnswer: 1,
+    topic: "Odisha Stratigraphy",
+    course: "Geology of Odisha",
+    difficulty: "easy"
+  },
+
+  // Additional Fuel Geology Questions
+  {
+    id: "fg-006",
+    question: "The rank of coal increases with:",
+    options: ["Decreasing carbon content", "Increasing depth and temperature", "Increasing moisture", "Decreasing age"],
+    correctAnswer: 1,
+    topic: "Coal Metamorphism",
+    course: "Fuel Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "fg-007",
+    question: "Source rock for petroleum must contain:",
+    options: ["High silica", "Organic matter", "Metallic minerals", "Volcanic ash"],
+    correctAnswer: 1,
+    topic: "Petroleum Geology",
+    course: "Fuel Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "fg-008",
+    question: "Lignite is also known as:",
+    options: ["Black coal", "Brown coal", "Anthracite", "Coke"],
+    correctAnswer: 1,
+    topic: "Coal Types",
+    course: "Fuel Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "fg-009",
+    question: "Bombay High is associated with:",
+    options: ["Coal mining", "Offshore oil field", "Iron ore", "Uranium"],
+    correctAnswer: 1,
+    topic: "Indian Petroleum",
+    course: "Fuel Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "fg-010",
+    question: "Natural gas primarily consists of:",
+    options: ["CO2", "CH4 (Methane)", "H2S", "N2"],
+    correctAnswer: 1,
+    topic: "Natural Gas",
+    course: "Fuel Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "fg-011",
+    question: "Kerogen is:",
+    options: ["Mature petroleum", "Immature organic matter in source rock", "A type of coal", "Refined oil"],
+    correctAnswer: 1,
+    topic: "Petroleum Formation",
+    course: "Fuel Geology",
+    difficulty: "hard"
+  },
+
+  // Additional Environmental Geology Questions
+  {
+    id: "ev-004",
+    question: "Acid rain is primarily caused by:",
+    options: ["CO2 emissions", "SO2 and NOx emissions", "Methane", "Oxygen"],
+    correctAnswer: 1,
+    topic: "Atmospheric Pollution",
+    course: "Environmental Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "ev-005",
+    question: "Desertification is caused by:",
+    options: ["Increased rainfall", "Climate change and overgrazing", "Volcanic activity", "Tectonic movement"],
+    correctAnswer: 1,
+    topic: "Land Degradation",
+    course: "Environmental Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "ev-006",
+    question: "Radon is a geological hazard because:",
+    options: ["It's flammable", "It's radioactive and accumulates in buildings", "It causes earthquakes", "It pollutes water"],
+    correctAnswer: 1,
+    topic: "Geological Hazards",
+    course: "Environmental Geology",
+    difficulty: "medium"
+  },
+  {
+    id: "ev-007",
+    question: "Sea level rise is a concern due to:",
+    options: ["Tectonic uplift", "Glacial melting and thermal expansion", "Volcanic activity", "Sedimentation"],
+    correctAnswer: 1,
+    topic: "Climate Change",
+    course: "Environmental Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "ev-008",
+    question: "Sustainable development in mining includes:",
+    options: ["Maximum extraction", "Environmental rehabilitation", "No regulation", "Only profit focus"],
+    correctAnswer: 1,
+    topic: "Environmental Management",
+    course: "Environmental Geology",
+    difficulty: "easy"
+  },
+  {
+    id: "ev-009",
+    question: "Groundwater contamination often results from:",
+    options: ["Tectonic activity", "Industrial and agricultural pollutants", "Solar radiation", "Wind erosion"],
+    correctAnswer: 1,
+    topic: "Water Pollution",
+    course: "Environmental Geology",
+    difficulty: "easy"
+  },
+
+  // Additional Ore Microscopy Questions
+  {
+    id: "om-004",
+    question: "Chalcopyrite appears in reflected light as:",
+    options: ["White", "Brass yellow", "Silver", "Red"],
+    correctAnswer: 1,
+    topic: "Ore Mineral Colors",
+    course: "Ore Microscopy",
+    difficulty: "medium"
+  },
+  {
+    id: "om-005",
+    question: "Anisotropism in ore minerals refers to:",
+    options: ["Color change with rotation", "Hardness variation", "Chemical zoning", "Crystal twinning"],
+    correctAnswer: 0,
+    topic: "Optical Properties",
+    course: "Ore Microscopy",
+    difficulty: "hard"
+  },
+  {
+    id: "om-006",
+    question: "Colloform texture in ore minerals indicates:",
+    options: ["High temperature origin", "Colloidal precipitation", "Igneous crystallization", "Metamorphic growth"],
+    correctAnswer: 1,
+    topic: "Ore Textures",
+    course: "Ore Microscopy",
+    difficulty: "hard"
+  },
+  {
+    id: "om-007",
+    question: "Magnetite appears in reflected light as:",
+    options: ["White", "Yellow", "Gray with brownish tint", "Blue"],
+    correctAnswer: 2,
+    topic: "Ore Mineral Identification",
+    course: "Ore Microscopy",
+    difficulty: "medium"
+  },
+  {
+    id: "om-008",
+    question: "Reflectance of ore minerals is measured relative to:",
+    options: ["Water", "Standard mineral (usually pyrite)", "Air", "Diamond"],
+    correctAnswer: 1,
+    topic: "Reflectance Measurement",
+    course: "Ore Microscopy",
+    difficulty: "hard"
+  },
+
+  // Additional Geostatistics Questions
+  {
+    id: "gs-004",
+    question: "The nugget effect in a variogram represents:",
+    options: ["Maximum variance", "Variance at zero distance", "Mean value", "Range"],
+    correctAnswer: 1,
+    topic: "Variogram Parameters",
+    course: "Geostatistics",
+    difficulty: "hard"
+  },
+  {
+    id: "gs-005",
+    question: "Inverse Distance Weighting (IDW) is a type of:",
+    options: ["Classification method", "Interpolation method", "Sampling technique", "Statistical test"],
+    correctAnswer: 1,
+    topic: "Spatial Interpolation",
+    course: "Geostatistics",
+    difficulty: "medium"
+  },
+  {
+    id: "gs-006",
+    question: "Semivariogram helps in understanding:",
+    options: ["Rock type", "Spatial correlation structure", "Chemical composition", "Age of deposit"],
+    correctAnswer: 1,
+    topic: "Geostatistical Analysis",
+    course: "Geostatistics",
+    difficulty: "medium"
+  },
+  {
+    id: "gs-007",
+    question: "Block kriging estimates values for:",
+    options: ["Points only", "Blocks or areas", "Lines only", "Random locations"],
+    correctAnswer: 1,
+    topic: "Kriging Methods",
+    course: "Geostatistics",
+    difficulty: "hard"
+  },
+  {
+    id: "gs-008",
+    question: "The sill in a variogram represents:",
+    options: ["Zero variance", "Maximum variance", "Mean value", "Sampling error"],
+    correctAnswer: 1,
+    topic: "Variogram Parameters",
+    course: "Geostatistics",
+    difficulty: "hard"
+  },
+
+  // Additional miscellaneous questions for variety
   {
     id: "add-001",
     question: "What is the difference between magma and lava?",

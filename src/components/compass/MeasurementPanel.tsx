@@ -18,6 +18,8 @@ import { cn } from '@/lib/utils';
 
 export type MeasurementMode = 'strike' | 'dip' | 'strike_dip' | 'trend_plunge' | 'bearing' | 'clinometer';
 
+type AdjustField = 'strike' | 'dip' | 'trend' | 'plunge' | 'bearing';
+
 interface MeasurementPanelProps {
   mode: MeasurementMode;
   onModeChange: (mode: MeasurementMode) => void;
@@ -29,7 +31,7 @@ interface MeasurementPanelProps {
   isLocked: boolean;
   onLock: () => void;
   onUnlock: () => void;
-  onAdjust: (field: 'strike' | 'dip' | 'trend' | 'plunge' | 'bearing', delta: number) => void;
+  onAdjust: (field: AdjustField, delta: number) => void;
   onReset: () => void;
   currentHeading: number;
   currentTilt: { pitch: number | null; roll: number | null };

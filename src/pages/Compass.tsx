@@ -11,67 +11,62 @@ import { HowToUseOverlay } from '@/components/compass/HowToUseOverlay';
 import { RoseDiagram } from '@/components/compass/RoseDiagram';
 import { Stereonet } from '@/components/compass/Stereonet';
 import { ReadingsList } from '@/components/compass/ReadingsList';
-import { useDeviceOrientation } from '@/hooks/useDeviceOrientation';
-import { useGeolocation } from '@/hooks/useGeolocation';
+import { useBruntonCompass, SavedReading } from '@/hooks/useBruntonCompass';
 import { exportReadings } from '@/lib/compassExport';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { Settings, HelpCircle, Play, Pause, LogIn } from 'lucide-react';
+import { Settings, HelpCircle, Play, Pause, LogIn, AlertTriangle, Wifi, WifiOff, Signal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Compass: React.FC = () => {
-  // Compass state
-  const [mode, setMode] = useState<MeasurementMode>('strike_dip');
-  const [isLocked, setIsLocked] = useState(false);
-  const [declination, setDeclination] = useState(0);
-  const [useTrueNorth, setUseTrueNorth] = useState(true);
+  // Use the production-ready Brunton compass hook
+  const compass = useBruntonCompass();
+  
+  // UI state
   const [showCalibration, setShowCalibration] = useState(false);
   const [showHowTo, setShowHowTo] = useState(false);
-  const [isDemo, setIsDemo] = useState(false);
   const [demoHeading, setDemoHeading] = useState(45);
-
-  // Measurements
-  const [strike, setStrike] = useState<number | null>(null);
-  const [dip, setDip] = useState<number | null>(null);
-  const [trend, setTrend] = useState<number | null>(null);
-  const [plunge, setPlunge] = useState<number | null>(null);
-  const [bearing, setBearing] = useState<number | null>(null);
-
-  // Saved readings
-  const [readings, setReadings] = useState<CompassReadingData[]>([]);
+  const [demoPitch, setDemoPitch] = useState(0);
+  
+  // Current reading being edited (for save form)
   const [currentReading, setCurrentReading] = useState<CompassReadingData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
+  
+  // Readings from database
+  const [dbReadings, setDbReadings] = useState<CompassReadingData[]>([]);
+  
   // Auth
   const { user } = useAuth();
 
-  // Device sensors
-  const orientation = useDeviceOrientation({ magneticDeclination: declination, useTrueNorth });
-  const { latitude, longitude, getCurrentLocation } = useGeolocation();
-
-  const heading = isDemo ? demoHeading : (orientation.heading ?? 0);
-
   // Demo mode rotation
   useEffect(() => {
-    if (!isDemo) return;
+    if (!compass.isDemoMode) return;
     const interval = setInterval(() => {
       setDemoHeading(prev => (prev + 0.5) % 360);
+      compass.simulateSensorValues(demoHeading, demoPitch, 0);
     }, 50);
     return () => clearInterval(interval);
-  }, [isDemo]);
+  }, [compass.isDemoMode, demoHeading, demoPitch, compass.simulateSensorValues]);
 
   // Start compass on mount
   useEffect(() => {
-    if (!orientation.isSupported) {
-      setIsDemo(true);
-      toast.info('Demo mode: Device sensors not available');
-    } else {
-      orientation.startListening();
-    }
+    const init = async () => {
+      const started = await compass.startListening();
+      if (!started) {
+        compass.enableDemoMode();
+      }
+    };
+    init();
+    
+    return () => {
+      compass.stopListening();
+    };
   }, []);
 
   // Load readings from database
@@ -106,7 +101,7 @@ const Compass: React.FC = () => {
           structureType: r.structure_type || '',
         }));
 
-        setReadings(loadedReadings);
+        setDbReadings(loadedReadings);
       } catch (error) {
         console.error('Error loading readings:', error);
         toast.error('Failed to load saved readings');
@@ -118,87 +113,42 @@ const Compass: React.FC = () => {
     loadReadings();
   }, [user]);
 
-  // Lock reading
+  // Lock reading and prepare for saving
   const handleLock = useCallback(() => {
-    const currentHeading = Math.round(heading);
-    const currentTilt = Math.abs(orientation.tilt.pitch ?? 0);
-
-    switch (mode) {
-      case 'strike':
-        setStrike(currentHeading);
-        break;
-      case 'dip':
-        setDip(Math.min(90, Math.round(currentTilt)));
-        break;
-      case 'strike_dip':
-        setStrike(currentHeading);
-        setDip(Math.min(90, Math.round(currentTilt)));
-        break;
-      case 'trend_plunge':
-        setTrend(currentHeading);
-        setPlunge(Math.min(90, Math.round(currentTilt)));
-        break;
-      case 'bearing':
-        setBearing(currentHeading);
-        break;
-      case 'clinometer':
-        setDip(Math.min(90, Math.round(currentTilt)));
-        break;
-    }
-
-    setIsLocked(true);
-    getCurrentLocation();
+    compass.lockReading();
     
-    const clinometerDip = mode === 'clinometer' ? Math.min(90, Math.round(currentTilt)) : null;
-    
+    // Prepare current reading for the save form
     setCurrentReading({
-      mode,
-      strike: mode === 'strike' || mode === 'strike_dip' ? currentHeading : null,
-      dip: mode === 'dip' || mode === 'strike_dip' || mode === 'clinometer' ? Math.min(90, Math.round(currentTilt)) : null,
-      trend: mode === 'trend_plunge' ? currentHeading : null,
-      plunge: mode === 'trend_plunge' ? Math.min(90, Math.round(currentTilt)) : null,
-      bearing: mode === 'bearing' ? currentHeading : null,
-      azimuth: mode === 'clinometer' ? 0 : currentHeading,
+      mode: compass.activeMode,
+      strike: compass.strikeDeg,
+      dip: compass.dipDeg,
+      trend: compass.trendDeg,
+      plunge: compass.plungeDeg,
+      bearing: compass.bearingDeg,
+      azimuth: compass.headingDeg,
       timestamp: new Date(),
-      latitude,
-      longitude,
+      latitude: compass.location.lat,
+      longitude: compass.location.lon,
       notes: '',
       photos: [],
       lithology: '',
       structureType: '',
     });
-
-    toast.success('Reading locked!');
-  }, [heading, orientation.tilt, mode, latitude, longitude, getCurrentLocation]);
+  }, [compass]);
 
   const handleUnlock = () => {
-    setIsLocked(false);
+    compass.unlockReading();
     setCurrentReading(null);
-  };
-
-  const handleAdjust = (field: string, delta: number) => {
-    const adjust = (val: number | null, max = 360) => {
-      if (val === null) return null;
-      return ((val + delta) % max + max) % max;
-    };
-
-    switch (field) {
-      case 'strike': setStrike(prev => adjust(prev)); break;
-      case 'dip': setDip(prev => adjust(prev, 91)); break;
-      case 'trend': setTrend(prev => adjust(prev)); break;
-      case 'plunge': setPlunge(prev => adjust(prev, 91)); break;
-      case 'bearing': setBearing(prev => adjust(prev)); break;
-    }
   };
 
   const handleReset = () => {
-    setStrike(null);
-    setDip(null);
-    setTrend(null);
-    setPlunge(null);
-    setBearing(null);
-    setIsLocked(false);
+    compass.reset();
     setCurrentReading(null);
+  };
+
+  const handleModeChange = (mode: MeasurementMode) => {
+    compass.setActiveMode(mode);
+    compass.reset();
   };
 
   const handleSaveReading = async () => {
@@ -216,14 +166,14 @@ const Compass: React.FC = () => {
         .insert({
           user_id: user.id,
           mode: currentReading.mode,
-          strike: currentReading.strike,
-          dip: currentReading.dip,
-          trend: currentReading.trend,
-          plunge: currentReading.plunge,
-          bearing: currentReading.bearing,
-          azimuth: currentReading.azimuth,
-          latitude: latitude,
-          longitude: longitude,
+          strike: compass.strikeDeg,
+          dip: compass.dipDeg,
+          trend: compass.trendDeg,
+          plunge: compass.plungeDeg,
+          bearing: compass.bearingDeg,
+          azimuth: compass.headingDeg,
+          latitude: compass.location.lat,
+          longitude: compass.location.lon,
           notes: currentReading.notes,
           photos: currentReading.photos,
           lithology: currentReading.lithology,
@@ -237,12 +187,17 @@ const Compass: React.FC = () => {
       const savedReading: CompassReadingData = {
         ...currentReading,
         id: data.id,
-        latitude,
-        longitude,
+        strike: compass.strikeDeg,
+        dip: compass.dipDeg,
+        trend: compass.trendDeg,
+        plunge: compass.plungeDeg,
+        bearing: compass.bearingDeg,
+        latitude: compass.location.lat,
+        longitude: compass.location.lon,
         timestamp: new Date(data.created_at),
       };
 
-      setReadings(prev => [savedReading, ...prev]);
+      setDbReadings(prev => [savedReading, ...prev]);
       toast.success('Reading saved to cloud!');
       handleReset();
     } catch (error) {
@@ -255,7 +210,7 @@ const Compass: React.FC = () => {
 
   const handleDeleteReading = async (id: string) => {
     if (!user) {
-      setReadings(prev => prev.filter(r => r.id !== id));
+      setDbReadings(prev => prev.filter(r => r.id !== id));
       toast.success('Reading deleted');
       return;
     }
@@ -268,7 +223,7 @@ const Compass: React.FC = () => {
 
       if (error) throw error;
 
-      setReadings(prev => prev.filter(r => r.id !== id));
+      setDbReadings(prev => prev.filter(r => r.id !== id));
       toast.success('Reading deleted');
     } catch (error) {
       console.error('Error deleting reading:', error);
@@ -277,13 +232,38 @@ const Compass: React.FC = () => {
   };
 
   const handleExport = () => {
-    if (readings.length === 0) {
+    if (dbReadings.length === 0) {
       toast.error('No readings to export');
       return;
     }
-    exportReadings(readings, 'csv');
+    exportReadings(dbReadings, 'csv');
     toast.success('Exported as CSV');
   };
+
+  const toggleDemoMode = () => {
+    if (compass.isDemoMode) {
+      compass.startListening();
+    } else {
+      compass.enableDemoMode();
+    }
+  };
+
+  // Get accuracy color and icon
+  const getAccuracyBadge = () => {
+    switch (compass.sensorAccuracy) {
+      case 'HIGH':
+        return <Badge variant="default" className="bg-success text-success-foreground"><Signal className="h-3 w-3 mr-1" />HIGH</Badge>;
+      case 'MEDIUM':
+        return <Badge variant="default" className="bg-warning text-warning-foreground"><Signal className="h-3 w-3 mr-1" />MEDIUM</Badge>;
+      case 'LOW':
+        return <Badge variant="destructive"><Signal className="h-3 w-3 mr-1" />LOW</Badge>;
+      default:
+        return <Badge variant="outline"><Signal className="h-3 w-3 mr-1" />CALIBRATING</Badge>;
+    }
+  };
+
+  // Convert accuracy to the expected format for CompassDial
+  const dialAccuracy = compass.sensorAccuracy === 'UNKNOWN' ? 'unknown' : compass.sensorAccuracy.toLowerCase() as 'low' | 'medium' | 'high';
 
   return (
     <AppLayout>
@@ -295,39 +275,62 @@ const Compass: React.FC = () => {
             <HelpCircle className="h-4 w-4 mr-1" /> Help
           </Button>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setIsDemo(!isDemo)}>
-            {isDemo ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowCalibration(true)}>
-            <Settings className="h-4 w-4" />
-          </Button>
+
+        {/* Status bar */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={toggleDemoMode}>
+              {compass.isDemoMode ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              {compass.isDemoMode ? 'Demo' : 'Live'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowCalibration(true)}>
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            {getAccuracyBadge()}
+            {compass.isListening ? (
+              <Badge variant="outline" className="text-success border-success"><Wifi className="h-3 w-3 mr-1" />Live</Badge>
+            ) : (
+              <Badge variant="outline" className="text-muted-foreground"><WifiOff className="h-3 w-3 mr-1" />Off</Badge>
+            )}
+          </div>
         </div>
+
+        {/* Warning banner for demo mode or errors */}
+        {(compass.isDemoMode || compass.error) && (
+          <Alert variant="destructive" className="bg-warning/10 border-warning text-warning-foreground">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              {compass.error || 'Demo mode: Sensor data simulated. Lock & Save disabled.'}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Compass dial or Clinometer */}
         <div className="flex flex-col items-center gap-6">
-          {mode === 'clinometer' ? (
+          {compass.activeMode === 'clinometer' ? (
             <Clinometer
-              angle={orientation.tilt.pitch ?? 0}
-              lockedAngle={dip}
-              isLocked={isLocked}
+              angle={compass.pitchDeg}
+              lockedAngle={compass.dipDeg}
+              isLocked={compass.isLocked}
               size={280}
             />
           ) : (
             <>
               <CompassDial
-                heading={heading}
-                strike={strike}
-                dip={dip}
-                accuracy={isDemo ? 'high' : orientation.accuracy}
-                isLocked={isLocked}
+                heading={compass.headingDeg}
+                strike={compass.strikeDeg}
+                dip={compass.dipDeg}
+                accuracy={dialAccuracy}
+                isLocked={compass.isLocked}
                 size={280}
               />
               
               {/* Bubble Level Indicators */}
               <DualBubbleLevel
-                pitch={orientation.tilt.pitch ?? 0}
-                roll={orientation.tilt.roll ?? 0}
+                pitch={compass.pitchDeg}
+                roll={compass.rollDeg}
               />
             </>
           )}
@@ -335,20 +338,20 @@ const Compass: React.FC = () => {
 
         {/* Measurement panel */}
         <MeasurementPanel
-          mode={mode}
-          onModeChange={setMode}
-          strike={strike}
-          dip={dip}
-          trend={trend}
-          plunge={plunge}
-          bearing={bearing}
-          isLocked={isLocked}
+          mode={compass.activeMode}
+          onModeChange={handleModeChange}
+          strike={compass.strikeDeg}
+          dip={compass.dipDeg}
+          trend={compass.trendDeg}
+          plunge={compass.plungeDeg}
+          bearing={compass.bearingDeg}
+          isLocked={compass.isLocked}
           onLock={handleLock}
           onUnlock={handleUnlock}
-          onAdjust={handleAdjust}
+          onAdjust={compass.adjustValue}
           onReset={handleReset}
-          currentHeading={heading}
-          currentTilt={orientation.tilt}
+          currentHeading={compass.headingDeg}
+          currentTilt={{ pitch: compass.pitchDeg, roll: compass.rollDeg }}
         />
 
         {/* Login prompt if not signed in */}
@@ -367,7 +370,7 @@ const Compass: React.FC = () => {
         )}
 
         {/* Save form when locked */}
-        {isLocked && currentReading && (
+        {compass.isLocked && currentReading && !compass.isDemoMode && (
           <CompassReadingForm
             reading={currentReading}
             onReadingChange={setCurrentReading}
@@ -380,12 +383,12 @@ const Compass: React.FC = () => {
 
         {/* Declination settings */}
         <DeclinationInput
-          declination={declination}
-          useTrueNorth={useTrueNorth}
-          onDeclinationChange={setDeclination}
-          onTrueNorthChange={setUseTrueNorth}
-          latitude={latitude}
-          longitude={longitude}
+          declination={compass.declinationDeg}
+          useTrueNorth={compass.useTrueNorth}
+          onDeclinationChange={compass.setDeclination}
+          onTrueNorthChange={compass.setUseTrueNorth}
+          latitude={compass.location.lat}
+          longitude={compass.location.lon}
         />
 
         {/* Visualizations and readings */}
@@ -397,17 +400,17 @@ const Compass: React.FC = () => {
           </TabsList>
           <TabsContent value="readings">
             <ReadingsList
-              readings={readings}
+              readings={dbReadings}
               onView={() => {}}
               onDelete={handleDeleteReading}
               onExport={handleExport}
             />
           </TabsContent>
           <TabsContent value="rose">
-            <RoseDiagram readings={readings} size={220} />
+            <RoseDiagram readings={dbReadings} size={220} />
           </TabsContent>
           <TabsContent value="stereonet">
-            <Stereonet readings={readings} size={220} />
+            <Stereonet readings={dbReadings} size={220} />
           </TabsContent>
         </Tabs>
       </div>
@@ -416,7 +419,7 @@ const Compass: React.FC = () => {
       <CalibrationOverlay
         isOpen={showCalibration}
         onClose={() => setShowCalibration(false)}
-        accuracy={orientation.accuracy}
+        accuracy={dialAccuracy}
       />
       <HowToUseOverlay isOpen={showHowTo} onClose={() => setShowHowTo(false)} />
     </AppLayout>

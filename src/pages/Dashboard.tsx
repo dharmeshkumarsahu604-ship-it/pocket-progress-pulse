@@ -8,19 +8,17 @@ import {
   Gem, 
   ChevronRight, 
   Sparkles, 
-  Lightbulb, 
   FileText,
   Plus,
   ArrowRight,
-  BookOpen,
-  Target,
-  Beaker
+  RefreshCw
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { getDailyLearningCards, getIconForType, LearningTip } from "@/data/dailyLearningTips";
 
 interface FieldNote {
   id: string;
@@ -45,40 +43,6 @@ interface SpecimenOfDay {
   subtype?: string;
 }
 
-// Micro-learning content
-const learningCards = [
-  {
-    icon: Lightbulb,
-    title: "Did You Know?",
-    content: "The oldest rocks on Earth are 4 billion years old, found in Canada's Acasta Gneiss.",
-    type: "fact"
-  },
-  {
-    icon: Target,
-    title: "Field Tip",
-    content: "Always observe rock orientation in the field before collecting samples.",
-    type: "tip"
-  },
-  {
-    icon: BookOpen,
-    title: "Exam Prep",
-    content: "Remember: Igneous → Sedimentary → Metamorphic forms the rock cycle.",
-    type: "exam"
-  },
-  {
-    icon: Beaker,
-    title: "Quick Test",
-    content: "Use dilute HCl to test for carbonates - fizzing indicates calcite or dolomite.",
-    type: "tip"
-  },
-  {
-    icon: Lightbulb,
-    title: "Fun Fact",
-    content: "Pumice is the only rock that can float on water due to its air-filled pores.",
-    type: "fact"
-  },
-];
-
 // Generate a deterministic "random" index based on date
 function getDailyIndex(max: number, offset: number = 0): number {
   const today = new Date();
@@ -93,6 +57,29 @@ function getGreeting(): string {
   return "Good evening";
 }
 
+// Get category color based on tip category
+function getCategoryColor(category: LearningTip['category']): string {
+  switch (category) {
+    case 'rock': return 'bg-primary/10 text-primary';
+    case 'mineral': return 'bg-accent/10 text-accent';
+    case 'site': return 'bg-secondary/10 text-secondary';
+    case 'compass': return 'bg-warning/10 text-warning';
+    case 'exam': return 'bg-success/10 text-success';
+    default: return 'bg-muted text-muted-foreground';
+  }
+}
+
+function getCategoryLabel(category: LearningTip['category']): string {
+  switch (category) {
+    case 'rock': return 'Rocks';
+    case 'mineral': return 'Minerals';
+    case 'site': return 'Field Sites';
+    case 'compass': return 'Compass';
+    case 'exam': return 'Exam Prep';
+    default: return 'Geology';
+  }
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -101,6 +88,9 @@ export default function Dashboard() {
   const [specimenOfDay, setSpecimenOfDay] = useState<SpecimenOfDay | null>(null);
   const [loadingSpecimen, setLoadingSpecimen] = useState(true);
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Get daily learning cards - memoized to prevent recalculation
+  const dailyLearningCards = useMemo(() => getDailyLearningCards(), []);
 
   useEffect(() => {
     fetchSpecimenOfDay();
@@ -313,32 +303,43 @@ export default function Dashboard() {
           </Card>
         )}
 
-        {/* Micro-Learning Carousel */}
+        {/* Daily Learning Carousel - Rotates every 24 hours */}
         <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-foreground px-1">Quick Learning</h2>
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-sm font-semibold text-foreground">Quick Learning</h2>
+            <Badge variant="outline" className="text-xs gap-1">
+              <RefreshCw className="h-3 w-3" />
+              Daily Tips
+            </Badge>
+          </div>
           <div 
             ref={carouselRef}
             className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {learningCards.map((card, index) => {
-              const Icon = card.icon;
+            {dailyLearningCards.map((tip, index) => {
+              const Icon = getIconForType(tip.iconType);
               return (
                 <Card 
-                  key={index} 
-                  className="flex-shrink-0 w-64 bg-learning border-0 shadow-sm"
+                  key={tip.id} 
+                  className="flex-shrink-0 w-72 border shadow-sm hover:shadow-md transition-shadow"
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <div className="h-9 w-9 rounded-lg bg-learning-foreground/10 flex items-center justify-center flex-shrink-0">
-                        <Icon className="h-5 w-5 text-learning-foreground" />
+                      <div className={`h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0 ${getCategoryColor(tip.category)}`}>
+                        <Icon className="h-5 w-5" />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-learning-foreground mb-1">
-                          {card.title}
-                        </p>
-                        <p className="text-sm text-foreground leading-snug">
-                          {card.content}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-xs font-semibold text-foreground">
+                            {tip.title}
+                          </p>
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                            {getCategoryLabel(tip.category)}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-snug">
+                          {tip.content}
                         </p>
                       </div>
                     </div>

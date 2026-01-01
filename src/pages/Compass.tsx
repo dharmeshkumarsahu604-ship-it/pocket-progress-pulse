@@ -11,8 +11,7 @@ import { HowToUseOverlay } from '@/components/compass/HowToUseOverlay';
 import { RoseDiagram } from '@/components/compass/RoseDiagram';
 import { Stereonet } from '@/components/compass/Stereonet';
 import { ReadingsList } from '@/components/compass/ReadingsList';
-import { useBruntonCompass, SavedReading } from '@/hooks/useBruntonCompass';
-import { exportReadings } from '@/lib/compassExport';
+import { useBruntonCompass } from '@/hooks/useBruntonCompass';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -231,15 +230,6 @@ const Compass: React.FC = () => {
     }
   };
 
-  const handleExport = () => {
-    if (dbReadings.length === 0) {
-      toast.error('No readings to export');
-      return;
-    }
-    exportReadings(dbReadings, 'csv');
-    toast.success('Exported as CSV');
-  };
-
   const toggleDemoMode = () => {
     if (compass.isDemoMode) {
       compass.startListening();
@@ -403,7 +393,6 @@ const Compass: React.FC = () => {
               readings={dbReadings}
               onView={() => {}}
               onDelete={handleDeleteReading}
-              onExport={handleExport}
             />
           </TabsContent>
           <TabsContent value="rose">

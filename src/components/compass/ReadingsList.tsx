@@ -1,23 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { 
   MapPin, 
   Clock, 
-  Trash2, 
-  Eye,
-  Download
+  Trash2,
+  Download,
+  FileSpreadsheet,
+  Globe,
+  Map,
+  FileText,
+  ChevronDown
 } from 'lucide-react';
 import { CompassReadingData } from './CompassReading';
+import { exportReadings, ExportFormat, EXPORT_FORMATS } from '@/lib/compassExport';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface ReadingsListProps {
   readings: CompassReadingData[];
   onView: (reading: CompassReadingData) => void;
   onDelete: (id: string) => void;
-  onExport: () => void;
+  onExport?: () => void;
   selectedId?: string;
 }
 
@@ -38,8 +52,24 @@ const getModeLabel = (mode: string): string => {
     strike_dip: 'S/D',
     trend_plunge: 'T/P',
     bearing: 'Bearing',
+    clinometer: 'Clino',
   };
   return labels[mode] || mode;
+};
+
+const getFormatIcon = (format: ExportFormat) => {
+  switch (format) {
+    case 'csv':
+      return <FileSpreadsheet className="h-4 w-4" />;
+    case 'geojson':
+      return <Globe className="h-4 w-4" />;
+    case 'kml':
+      return <Map className="h-4 w-4" />;
+    case 'txt':
+      return <FileText className="h-4 w-4" />;
+    default:
+      return <Download className="h-4 w-4" />;
+  }
 };
 
 export const ReadingsList: React.FC<ReadingsListProps> = ({
@@ -49,6 +79,28 @@ export const ReadingsList: React.FC<ReadingsListProps> = ({
   onExport,
   selectedId,
 }) => {
+  const handleExport = (format: ExportFormat) => {
+    if (readings.length === 0) {
+      toast.error('No readings to export');
+      return;
+    }
+
+    // Check if readings have coordinates for geo formats
+    if ((format === 'geojson' || format === 'kml')) {
+      const withCoords = readings.filter(r => r.latitude && r.longitude);
+      if (withCoords.length === 0) {
+        toast.error(`No readings with GPS coordinates for ${format.toUpperCase()} export`);
+        return;
+      }
+      if (withCoords.length < readings.length) {
+        toast.warning(`Exporting ${withCoords.length} of ${readings.length} readings with GPS data`);
+      }
+    }
+
+    exportReadings(readings, format);
+    toast.success(`Exported ${readings.length} readings as ${format.toUpperCase()}`);
+  };
+
   if (readings.length === 0) {
     return (
       <Card>
@@ -68,10 +120,41 @@ export const ReadingsList: React.FC<ReadingsListProps> = ({
           <CardTitle className="text-sm">
             Saved Readings ({readings.length})
           </CardTitle>
-          <Button variant="outline" size="sm" onClick={onExport}>
-            <Download className="h-3 w-3 mr-1" />
-            Export
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Download className="h-3 w-3 mr-1" />
+                Export
+                <ChevronDown className="h-3 w-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-background z-50">
+              <DropdownMenuLabel>Export Format</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {EXPORT_FORMATS.map((format) => (
+                <DropdownMenuItem
+                  key={format.id}
+                  onClick={() => handleExport(format.id)}
+                  className="cursor-pointer"
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    {getFormatIcon(format.id)}
+                    <div className="flex-1">
+                      <div className="font-medium">{format.label}</div>
+                      <div className="text-xs text-muted-foreground">{format.description}</div>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{format.extension}</span>
+                  </div>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <div className="px-2 py-1.5">
+                <p className="text-xs text-muted-foreground">
+                  GeoJSON & KML require GPS coordinates
+                </p>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardHeader>
       <CardContent className="p-2">
@@ -99,6 +182,12 @@ export const ReadingsList: React.FC<ReadingsListProps> = ({
                           {reading.lithology}
                         </Badge>
                       )}
+                      {reading.latitude && reading.longitude && (
+                        <Badge variant="outline" className="text-xs text-success border-success/30">
+                          <MapPin className="h-2.5 w-2.5 mr-0.5" />
+                          GPS
+                        </Badge>
+                      )}
                     </div>
                     
                     <div className="font-mono text-sm font-bold truncate">
@@ -115,8 +204,7 @@ export const ReadingsList: React.FC<ReadingsListProps> = ({
                       </span>
                       {reading.latitude && reading.longitude && (
                         <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {reading.latitude.toFixed(3)}°
+                          {reading.latitude.toFixed(3)}°, {reading.longitude.toFixed(3)}°
                         </span>
                       )}
                     </div>

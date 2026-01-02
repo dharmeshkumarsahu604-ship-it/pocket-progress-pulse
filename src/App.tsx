@@ -26,6 +26,7 @@ const FieldTripView = lazy(() => import("./pages/FieldTripView"));
 const Chat = lazy(() => import("./pages/Chat"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Compass = lazy(() => import("./pages/Compass"));
@@ -69,6 +70,8 @@ const AppContent = () => {
             <Route path="/field-trips/:id" element={<FieldTripView />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />

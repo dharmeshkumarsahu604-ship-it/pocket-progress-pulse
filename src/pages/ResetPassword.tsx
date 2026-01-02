@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mountain, Loader2 } from "lucide-react";
+import { Mountain, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,45 +17,31 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Listen for auth state changes - Supabase will process the recovery token from URL
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth event:', event, 'Session:', !!session);
-      
-      if (event === 'PASSWORD_RECOVERY') {
-        // User clicked the recovery link and token was valid
-        setIsValidSession(true);
-        setIsVerifying(false);
-      } else if (event === 'SIGNED_IN' && session) {
-        // Session established after recovery
-        setIsValidSession(true);
-        setIsVerifying(false);
-      }
-    });
+    const getSessionFromURL = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
 
-    // Also check if there's already a valid session (user might have refreshed)
-    const checkSession = async () => {
-      // Give Supabase time to process the URL hash token
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        setIsValidSession(true);
-      } else {
-        // Check if URL has recovery token fragments
-        const hash = window.location.hash;
-        if (!hash.includes('type=recovery') && !hash.includes('access_token')) {
+        if (error || !session) {
+          // Error - show alert and redirect to signin
           toast.error("Invalid or expired reset link");
-          navigate("/auth");
+          setIsValidSession(false);
+          setIsVerifying(false);
+          setTimeout(() => navigate("/auth", { replace: true }), 2000);
           return;
         }
+
+        // Success - show reset password form
+        setIsValidSession(true);
+      } catch {
+        toast.error("Invalid or expired reset link");
+        setIsValidSession(false);
+        setTimeout(() => navigate("/auth", { replace: true }), 2000);
+      } finally {
+        setIsVerifying(false);
       }
-      setIsVerifying(false);
     };
 
-    checkSession();
-
-    return () => subscription.unsubscribe();
+    getSessionFromURL();
   }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -82,11 +68,10 @@ export default function ResetPassword() {
         toast.error(error.message);
       } else {
         toast.success("Password updated successfully!");
-        // Sign out and redirect to login
         await supabase.auth.signOut();
-        navigate("/auth");
+        navigate("/auth", { replace: true });
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to reset password");
     } finally {
       setIsLoading(false);
@@ -109,17 +94,12 @@ export default function ResetPassword() {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <Mountain className="h-12 w-12 text-primary mx-auto mb-2" />
-            <CardTitle>Link Expired</CardTitle>
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-2" />
+            <CardTitle>Invalid or Expired Link</CardTitle>
             <CardDescription>
-              This password reset link is invalid or has expired. Please request a new one.
+              This password reset link is invalid or has expired. Redirecting to sign in...
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button className="w-full" onClick={() => navigate("/auth")}>
-              Back to Login
-            </Button>
-          </CardContent>
         </Card>
       </div>
     );

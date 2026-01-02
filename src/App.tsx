@@ -71,8 +71,7 @@ const AppContent = () => {
         <Route path="/chat" element={<Chat />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/auth/reset" element={<ResetPassword />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/compass" element={<Compass />} />

@@ -113,6 +113,36 @@ export default function Auth() {
     }
   };
 
+  const [showResendVerification, setShowResendVerification] = useState(false);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState("");
+
+  const handleResendVerification = async () => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: pendingVerificationEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Verification email sent!", {
+          description: "Please check your inbox and spam folder.",
+          duration: 8000,
+        });
+        setShowResendVerification(false);
+      }
+    } catch (error) {
+      toast.error("Failed to resend verification email");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -126,8 +156,10 @@ export default function Auth() {
         if (error.message.includes("Invalid login credentials")) {
           toast.error("Invalid email or password");
         } else if (error.message.includes("Email not confirmed")) {
+          setPendingVerificationEmail(loginEmail);
+          setShowResendVerification(true);
           toast.error("Please verify your email first", {
-            description: "Check your inbox for the verification email. If you didn't receive it, try signing up again.",
+            description: "Click 'Resend Verification' to get a new email.",
             duration: 8000,
           });
         } else {
@@ -358,6 +390,18 @@ export default function Auth() {
                       </>
                     )}
                   </Button>
+                  
+                  {showResendVerification && (
+                    <Button 
+                      type="button" 
+                      variant="secondary" 
+                      className="w-full" 
+                      onClick={handleResendVerification}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Sending..." : "Resend Verification Email"}
+                    </Button>
+                  )}
                   
                   <Button 
                     type="button" 

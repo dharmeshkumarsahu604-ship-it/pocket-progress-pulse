@@ -1,7 +1,6 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MineralCard } from "@/components/minerals/MineralCard";
 import { SearchBar } from "@/components/shared/SearchBar";
-import { LoadingSkeleton, SearchBarSkeleton } from "@/components/shared/LoadingSkeleton";
 import { PullToRefreshIndicator } from "@/components/shared/PullToRefreshIndicator";
 import { useSearch } from "@/hooks/useSearch";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -9,7 +8,6 @@ import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useState, useMemo, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -112,41 +110,45 @@ export default function Minerals() {
           {/* Header Skeleton */}
           <div className="animate-fade-in">
             <div className="flex items-center gap-3 mb-2">
-              <Skeleton className="h-10 w-10 rounded-xl" />
+              <div className="h-10 w-10 rounded-xl bg-muted shimmer" />
               <div>
-                <Skeleton className="h-8 w-48 mb-1" />
-                <Skeleton className="h-4 w-64" />
+                <div className="h-8 w-48 mb-1 bg-muted rounded shimmer" style={{ animationDelay: '100ms' }} />
+                <div className="h-4 w-64 bg-muted rounded shimmer" style={{ animationDelay: '200ms' }} />
               </div>
             </div>
           </div>
           
           {/* Search & Filter Skeleton */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-border/50 space-y-4">
-            <Skeleton className="h-12 w-full rounded-xl" />
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-border/50 space-y-4 animate-fade-in" style={{ animationDelay: '150ms' }}>
+            <div className="h-12 w-full rounded-xl bg-muted shimmer" />
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-2 w-full" />
+                <div className="h-4 w-32 bg-muted rounded shimmer" style={{ animationDelay: '200ms' }} />
+                <div className="h-2 w-full bg-muted rounded shimmer" style={{ animationDelay: '250ms' }} />
               </div>
-              <Skeleton className="h-10 w-40" />
+              <div className="h-10 w-40 bg-muted rounded shimmer" style={{ animationDelay: '300ms' }} />
             </div>
           </div>
 
           {/* Cards Skeleton */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50">
-                <Skeleton className="aspect-[4/3] w-full" />
+              <div 
+                key={i} 
+                className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50 animate-fade-in"
+                style={{ animationDelay: `${350 + i * 100}ms` }}
+              >
+                <div className="aspect-[4/3] w-full bg-muted shimmer" />
                 <div className="p-4 space-y-3">
                   <div className="flex justify-between items-start">
-                    <Skeleton className="h-6 w-32" />
-                    <Skeleton className="h-6 w-10 rounded-full" />
+                    <div className="h-6 w-32 bg-muted rounded shimmer" />
+                    <div className="h-6 w-10 rounded-full bg-muted shimmer" />
                   </div>
-                  <Skeleton className="h-4 w-full" />
+                  <div className="h-4 w-full bg-muted rounded shimmer" />
                   <div className="flex gap-2">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-5 w-16" />
-                    <Skeleton className="h-5 w-14" />
+                    <div className="h-5 w-20 bg-muted rounded shimmer" />
+                    <div className="h-5 w-16 bg-muted rounded shimmer" />
+                    <div className="h-5 w-14 bg-muted rounded shimmer" />
                   </div>
                 </div>
               </div>

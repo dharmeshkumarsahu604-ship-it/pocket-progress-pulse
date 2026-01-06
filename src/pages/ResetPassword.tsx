@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mountain, Loader2, AlertCircle } from "lucide-react";
+import { Mountain, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -81,9 +81,12 @@ export default function ResetPassword() {
   if (isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Verifying reset link...</p>
+        <div className="flex flex-col items-center space-y-4 animate-fade-in">
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin" />
+          </div>
+          <p className="text-muted-foreground animate-pulse">Verifying reset link...</p>
         </div>
       </div>
     );
@@ -92,9 +95,11 @@ export default function ResetPassword() {
   if (!isValidSession) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md animate-fade-in">
           <CardHeader className="text-center">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-2" />
+            <div className="animate-bounce">
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-2" />
+            </div>
             <CardTitle>Invalid or Expired Link</CardTitle>
             <CardDescription>
               This password reset link is invalid or has expired. Redirecting to sign in...

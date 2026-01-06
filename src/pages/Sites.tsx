@@ -136,25 +136,25 @@ export default function Sites() {
           <div className="space-y-4 animate-fade-in">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="space-y-2">
-                <Skeleton className="h-10 w-96 animate-pulse" />
-                <Skeleton className="h-6 w-80 animate-pulse" />
+                <div className="h-10 w-96 bg-muted rounded shimmer" />
+                <div className="h-6 w-80 bg-muted rounded shimmer" style={{ animationDelay: '100ms' }} />
               </div>
               <div className="flex gap-2">
-                <Skeleton className="h-10 w-32 shimmer" />
-                <Skeleton className="h-10 w-32 shimmer" />
+                <div className="h-10 w-32 bg-muted rounded shimmer" style={{ animationDelay: '150ms' }} />
+                <div className="h-10 w-32 bg-muted rounded shimmer" style={{ animationDelay: '200ms' }} />
               </div>
             </div>
 
             {/* Statistics Cards Skeleton */}
-            <div className="grid gap-4 sm:grid-cols-3 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <div className="grid gap-4 sm:grid-cols-3 animate-fade-in" style={{ animationDelay: '200ms' }}>
               {[1, 2, 3].map((i) => (
-                <Card key={i}>
+                <Card key={i} className="animate-fade-in" style={{ animationDelay: `${250 + i * 100}ms` }}>
                   <CardHeader className="pb-3">
-                    <Skeleton className="h-4 w-24 shimmer" />
-                    <Skeleton className="h-8 w-16 shimmer" />
+                    <div className="h-4 w-24 bg-muted rounded shimmer" />
+                    <div className="h-8 w-16 bg-muted rounded shimmer" style={{ animationDelay: '50ms' }} />
                   </CardHeader>
                   <CardContent>
-                    <Skeleton className="h-3 w-full shimmer" />
+                    <div className="h-3 w-full bg-muted rounded shimmer" />
                   </CardContent>
                 </Card>
               ))}
@@ -162,19 +162,19 @@ export default function Sites() {
           </div>
 
           {/* View Mode Skeleton */}
-          <div className="flex gap-3 flex-wrap animate-fade-in" style={{ animationDelay: '200ms' }}>
-            <Skeleton className="h-10 w-28 shimmer" />
-            <Skeleton className="h-10 w-32 shimmer" />
+          <div className="flex gap-3 flex-wrap animate-fade-in" style={{ animationDelay: '400ms' }}>
+            <div className="h-10 w-28 bg-muted rounded shimmer" />
+            <div className="h-10 w-32 bg-muted rounded shimmer" style={{ animationDelay: '50ms' }} />
           </div>
 
           {/* Search Skeleton */}
-          <div className="space-y-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
+          <div className="space-y-4 animate-fade-in" style={{ animationDelay: '500ms' }}>
             <SearchBarSkeleton />
             <div className="space-y-3">
-              <Skeleton className="h-5 w-32 shimmer" />
+              <div className="h-5 w-32 bg-muted rounded shimmer" />
               <div className="flex gap-2">
                 {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-10 w-24 shimmer" />
+                  <div key={i} className="h-10 w-24 bg-muted rounded shimmer" style={{ animationDelay: `${i * 50}ms` }} />
                 ))}
               </div>
             </div>

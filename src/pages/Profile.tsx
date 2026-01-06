@@ -291,12 +291,12 @@ export default function Profile() {
       <AppLayout>
         <div className="space-y-6 max-w-2xl mx-auto pb-20">
           {/* Hero skeleton */}
-          <div className="rounded-2xl p-6 bg-gradient-to-br from-[hsl(var(--geo-brown))] to-[hsl(var(--geo-green))]">
+          <div className="rounded-2xl p-6 bg-gradient-to-br from-[hsl(var(--geo-brown))] to-[hsl(var(--geo-green))] animate-fade-in">
             <div className="flex items-center gap-4">
-              <Skeleton className="h-20 w-20 rounded-full bg-white/20" />
+              <div className="h-20 w-20 rounded-full bg-white/20 shimmer" />
               <div className="space-y-2">
-                <Skeleton className="h-6 w-32 bg-white/20" />
-                <Skeleton className="h-5 w-20 bg-white/20" />
+                <div className="h-6 w-32 bg-white/20 rounded shimmer" style={{ animationDelay: '100ms' }} />
+                <div className="h-5 w-20 bg-white/20 rounded shimmer" style={{ animationDelay: '200ms' }} />
               </div>
             </div>
           </div>
@@ -304,7 +304,11 @@ export default function Profile() {
           {/* Stats skeleton */}
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-24 rounded-xl" />
+              <div 
+                key={i} 
+                className="h-24 rounded-xl bg-muted shimmer animate-fade-in" 
+                style={{ animationDelay: `${i * 100}ms` }}
+              />
             ))}
           </div>
         </div>

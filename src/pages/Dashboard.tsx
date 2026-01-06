@@ -221,13 +221,13 @@ export default function Dashboard() {
 
         {/* Today's Specimen */}
         {loadingSpecimen ? (
-          <Card className="p-4">
-            <div className="flex gap-4 animate-pulse">
-              <div className="w-24 h-24 rounded-xl bg-muted" />
+          <Card className="p-4 animate-fade-in">
+            <div className="flex gap-4">
+              <div className="w-24 h-24 rounded-xl bg-muted shimmer" />
               <div className="flex-1 space-y-3">
-                <div className="h-4 w-20 bg-muted rounded" />
-                <div className="h-6 w-32 bg-muted rounded" />
-                <div className="h-4 w-full bg-muted rounded" />
+                <div className="h-4 w-20 bg-muted rounded shimmer" />
+                <div className="h-6 w-32 bg-muted rounded shimmer" style={{ animationDelay: '100ms' }} />
+                <div className="h-4 w-full bg-muted rounded shimmer" style={{ animationDelay: '200ms' }} />
               </div>
             </div>
           </Card>

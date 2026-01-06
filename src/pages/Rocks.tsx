@@ -6,7 +6,6 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useState, useMemo, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -116,41 +115,45 @@ export default function Rocks() {
           {/* Header Skeleton */}
           <div className="animate-fade-in">
             <div className="flex items-center gap-3 mb-2">
-              <Skeleton className="h-11 w-11 rounded-xl" />
+              <div className="h-11 w-11 rounded-xl bg-muted shimmer" />
               <div>
-                <Skeleton className="h-8 w-48 mb-1" />
-                <Skeleton className="h-4 w-72" />
+                <div className="h-8 w-48 mb-1 bg-muted rounded shimmer" style={{ animationDelay: '100ms' }} />
+                <div className="h-4 w-72 bg-muted rounded shimmer" style={{ animationDelay: '200ms' }} />
               </div>
             </div>
           </div>
           
           {/* Search & Filter Skeleton */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-border/50 space-y-4">
-            <Skeleton className="h-12 w-full rounded-xl" />
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-border/50 space-y-4 animate-fade-in" style={{ animationDelay: '150ms' }}>
+            <div className="h-12 w-full rounded-xl bg-muted shimmer" />
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex gap-2">
-                <Skeleton className="h-9 w-24 rounded-full" />
-                <Skeleton className="h-9 w-28 rounded-full" />
-                <Skeleton className="h-9 w-28 rounded-full" />
+                <div className="h-9 w-24 rounded-full bg-muted shimmer" style={{ animationDelay: '200ms' }} />
+                <div className="h-9 w-28 rounded-full bg-muted shimmer" style={{ animationDelay: '250ms' }} />
+                <div className="h-9 w-28 rounded-full bg-muted shimmer" style={{ animationDelay: '300ms' }} />
               </div>
-              <Skeleton className="h-10 w-40 ml-auto" />
+              <div className="h-10 w-40 ml-auto bg-muted rounded shimmer" style={{ animationDelay: '350ms' }} />
             </div>
           </div>
 
           {/* Cards Skeleton */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50">
-                <Skeleton className="aspect-[4/3] w-full" />
+              <div 
+                key={i} 
+                className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50 animate-fade-in"
+                style={{ animationDelay: `${400 + i * 100}ms` }}
+              >
+                <div className="aspect-[4/3] w-full bg-muted shimmer" />
                 <div className="p-4 space-y-3">
                   <div className="flex justify-between items-start">
-                    <Skeleton className="h-6 w-32" />
-                    <Skeleton className="h-6 w-20 rounded-full" />
+                    <div className="h-6 w-32 bg-muted rounded shimmer" />
+                    <div className="h-6 w-20 rounded-full bg-muted shimmer" />
                   </div>
-                  <Skeleton className="h-4 w-full" />
+                  <div className="h-4 w-full bg-muted rounded shimmer" />
                   <div className="flex gap-2">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-5 w-16" />
+                    <div className="h-5 w-20 bg-muted rounded shimmer" />
+                    <div className="h-5 w-16 bg-muted rounded shimmer" />
                   </div>
                 </div>
               </div>

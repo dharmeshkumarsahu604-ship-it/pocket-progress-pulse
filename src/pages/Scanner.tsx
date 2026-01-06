@@ -502,7 +502,8 @@ export default function Scanner() {
                   {[...Array(4)].map((_, i) => (
                     <div 
                       key={i} 
-                      className="flex-shrink-0 w-28 h-28 bg-muted rounded-xl animate-pulse" 
+                      className="flex-shrink-0 w-28 h-28 bg-muted rounded-xl shimmer animate-fade-in" 
+                      style={{ animationDelay: `${i * 100}ms` }}
                     />
                   ))}
                 </div>

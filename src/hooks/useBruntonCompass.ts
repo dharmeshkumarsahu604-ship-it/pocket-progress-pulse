@@ -149,6 +149,8 @@ export const useBruntonCompass = () => {
   const headingHistory = useRef<number[]>([]);
   const lastAccuracyCheck = useRef<number>(0);
   const orientationHandler = useRef<((e: DeviceOrientationEvent) => void) | null>(null);
+  const absoluteOrientationHandler = useRef<((e: DeviceOrientationEvent) => void) | null>(null);
+  const hasAbsoluteSupport = useRef<boolean>(false);
 
   // ---- Permission & Initialization ----
   const checkSupport = useCallback(() => {
@@ -243,7 +245,18 @@ export const useBruntonCompass = () => {
   }, []);
 
   // ---- Device Orientation Handler ----
-  const handleOrientation = useCallback((event: DeviceOrientationEvent) => {
+  // Calculate heading using atan2 for better magnetometer accuracy
+  const calculateMagnetometerHeading = useCallback((alpha: number, beta: number, gamma: number): number => {
+    // Use atan2 on magnetometer values for more accurate heading
+    let heading = Math.atan2(gamma, beta);
+    heading = heading * (180 / Math.PI);
+    heading = (heading + 360) % 360;
+    // Fix inverted direction
+    heading = 360 - heading;
+    return heading;
+  }, []);
+
+  const handleOrientation = useCallback((event: DeviceOrientationEvent, useAbsolute: boolean = false) => {
     // Skip updates if locked
     setState(prev => {
       if (prev.isLocked) return prev;
@@ -267,8 +280,17 @@ export const useBruntonCompass = () => {
       previousPitch.current = smoothedBeta;
       previousRoll.current = smoothedGamma;
 
-      // Apply tilt compensation
-      let heading = calculateTiltCompensatedHeading(smoothedAlpha, smoothedBeta, smoothedGamma);
+      let heading: number;
+      
+      if (useAbsolute || hasAbsoluteSupport.current) {
+        // Use improved magnetometer-based heading calculation
+        heading = calculateMagnetometerHeading(smoothedAlpha, smoothedBeta, smoothedGamma);
+        // Apply smoothing to the calculated heading
+        heading = smoothAngle(heading, previousHeading.current, SMOOTHING_FACTOR);
+      } else {
+        // Apply tilt compensation for fallback
+        heading = calculateTiltCompensatedHeading(smoothedAlpha, smoothedBeta, smoothedGamma);
+      }
       
       // Apply magnetic declination for true north
       if (prev.useTrueNorth) {
@@ -304,7 +326,7 @@ export const useBruntonCompass = () => {
         sensorAccuracy: accuracy,
       };
     });
-  }, [calculateTiltCompensatedHeading]);
+  }, [calculateTiltCompensatedHeading, calculateMagnetometerHeading]);
 
   // ---- Start/Stop Listening ----
   const startListening = useCallback(async () => {
@@ -329,9 +351,27 @@ export const useBruntonCompass = () => {
     // Request location in background
     requestLocationPermission();
 
-    // Create handler
-    orientationHandler.current = handleOrientation;
-    window.addEventListener('deviceorientation', handleOrientation, true);
+    // Create handlers
+    const fallbackHandler = (e: DeviceOrientationEvent) => handleOrientation(e, false);
+    const absoluteHandler = (e: DeviceOrientationEvent) => {
+      hasAbsoluteSupport.current = true;
+      // Remove fallback listener once absolute is available
+      if (orientationHandler.current) {
+        window.removeEventListener('deviceorientation', orientationHandler.current, true);
+        orientationHandler.current = null;
+      }
+      handleOrientation(e, true);
+    };
+
+    // Try to use deviceorientationabsolute first (more accurate magnetometer)
+    if ('ondeviceorientationabsolute' in window) {
+      absoluteOrientationHandler.current = absoluteHandler;
+      window.addEventListener('deviceorientationabsolute', absoluteHandler as EventListener, true);
+    }
+
+    // Also listen to regular deviceorientation as fallback
+    orientationHandler.current = fallbackHandler;
+    window.addEventListener('deviceorientation', fallbackHandler, true);
 
     setState(prev => ({ ...prev, isListening: true, isDemoMode: false, error: null }));
     toast.success('Compass sensors activated');
@@ -343,11 +383,16 @@ export const useBruntonCompass = () => {
       window.removeEventListener('deviceorientation', orientationHandler.current, true);
       orientationHandler.current = null;
     }
+    if (absoluteOrientationHandler.current) {
+      window.removeEventListener('deviceorientationabsolute', absoluteOrientationHandler.current as EventListener, true);
+      absoluteOrientationHandler.current = null;
+    }
     
     previousHeading.current = null;
     previousPitch.current = null;
     previousRoll.current = null;
     headingHistory.current = [];
+    hasAbsoluteSupport.current = false;
     
     setState(prev => ({ ...prev, isListening: false }));
   }, []);

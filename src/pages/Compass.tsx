@@ -324,6 +324,12 @@ const Compass: React.FC = () => {
               />
             </>
           )}
+          
+          {/* Metallic objects warning */}
+          <p className="text-xs text-warning text-center flex items-center justify-center gap-1">
+            <AlertTriangle className="h-3 w-3" />
+            Keep device away from metallic objects for accurate geological readings
+          </p>
         </div>
 
         {/* Measurement panel */}

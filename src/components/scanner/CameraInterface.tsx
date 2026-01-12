@@ -29,9 +29,13 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCapture = () => {
+  const handleCapture = async () => {
     const imageData = captureImage();
     if (imageData) {
+      // Auto turn off flash after capture
+      if (flashOn) {
+        await setFlash(false);
+      }
       onCapture(imageData);
     }
   };

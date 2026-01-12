@@ -79,41 +79,110 @@ serve(async (req) => {
       ? { type: "image_url", image_url: { url: imageUrl } }
       : { type: "image_url", image_url: { url: imageBase64 } };
 
-    // Combined prompt that handles both cases intelligently
-    const IDENTIFICATION_PROMPT = `You are a professional geologist. Analyze this geological specimen image.
+    // Helper function to check if meaningful text was detected
+    const hasTextDetected = (ocrText: string | null | undefined): boolean => {
+      return ocrText !== null && ocrText !== undefined && ocrText.trim().length > 3;
+    };
 
-STEP 1 - TEXT DETECTION:
-First, check if there is any readable text (label, name tag, or handwritten text) in the image.
+    // PHASE 1: Quick OCR/text detection
+    const OCR_DETECTION_PROMPT = `Look at this image and extract any visible text (labels, name tags, handwritten notes, or printed text).
+Return ONLY a JSON object:
+{
+  "hasText": true or false,
+  "detectedText": "the text you found" or null
+}
+If no text is visible, return {"hasText": false, "detectedText": null}`;
 
-IF TEXT/LABEL IS DETECTED:
-- Read the text and use it as the specimen name
-- Verify if the specimen visually matches the text/label name
-- If there's a mismatch between the label and what you see, warn the user
-- Set "labelDetected": true and include "labelText" and "verification" fields
+    const ocrResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: OCR_DETECTION_PROMPT },
+              imageContent
+            ]
+          }
+        ],
+        temperature: 0.1,
+      }),
+    });
 
-IF NO TEXT/LABEL IS DETECTED:
-- DO NOT guess exact mineral name unless you are very confident
-- If unsure, return a mineral GROUP or ROCK TYPE instead of specific name
-- Use visual features only for analysis
-- Set "labelDetected": false
+    let ocrResult: string | null = null;
+    
+    if (ocrResponse.ok) {
+      const ocrData = await ocrResponse.json();
+      const ocrContent = ocrData.choices?.[0]?.message?.content;
+      try {
+        const cleanOcr = ocrContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        const ocrParsed = JSON.parse(cleanOcr);
+        if (ocrParsed.hasText && ocrParsed.detectedText) {
+          ocrResult = ocrParsed.detectedText;
+        }
+      } catch {
+        secureLog.info("OCR parsing failed, proceeding without text detection");
+      }
+    }
 
-ANALYZE BASED ON (for visual identification):
+    secureLog.info(`Text detection result: ${hasTextDetected(ocrResult) ? 'Text found' : 'No text'}`);
+
+    // PHASE 2: Use appropriate prompt based on OCR result
+    const PROMPT_WITH_TEXT = `You are a geology identification assistant.
+The specimen has a label/text: "${ocrResult}"
+
+TASK:
+1. Use the label text as the specimen name
+2. Verify if the specimen visually matches the labeled name
+3. If there's a mismatch, warn the user
+
+Return JSON:
+{
+  "name": "${ocrResult}",
+  "type": "rock type (igneous/sedimentary/metamorphic) or mineral classification",
+  "confidence": 85,
+  "confidenceLevel": "high",
+  "description": "detailed description",
+  "composition": "main components",
+  "texture": "texture description",
+  "color": "color description",
+  "formation": "formation process",
+  "locations": ["location1", "location2"],
+  "keyFeatures": ["feature1", "feature2"],
+  "possibleExamples": [],
+  "additionalNotes": "other relevant information",
+  "labelDetected": true,
+  "labelText": "${ocrResult}",
+  "verification": "match" or "mismatch",
+  "verificationNote": "explanation if mismatch detected"
+}
+
+If the specimen doesn't match the label, set verification to "mismatch" and explain why.`;
+
+    const PROMPT_WITHOUT_TEXT = `You are a professional geologist.
+
+IMPORTANT RULES:
+- DO NOT guess exact mineral name unless very confident
+- If unsure, return a mineral GROUP or ROCK TYPE
+- Use visual features only
+
+ANALYZE BASED ON:
 - Color
 - Grain size
 - Texture
 - Luster
 - Crystal shape (if visible)
 
-IMPORTANT RULES:
-- Be scientifically rigorous
-- If confidence is low, provide mineral/rock GROUP rather than exact name
-- Always note that user should verify with hardness/streak tests when uncertain
-
-Return your response as a valid JSON object with this structure:
+Return JSON:
 {
-  "name": "specimen name or mineral group/rock type",
+  "name": "mineral group or rock type (be conservative)",
   "type": "rock type (igneous/sedimentary/metamorphic) or mineral classification",
-  "confidence": 75,
+  "confidence": 60,
   "confidenceLevel": "low" | "medium" | "high",
   "description": "detailed description",
   "composition": "main components",
@@ -124,14 +193,17 @@ Return your response as a valid JSON object with this structure:
   "keyFeatures": ["feature1", "feature2"],
   "possibleExamples": ["possible mineral 1", "possible mineral 2"],
   "additionalNotes": "other relevant information",
-  "labelDetected": true or false,
-  "labelText": "text found in image (if any, otherwise null)",
-  "verification": "match" | "mismatch" | "no_label",
-  "verificationNote": "explanation if mismatch detected or null",
-  "requiresVerification": "User should verify with hardness/streak test" (include when confidence is low/medium)
+  "labelDetected": false,
+  "labelText": null,
+  "verification": "no_label",
+  "verificationNote": null,
+  "requiresVerification": "User must verify with hardness/streak test"
 }
 
-Be specific and scientifically accurate. When uncertain, err on the side of caution and suggest verification tests.`;
+If confidence is low, DO NOT give exact mineral name - give the GROUP instead.`;
+
+    // Select prompt based on OCR result
+    const identificationPrompt = hasTextDetected(ocrResult) ? PROMPT_WITH_TEXT : PROMPT_WITHOUT_TEXT;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -145,10 +217,7 @@ Be specific and scientifically accurate. When uncertain, err on the side of caut
           {
             role: "user",
             content: [
-              {
-                type: "text",
-                text: IDENTIFICATION_PROMPT
-              },
+              { type: "text", text: identificationPrompt },
               imageContent
             ]
           }

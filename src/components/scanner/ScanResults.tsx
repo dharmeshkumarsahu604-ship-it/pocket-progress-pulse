@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Save, Share2, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Share2, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 interface ScanResult {
@@ -125,6 +125,12 @@ export const ScanResults = ({ imageData, result, onBack, onSave, isSaving }: Sca
           ))}
         </CardContent>
       </Card>
+
+      {/* AI Disclaimer */}
+      <p className="text-xs text-warning text-center flex items-center justify-center gap-1 animate-fade-in" style={{ animationDelay: '400ms' }}>
+        <AlertTriangle className="h-3 w-3" />
+        AI identification is visual-based. Field & lab tests recommended for confirmation.
+      </p>
     </div>
   );
 };

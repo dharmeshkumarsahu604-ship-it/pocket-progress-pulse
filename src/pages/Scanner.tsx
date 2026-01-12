@@ -226,6 +226,7 @@ export default function Scanner() {
         name: result.name || "Unknown Specimen",
         type: result.type || "Unknown",
         confidence: (result.confidence || 50) / 100,
+        confidenceLevel: result.confidenceLevel || (result.confidence >= 80 ? "high" : result.confidence >= 50 ? "medium" : "low"),
         description: result.description || "No description available",
         properties: [
           { label: "Composition", value: result.composition || "Unknown" },
@@ -233,6 +234,12 @@ export default function Scanner() {
           { label: "Color", value: result.color || "Unknown" },
           { label: "Formation", value: result.formation || "Unknown" },
         ],
+        possibleExamples: result.possibleExamples || [],
+        labelDetected: result.labelDetected || false,
+        labelText: result.labelText || null,
+        verification: result.verification || "no_label",
+        verificationNote: result.verificationNote || null,
+        requiresVerification: result.requiresVerification || null,
       };
 
       setScanResult(formattedResult);

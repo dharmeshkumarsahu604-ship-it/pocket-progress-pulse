@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { useCamera } from "@/hooks/useCamera";
 import { Button } from "@/components/ui/button";
-import { Camera, FlipHorizontal, X } from "lucide-react";
+import { Camera, FlipHorizontal, X, Zap, ZapOff } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 interface CameraInterfaceProps {
   onCapture: (imageData: string) => void;
@@ -10,7 +11,17 @@ interface CameraInterfaceProps {
 }
 
 export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) => {
-  const { videoRef, isActive, error, startCamera, stopCamera, captureImage } = useCamera();
+  const { 
+    videoRef, 
+    isActive, 
+    error, 
+    flashOn, 
+    flashSupported, 
+    startCamera, 
+    stopCamera, 
+    captureImage,
+    toggleFlash 
+  } = useCamera();
 
   useEffect(() => {
     startCamera();
@@ -25,20 +36,40 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
     }
   };
 
+  const handleToggleFlash = async () => {
+    const success = await toggleFlash();
+    if (!success && !flashSupported) {
+      toast.error("Flash not supported on this device");
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-background animate-fade-in">
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border animate-slide-in-right">
           <h2 className="text-lg font-semibold">Camera</h2>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onClose}
-            className="hover-scale transition-all duration-200"
-          >
-            <X className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Flash Toggle */}
+            <Button 
+              variant={flashOn ? "default" : "ghost"} 
+              size="icon" 
+              onClick={handleToggleFlash}
+              disabled={!isActive}
+              className={`hover-scale transition-all duration-200 ${flashOn ? 'bg-warning text-warning-foreground' : ''}`}
+              title={flashSupported ? (flashOn ? "Turn off flash" : "Turn on flash") : "Flash not supported"}
+            >
+              {flashOn ? <Zap className="h-5 w-5" /> : <ZapOff className="h-5 w-5" />}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onClose}
+              className="hover-scale transition-all duration-200"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Camera View */}
@@ -75,6 +106,14 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
               </div>
             </div>
           )}
+
+          {/* Flash indicator */}
+          {flashOn && isActive && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-warning/90 text-warning-foreground px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 animate-fade-in">
+              <Zap className="h-4 w-4" />
+              Flash On
+            </div>
+          )}
         </div>
 
         {/* Controls */}
@@ -98,8 +137,25 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
               <Camera className="h-8 w-8" />
             </Button>
 
-            <div className="h-12 w-12" /> {/* Spacer for symmetry */}
+            {/* Flash button in controls area for easier access */}
+            <Button
+              variant={flashOn ? "default" : "outline"}
+              size="icon"
+              className={`h-12 w-12 hover-scale transition-all duration-200 ${flashOn ? 'bg-warning text-warning-foreground hover:bg-warning/90' : ''}`}
+              onClick={handleToggleFlash}
+              disabled={!isActive}
+              title={flashSupported ? (flashOn ? "Turn off flash" : "Turn on flash") : "Flash not supported"}
+            >
+              {flashOn ? <Zap className="h-5 w-5" /> : <ZapOff className="h-5 w-5" />}
+            </Button>
           </div>
+          
+          {/* Flash support indicator */}
+          {isActive && !flashSupported && (
+            <p className="text-xs text-muted-foreground text-center mt-3">
+              Flash not available on this device
+            </p>
+          )}
         </div>
       </div>
     </div>

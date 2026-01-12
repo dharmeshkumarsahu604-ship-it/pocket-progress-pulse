@@ -79,21 +79,42 @@ serve(async (req) => {
       ? { type: "image_url", image_url: { url: imageUrl } }
       : { type: "image_url", image_url: { url: imageBase64 } };
 
-    // Prompt for when text/label is detected in the image
-    const PROMPT_WITH_TEXT = `You are a geology identification assistant.
-The specimen may have text/label written in the image.
+    // Combined prompt that handles both cases intelligently
+    const IDENTIFICATION_PROMPT = `You are a professional geologist. Analyze this geological specimen image.
 
-TASK:
-1. First, check if there is any readable text (label, name tag, or handwritten text) in the image
-2. If text is present, read it and use it as the specimen name
-3. Verify if the specimen visually matches the text/label name
-4. If there's a mismatch between the label and what you see, warn the user
+STEP 1 - TEXT DETECTION:
+First, check if there is any readable text (label, name tag, or handwritten text) in the image.
+
+IF TEXT/LABEL IS DETECTED:
+- Read the text and use it as the specimen name
+- Verify if the specimen visually matches the text/label name
+- If there's a mismatch between the label and what you see, warn the user
+- Set "labelDetected": true and include "labelText" and "verification" fields
+
+IF NO TEXT/LABEL IS DETECTED:
+- DO NOT guess exact mineral name unless you are very confident
+- If unsure, return a mineral GROUP or ROCK TYPE instead of specific name
+- Use visual features only for analysis
+- Set "labelDetected": false
+
+ANALYZE BASED ON (for visual identification):
+- Color
+- Grain size
+- Texture
+- Luster
+- Crystal shape (if visible)
+
+IMPORTANT RULES:
+- Be scientifically rigorous
+- If confidence is low, provide mineral/rock GROUP rather than exact name
+- Always note that user should verify with hardness/streak tests when uncertain
 
 Return your response as a valid JSON object with this structure:
 {
-  "name": "specimen name (from label if present, otherwise your identification)",
-  "type": "rock or mineral type",
-  "confidence": 85,
+  "name": "specimen name or mineral group/rock type",
+  "type": "rock type (igneous/sedimentary/metamorphic) or mineral classification",
+  "confidence": 75,
+  "confidenceLevel": "low" | "medium" | "high",
   "description": "detailed description",
   "composition": "main components",
   "texture": "texture description",
@@ -101,48 +122,16 @@ Return your response as a valid JSON object with this structure:
   "formation": "formation process",
   "locations": ["location1", "location2"],
   "keyFeatures": ["feature1", "feature2"],
+  "possibleExamples": ["possible mineral 1", "possible mineral 2"],
   "additionalNotes": "other relevant information",
   "labelDetected": true or false,
-  "labelText": "text found in image (if any)",
-  "verification": "match" or "mismatch" or "no_label",
-  "verificationNote": "explanation if mismatch detected"
+  "labelText": "text found in image (if any, otherwise null)",
+  "verification": "match" | "mismatch" | "no_label",
+  "verificationNote": "explanation if mismatch detected or null",
+  "requiresVerification": "User should verify with hardness/streak test" (include when confidence is low/medium)
 }
 
-Be specific and scientifically accurate. If the label says one thing but the specimen looks different, clearly indicate this mismatch.`;
-
-    // Standard identification prompt (no text detection)
-    const STANDARD_PROMPT = `Analyze this geological specimen image and provide a detailed identification. Include:
-
-1. **Specimen Name**: Most likely rock or mineral name
-2. **Type**: Rock type (igneous/sedimentary/metamorphic) or mineral classification
-3. **Confidence**: Your confidence level (0-100%)
-4. **Key Features**: Observable characteristics that support the identification
-5. **Composition**: Main components or minerals present
-6. **Formation**: How it forms in nature
-7. **Common Locations**: Where specimens like this are typically found
-8. **Additional Notes**: Any other relevant geological information
-
-Return your response as a valid JSON object with this structure:
-{
-  "name": "specimen name",
-  "type": "rock or mineral type",
-  "confidence": 85,
-  "description": "detailed description",
-  "composition": "main components",
-  "texture": "texture description",
-  "color": "color description",
-  "formation": "formation process",
-  "locations": ["location1", "location2"],
-  "keyFeatures": ["feature1", "feature2"],
-  "additionalNotes": "other relevant information",
-  "labelDetected": false,
-  "verification": "no_label"
-}
-
-Be specific and scientifically accurate. If you're uncertain, mention alternative possibilities.`;
-
-    // Use text-aware prompt by default to always check for labels
-    const identificationPrompt = PROMPT_WITH_TEXT;
+Be specific and scientifically accurate. When uncertain, err on the side of caution and suggest verification tests.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -158,7 +147,7 @@ Be specific and scientifically accurate. If you're uncertain, mention alternativ
             content: [
               {
                 type: "text",
-                text: identificationPrompt
+                text: IDENTIFICATION_PROMPT
               },
               imageContent
             ]

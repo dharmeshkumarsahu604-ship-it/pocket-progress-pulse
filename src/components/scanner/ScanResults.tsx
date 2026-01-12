@@ -25,10 +25,11 @@ interface ScanResultsProps {
   result: ScanResult;
   onBack: () => void;
   onSave: () => void;
+  onSelectAlternative?: (alternativeName: string) => void;
   isSaving?: boolean;
 }
 
-export const ScanResults = ({ imageData, result, onBack, onSave, isSaving }: ScanResultsProps) => {
+export const ScanResults = ({ imageData, result, onBack, onSave, onSelectAlternative, isSaving }: ScanResultsProps) => {
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -183,7 +184,9 @@ export const ScanResults = ({ imageData, result, onBack, onSave, isSaving }: Sca
               Possible Alternatives
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Due to lower confidence, consider these alternatives:
+              {onSelectAlternative 
+                ? "Tap an alternative to update the identification:" 
+                : "Due to lower confidence, consider these alternatives:"}
             </p>
           </CardHeader>
           <CardContent>
@@ -192,15 +195,22 @@ export const ScanResults = ({ imageData, result, onBack, onSave, isSaving }: Sca
                 <Badge 
                   key={index} 
                   variant="outline" 
-                  className="animate-scale-in hover:bg-accent transition-colors cursor-default"
+                  className={`animate-scale-in transition-colors ${
+                    onSelectAlternative 
+                      ? 'cursor-pointer hover:bg-primary hover:text-primary-foreground hover:border-primary' 
+                      : 'cursor-default hover:bg-accent'
+                  }`}
                   style={{ animationDelay: `${200 + index * 50}ms` }}
+                  onClick={() => onSelectAlternative?.(example)}
                 >
                   {example}
                 </Badge>
               ))}
             </div>
             <p className="text-xs text-muted-foreground mt-3">
-              Perform hardness tests, streak tests, or acid tests to narrow down the identification.
+              {onSelectAlternative 
+                ? "Select an alternative above, or perform hardness/streak/acid tests to confirm."
+                : "Perform hardness tests, streak tests, or acid tests to narrow down the identification."}
             </p>
           </CardContent>
         </Card>

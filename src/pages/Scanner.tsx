@@ -362,6 +362,22 @@ export default function Scanner() {
     setIsScanning(false);
   };
 
+  const handleSelectAlternative = (alternativeName: string) => {
+    if (!scanResult) return;
+    
+    // Update the current scan result with the selected alternative
+    setScanResult((prev: any) => ({
+      ...prev,
+      name: alternativeName,
+      confidence: 0.9, // User-confirmed selection gets higher confidence
+      confidenceLevel: "high",
+      possibleExamples: prev.possibleExamples?.filter((ex: string) => ex !== alternativeName) || [],
+      requiresVerification: null, // Clear verification warning since user confirmed
+    }));
+    
+    toast.success(`Updated identification to "${alternativeName}"`);
+  };
+
   if (showCamera) {
     return (
       <CameraInterface
@@ -485,6 +501,7 @@ export default function Scanner() {
                 result={scanResult}
                 onBack={handleReset}
                 onSave={handleSave}
+                onSelectAlternative={handleSelectAlternative}
                 isSaving={isSaving}
               />
             </div>

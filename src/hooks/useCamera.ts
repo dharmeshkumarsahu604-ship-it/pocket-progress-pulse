@@ -59,7 +59,7 @@ export const useCamera = () => {
     }
   }, [stream, flashOn]);
 
-  const toggleFlash = useCallback(async () => {
+  const setFlash = useCallback(async (on: boolean) => {
     if (!trackRef.current) {
       console.warn("No video track available for flash control");
       return false;
@@ -71,20 +71,22 @@ export const useCamera = () => {
       console.warn("Flash/torch not supported on this device");
       return false;
     }
-
-    const newFlashState = !flashOn;
     
     try {
       await trackRef.current.applyConstraints({
-        advanced: [{ torch: newFlashState } as MediaTrackConstraintSet]
+        advanced: [{ torch: on } as MediaTrackConstraintSet]
       });
-      setFlashOn(newFlashState);
+      setFlashOn(on);
       return true;
     } catch (err) {
-      console.error("Failed to toggle flash:", err);
+      console.error("Failed to set flash:", err);
       return false;
     }
-  }, [flashOn]);
+  }, []);
+
+  const toggleFlash = useCallback(async () => {
+    return setFlash(!flashOn);
+  }, [flashOn, setFlash]);
 
   const captureImage = useCallback(() => {
     if (!videoRef.current || !isActive) return null;
@@ -110,5 +112,6 @@ export const useCamera = () => {
     stopCamera,
     captureImage,
     toggleFlash,
+    setFlash,
   };
 };

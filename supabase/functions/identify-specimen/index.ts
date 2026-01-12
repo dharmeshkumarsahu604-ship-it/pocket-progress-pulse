@@ -79,21 +79,39 @@ serve(async (req) => {
       ? { type: "image_url", image_url: { url: imageUrl } }
       : { type: "image_url", image_url: { url: imageBase64 } };
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `Analyze this geological specimen image and provide a detailed identification. Include:
+    // Prompt for when text/label is detected in the image
+    const PROMPT_WITH_TEXT = `You are a geology identification assistant.
+The specimen may have text/label written in the image.
+
+TASK:
+1. First, check if there is any readable text (label, name tag, or handwritten text) in the image
+2. If text is present, read it and use it as the specimen name
+3. Verify if the specimen visually matches the text/label name
+4. If there's a mismatch between the label and what you see, warn the user
+
+Return your response as a valid JSON object with this structure:
+{
+  "name": "specimen name (from label if present, otherwise your identification)",
+  "type": "rock or mineral type",
+  "confidence": 85,
+  "description": "detailed description",
+  "composition": "main components",
+  "texture": "texture description",
+  "color": "color description",
+  "formation": "formation process",
+  "locations": ["location1", "location2"],
+  "keyFeatures": ["feature1", "feature2"],
+  "additionalNotes": "other relevant information",
+  "labelDetected": true or false,
+  "labelText": "text found in image (if any)",
+  "verification": "match" or "mismatch" or "no_label",
+  "verificationNote": "explanation if mismatch detected"
+}
+
+Be specific and scientifically accurate. If the label says one thing but the specimen looks different, clearly indicate this mismatch.`;
+
+    // Standard identification prompt (no text detection)
+    const STANDARD_PROMPT = `Analyze this geological specimen image and provide a detailed identification. Include:
 
 1. **Specimen Name**: Most likely rock or mineral name
 2. **Type**: Rock type (igneous/sedimentary/metamorphic) or mineral classification
@@ -116,10 +134,31 @@ Return your response as a valid JSON object with this structure:
   "formation": "formation process",
   "locations": ["location1", "location2"],
   "keyFeatures": ["feature1", "feature2"],
-  "additionalNotes": "other relevant information"
+  "additionalNotes": "other relevant information",
+  "labelDetected": false,
+  "verification": "no_label"
 }
 
-Be specific and scientifically accurate. If you're uncertain, mention alternative possibilities.`
+Be specific and scientifically accurate. If you're uncertain, mention alternative possibilities.`;
+
+    // Use text-aware prompt by default to always check for labels
+    const identificationPrompt = PROMPT_WITH_TEXT;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: identificationPrompt
               },
               imageContent
             ]

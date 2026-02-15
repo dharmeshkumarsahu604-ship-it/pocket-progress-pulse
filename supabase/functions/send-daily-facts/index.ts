@@ -1,168 +1,49 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') || '';
+  const allowedOrigins = ['https://geosmart.lovable.app', 'https://geosmart.site'];
+  const isAllowed = allowedOrigins.includes(origin) || origin.endsWith('.lovable.app') || origin.startsWith('http://localhost:');
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : allowedOrigins[0],
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+  };
+}
 
 // Collection of daily geology facts
 const geologyFacts = [
-  {
-    title: "Earth's Age",
-    body: "Earth is approximately 4.54 billion years old, determined through radiometric dating of meteorites and the oldest known rocks.",
-    type: "daily_fact"
-  },
-  {
-    title: "Deepest Point",
-    body: "The Mariana Trench reaches 36,000 feet (11,000 meters) deep - you could fit Mount Everest inside with room to spare!",
-    type: "daily_fact"
-  },
-  {
-    title: "Moving Continents",
-    body: "The continents move about 2.5 cm per year - roughly the same rate your fingernails grow!",
-    type: "daily_fact"
-  },
-  {
-    title: "Diamond Formation",
-    body: "Diamonds form about 150-200 km below Earth's surface under extreme pressure and heat, then travel up through volcanic eruptions.",
-    type: "daily_fact"
-  },
-  {
-    title: "Oldest Minerals",
-    body: "Zircon crystals from Australia are the oldest known minerals on Earth, dating back 4.4 billion years.",
-    type: "daily_fact"
-  },
-  {
-    title: "Rock Cycle",
-    body: "The rock cycle has been operating for about 4 billion years. Some atoms in today's rocks have been recycled countless times!",
-    type: "daily_fact"
-  },
-  {
-    title: "Volcanic Glass",
-    body: "Obsidian is volcanic glass formed when lava cools so quickly that crystals don't have time to form.",
-    type: "daily_fact"
-  },
-  {
-    title: "Fossil Fuels",
-    body: "Coal takes millions of years to form from ancient plant material buried under sediment and subjected to heat and pressure.",
-    type: "daily_fact"
-  },
-  {
-    title: "Mohs Scale",
-    body: "Friedrich Mohs created the hardness scale in 1812. Diamond is 10, but it's actually about 4 times harder than corundum (9)!",
-    type: "daily_fact"
-  },
-  {
-    title: "Supervolcanoes",
-    body: "Yellowstone sits atop a supervolcano that has erupted catastrophically three times in the last 2.1 million years.",
-    type: "daily_fact"
-  },
-  {
-    title: "Tectonic Plates",
-    body: "Earth has 7 major and 8 minor tectonic plates. The Pacific Plate is the largest, covering about 103 million square km.",
-    type: "daily_fact"
-  },
-  {
-    title: "Pyrite vs Gold",
-    body: "Fool's gold (pyrite) has been mistaken for gold for centuries. Pyrite is harder and has a brassy color compared to gold's warm yellow.",
-    type: "daily_fact"
-  },
-  {
-    title: "Granite Abundance",
-    body: "Granite makes up about 70-80% of Earth's continental crust and is one of the most common rocks you'll encounter.",
-    type: "daily_fact"
-  },
-  {
-    title: "Metamorphic Magic",
-    body: "Marble is metamorphosed limestone. The beautiful swirls come from impurities that recrystallize during transformation.",
-    type: "daily_fact"
-  },
-  {
-    title: "Earthquake Frequency",
-    body: "About 500,000 detectable earthquakes occur worldwide each year. Only about 100,000 can be felt, and 100 cause damage.",
-    type: "daily_fact"
-  },
-  {
-    title: "Mineral Colors",
-    body: "Quartz can be almost any color depending on impurities - amethyst (purple), citrine (yellow), rose quartz (pink), and smoky quartz.",
-    type: "daily_fact"
-  },
-  {
-    title: "Basalt Dominance",
-    body: "Basalt covers more of Earth's surface than any other rock type, forming the ocean floor and many volcanic islands.",
-    type: "daily_fact"
-  },
-  {
-    title: "Cave Formation",
-    body: "Limestone caves form through dissolution - slightly acidic water slowly dissolves the calcium carbonate over thousands of years.",
-    type: "daily_fact"
-  },
-  {
-    title: "Magnetic Reversals",
-    body: "Earth's magnetic poles have reversed hundreds of times. The last reversal was about 780,000 years ago.",
-    type: "daily_fact"
-  },
-  {
-    title: "Fossils in Mountains",
-    body: "Marine fossils found on Mount Everest prove that the Himalayan rock was once at the bottom of an ancient ocean!",
-    type: "daily_fact"
-  },
-  {
-    title: "Inner Core Temperature",
-    body: "Earth's inner core is as hot as the surface of the Sun - about 5,400°C (9,800°F)!",
-    type: "daily_fact"
-  },
-  {
-    title: "Salt Domes",
-    body: "Salt is less dense than surrounding rock and can push upward creating dome structures that often trap oil and gas.",
-    type: "daily_fact"
-  },
-  {
-    title: "Mica Flexibility",
-    body: "Mica can be split into incredibly thin, flexible sheets. It was once used as windows before glass became common!",
-    type: "daily_fact"
-  },
-  {
-    title: "Volcanic Lightning",
-    body: "Lightning can occur in volcanic ash clouds due to static electricity generated by colliding ash particles.",
-    type: "daily_fact"
-  },
-  {
-    title: "Sediment Layers",
-    body: "The Grand Canyon exposes nearly 2 billion years of Earth's geological history in its colorful rock layers.",
-    type: "daily_fact"
-  },
-  {
-    title: "Fluorescent Minerals",
-    body: "Some minerals glow under UV light! Calcite, fluorite, and willemite are famous for their beautiful fluorescence.",
-    type: "daily_fact"
-  },
-  {
-    title: "Pumice Floats",
-    body: "Pumice is the only rock that floats on water due to its many air-filled vesicles from rapid volcanic cooling.",
-    type: "daily_fact"
-  },
-  {
-    title: "Gneiss Banding",
-    body: "Gneiss forms under extreme heat and pressure, creating distinctive light and dark mineral bands through segregation.",
-    type: "daily_fact"
-  },
-  {
-    title: "Soil Formation",
-    body: "It takes about 500-1000 years to form just one inch of topsoil through weathering and organic decomposition.",
-    type: "daily_fact"
-  },
-  {
-    title: "Oceanic Crust Age",
-    body: "No oceanic crust is older than 200 million years - it's constantly being created and destroyed at plate boundaries.",
-    type: "daily_fact"
-  },
-  {
-    title: "Mineral Diversity",
-    body: "Over 5,000 minerals have been identified on Earth, but only about 100 are commonly found.",
-    type: "daily_fact"
-  }
+  { title: "Earth's Age", body: "Earth is approximately 4.54 billion years old, determined through radiometric dating of meteorites and the oldest known rocks.", type: "daily_fact" },
+  { title: "Deepest Point", body: "The Mariana Trench reaches 36,000 feet (11,000 meters) deep - you could fit Mount Everest inside with room to spare!", type: "daily_fact" },
+  { title: "Moving Continents", body: "The continents move about 2.5 cm per year - roughly the same rate your fingernails grow!", type: "daily_fact" },
+  { title: "Diamond Formation", body: "Diamonds form about 150-200 km below Earth's surface under extreme pressure and heat, then travel up through volcanic eruptions.", type: "daily_fact" },
+  { title: "Oldest Minerals", body: "Zircon crystals from Australia are the oldest known minerals on Earth, dating back 4.4 billion years.", type: "daily_fact" },
+  { title: "Rock Cycle", body: "The rock cycle has been operating for about 4 billion years. Some atoms in today's rocks have been recycled countless times!", type: "daily_fact" },
+  { title: "Volcanic Glass", body: "Obsidian is volcanic glass formed when lava cools so quickly that crystals don't have time to form.", type: "daily_fact" },
+  { title: "Fossil Fuels", body: "Coal takes millions of years to form from ancient plant material buried under sediment and subjected to heat and pressure.", type: "daily_fact" },
+  { title: "Mohs Scale", body: "Friedrich Mohs created the hardness scale in 1812. Diamond is 10, but it's actually about 4 times harder than corundum (9)!", type: "daily_fact" },
+  { title: "Supervolcanoes", body: "Yellowstone sits atop a supervolcano that has erupted catastrophically three times in the last 2.1 million years.", type: "daily_fact" },
+  { title: "Tectonic Plates", body: "Earth has 7 major and 8 minor tectonic plates. The Pacific Plate is the largest, covering about 103 million square km.", type: "daily_fact" },
+  { title: "Pyrite vs Gold", body: "Fool's gold (pyrite) has been mistaken for gold for centuries. Pyrite is harder and has a brassy color compared to gold's warm yellow.", type: "daily_fact" },
+  { title: "Granite Abundance", body: "Granite makes up about 70-80% of Earth's continental crust and is one of the most common rocks you'll encounter.", type: "daily_fact" },
+  { title: "Metamorphic Magic", body: "Marble is metamorphosed limestone. The beautiful swirls come from impurities that recrystallize during transformation.", type: "daily_fact" },
+  { title: "Earthquake Frequency", body: "About 500,000 detectable earthquakes occur worldwide each year. Only about 100,000 can be felt, and 100 cause damage.", type: "daily_fact" },
+  { title: "Mineral Colors", body: "Quartz can be almost any color depending on impurities - amethyst (purple), citrine (yellow), rose quartz (pink), and smoky quartz.", type: "daily_fact" },
+  { title: "Basalt Dominance", body: "Basalt covers more of Earth's surface than any other rock type, forming the ocean floor and many volcanic islands.", type: "daily_fact" },
+  { title: "Cave Formation", body: "Limestone caves form through dissolution - slightly acidic water slowly dissolves the calcium carbonate over thousands of years.", type: "daily_fact" },
+  { title: "Magnetic Reversals", body: "Earth's magnetic poles have reversed hundreds of times. The last reversal was about 780,000 years ago.", type: "daily_fact" },
+  { title: "Fossils in Mountains", body: "Marine fossils found on Mount Everest prove that the Himalayan rock was once at the bottom of an ancient ocean!", type: "daily_fact" },
+  { title: "Inner Core Temperature", body: "Earth's inner core is as hot as the surface of the Sun - about 5,400°C (9,800°F)!", type: "daily_fact" },
+  { title: "Salt Domes", body: "Salt is less dense than surrounding rock and can push upward creating dome structures that often trap oil and gas.", type: "daily_fact" },
+  { title: "Mica Flexibility", body: "Mica can be split into incredibly thin, flexible sheets. It was once used as windows before glass became common!", type: "daily_fact" },
+  { title: "Volcanic Lightning", body: "Lightning can occur in volcanic ash clouds due to static electricity generated by colliding ash particles.", type: "daily_fact" },
+  { title: "Sediment Layers", body: "The Grand Canyon exposes nearly 2 billion years of Earth's geological history in its colorful rock layers.", type: "daily_fact" },
+  { title: "Fluorescent Minerals", body: "Some minerals glow under UV light! Calcite, fluorite, and willemite are famous for their beautiful fluorescence.", type: "daily_fact" },
+  { title: "Pumice Floats", body: "Pumice is the only rock that floats on water due to its many air-filled vesicles from rapid volcanic cooling.", type: "daily_fact" },
+  { title: "Gneiss Banding", body: "Gneiss forms under extreme heat and pressure, creating distinctive light and dark mineral bands through segregation.", type: "daily_fact" },
+  { title: "Soil Formation", body: "It takes about 500-1000 years to form just one inch of topsoil through weathering and organic decomposition.", type: "daily_fact" },
+  { title: "Oceanic Crust Age", body: "No oceanic crust is older than 200 million years - it's constantly being created and destroyed at plate boundaries.", type: "daily_fact" },
+  { title: "Mineral Diversity", body: "Over 5,000 minerals have been identified on Earth, but only about 100 are commonly found.", type: "daily_fact" },
 ];
 
 // Get today's fact based on day of year
@@ -175,6 +56,7 @@ function getTodaysFact(): typeof geologyFacts[0] {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCamera } from "@/hooks/useCamera";
 import { Button } from "@/components/ui/button";
 import { Camera, FlipHorizontal, X } from "lucide-react";
@@ -11,6 +11,7 @@ interface CameraInterfaceProps {
 }
 
 export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) => {
+  const [showFlashEffect, setShowFlashEffect] = useState(false);
   const { 
     videoRef, 
     isActive, 
@@ -32,6 +33,9 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
   const handleCapture = async () => {
     const imageData = captureImage();
     if (imageData) {
+      // Show flash effect
+      setShowFlashEffect(true);
+      setTimeout(() => setShowFlashEffect(false), 300);
       // Auto turn off flash after capture
       if (flashOn) {
         await setFlash(false);
@@ -126,9 +130,14 @@ export const CameraInterface = ({ onCapture, onClose }: CameraInterfaceProps) =>
             </div>
           )}
 
+          {/* Capture flash effect */}
+          {showFlashEffect && (
+            <div className="absolute inset-0 bg-white animate-fade-out pointer-events-none z-10" />
+          )}
+
           {/* Flash indicator */}
           {flashOn && isActive && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-warning/90 text-warning-foreground px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 animate-fade-in">
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-warning/90 text-warning-foreground px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 animate-fade-in z-20">
               🔦 Flash On
             </div>
           )}

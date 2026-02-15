@@ -99,7 +99,7 @@ export async function subscribeToPush(vapidPublicKey?: string): Promise<PushSubs
     }
 
     // Check for existing subscription
-    let subscription = await registration.pushManager.getSubscription();
+    let subscription = await (registration as any).pushManager.getSubscription();
     
     // If no subscription exists, create one
     if (!subscription) {
@@ -110,7 +110,7 @@ export async function subscribeToPush(vapidPublicKey?: string): Promise<PushSubs
       }
 
       const applicationServerKey = urlBase64ToUint8Array(key);
-      subscription = await registration.pushManager.subscribe({
+      subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: applicationServerKey.buffer as ArrayBuffer
       });
@@ -145,7 +145,7 @@ export async function unsubscribeFromPush(): Promise<boolean> {
       return false;
     }
 
-    const subscription = await registration.pushManager.getSubscription();
+    const subscription = await (registration as any).pushManager.getSubscription();
     if (subscription) {
       await subscription.unsubscribe();
       return true;
@@ -166,7 +166,7 @@ export async function getCurrentPushSubscription(): Promise<PushSubscription | n
     if (!registration) {
       return null;
     }
-    return registration.pushManager.getSubscription();
+    return (registration as any).pushManager.getSubscription();
   } catch (error) {
     console.error('Failed to get current subscription:', error);
     return null;
